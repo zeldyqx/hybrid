@@ -25,8 +25,7 @@
 
         .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; align-items: center; }
         .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
-        .user-profile-badge { font-size: 0.85rem; color: var(--accent); font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
-        .user-profile-badge:hover { background: rgba(56, 189, 248, 0.2); }
+        .user-profile-badge { font-size: 0.85rem; color: var(--accent); font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); }
 
         .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .container { width: 100%; max-width: 520px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
@@ -129,10 +128,7 @@
 </head>
 <body>
 
-<div class="auth-bar" id="authBar">
-    <button id="openLoginBtn" class="btn-secondary">Log In</button>
-    <button id="openRegisterBtn">Sign Up</button>
-</div>
+<div class="auth-bar" id="authBar"></div>
 
 <div id="mainWrapper" class="main-wrapper">
     <div class="container">
@@ -228,22 +224,6 @@
 </div>
 
 <!-- Modal Overlays -->
-<div id="profileModal" class="modal-overlay">
-    <div class="modal">
-        <h2>User Profile</h2>
-        <div style="background: rgba(0, 0, 0, 0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
-            <div class="info-row" style="margin-bottom: 0;">
-                <span>Username:</span>
-                <span id="profileUsername" class="info-value">------</span>
-            </div>
-        </div>
-        <div class="modal-actions">
-            <button onclick="logout()" class="btn-danger">Log Out</button>
-            <button id="closeProfileModalBtn" class="btn-secondary">Close</button>
-        </div>
-    </div>
-</div>
-
 <div id="loginModal" class="modal-overlay">
     <div class="modal">
         <h2>Account Login</h2>
@@ -357,17 +337,12 @@
         localStorage.setItem('lb_accounts', JSON.stringify(accounts));
     }
 
-    function openProfileModal() {
-        if (!currentUser) return;
-        document.getElementById('profileUsername').textContent = currentUser.username;
-        document.getElementById('profileModal').style.display = 'flex';
-    }
-
     function updateAuthBarUI() {
         const authBar = document.getElementById('authBar');
         if (currentUser) {
             authBar.innerHTML = `
-                <div class="user-profile-badge" onclick="openProfileModal()">👤 ${escapeHtml(currentUser.username)}</div>
+                <div class="user-profile-badge">👤 ${escapeHtml(currentUser.username)}</div>
+                <button onclick="logout()" class="btn-secondary">Log Out</button>
             `;
             myName = currentUser.username;
         } else {
@@ -375,19 +350,16 @@
                 <button id="openLoginBtn" class="btn-secondary" onclick="document.getElementById('loginModal').style.display='flex'">Log In</button>
                 <button id="openRegisterBtn" onclick="document.getElementById('registerModal').style.display='flex'">Sign Up</button>
             `;
-            myName = 'User_' + Math.floor(Math.random() * 1000);
+            if (!myName || myName.startsWith('User_')) {
+                myName = 'User_' + Math.floor(Math.random() * 1000);
+            }
         }
     }
 
     window.logout = function() {
         localStorage.removeItem('lb_session');
         currentUser = null;
-        document.getElementById('profileModal').style.display = 'none';
         updateAuthBarUI();
-    };
-
-    document.getElementById('closeProfileModalBtn').onclick = () => {
-        document.getElementById('profileModal').style.display = 'none';
     };
 
     document.getElementById('doRegisterBtn').onclick = () => {
@@ -518,6 +490,10 @@
                 conn.send({ type: 'join-response', success: false, message: 'You are banned from this room' });
                 return;
             }
+            if (hostState.requireAccount && !data.isLoggedIn) {
+                conn.send({ type: 'join-response', success: false, message: 'This room requires an account. Guest access is blocked.' });
+                return;
+            }
             if (data.password !== hostState.password) {
                 conn.send({ type: 'join-response', success: false, message: 'Incorrect password' });
                 return;
@@ -534,14 +510,16 @@
                 conn: conn
             };
 
+            const userPerms = hostState.users[conn.peer].permissions;
+
             conn.send({
                 type: 'join-response',
                 success: true,
                 roomId: hostState.roomId,
                 password: hostState.password,
-                permissions: hostState.users[conn.peer].permissions,
-                chatHistory: hostState.chatHistory,
-                fileHistory: hostState.fileHistory
+                permissions: userPerms,
+                chatHistory: userPerms.canViewMessageHistory !== false ? hostState.chatHistory : [],
+                fileHistory: userPerms.canViewFileHistory !== false ? hostState.fileHistory : []
             });
 
             broadcastUserList();
@@ -590,7 +568,8 @@
                 roomHostConn.send({
                     type: 'join-request',
                     password: password,
-                    name: myName
+                    name: myName,
+                    isLoggedIn: currentUser !== null
                 });
             });
 
@@ -623,13 +602,17 @@
             renderUserList(data.users, data.hostId, data.requireAccount);
         }
         else if (data.type === 'chat-message') {
-            appendChatMessage(data.author, data.text);
+            if (myPermissions.canViewMessageHistory !== false) {
+                appendChatMessage(data.author, data.text);
+            }
         }
         else if (data.type === 'sys-message') {
             appendSysMessage(data.text);
         }
         else if (data.type === 'receive-file') {
-            appendFileMessage(data.fileData);
+            if (myPermissions.canViewFileHistory !== false) {
+                appendFileMessage(data.fileData);
+            }
         }
         else if (data.type === 'file-deleted') {
             removeFileItem(data.fileId);
@@ -655,7 +638,11 @@
         if (data.type === 'file-deleted') removeFileItem(data.fileId);
 
         Object.values(hostState.users).forEach(u => {
-            if (u.conn && u.conn.open) u.conn.send(data);
+            if (u.conn && u.conn.open) {
+                if (data.type === 'chat-message' && u.permissions.canViewMessageHistory === false) return;
+                if (data.type === 'receive-file' && u.permissions.canViewFileHistory === false) return;
+                u.conn.send(data);
+            }
         });
     }
 
@@ -694,10 +681,6 @@
         document.getElementById('labelRoomId').textContent = data.roomId;
         document.getElementById('labelRoomPass').textContent = '••••••';
         mainWrapper.style.display = 'none';
-        
-        // Hide auth buttons bar when inside room
-        document.getElementById('authBar').style.display = 'none';
-        
         appLayout.style.display = 'flex';
         
         openSettingsBtn.style.display = isHost ? 'flex' : 'none';
@@ -851,7 +834,15 @@
 
     openSettingsBtn.onclick = () => {
         document.getElementById('hostSettingsSection').style.display = 'block';
+        document.getElementById('toggleRequireAccount').checked = hostState.requireAccount;
         renderBlacklist();
+    };
+
+    window.toggleRequireAccountSetting = function() {
+        if (isHost) {
+            hostState.requireAccount = document.getElementById('toggleRequireAccount').checked;
+            broadcastUserList();
+        }
     };
 
     function renderBlacklist() {
@@ -966,7 +957,7 @@
                 <span class="file-name">${escapeHtml(name)}</span>
                 <span class="file-size">${size}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim);">
+            <div style="display: flex; justify-content: space-between; align- items: center; font-size: 0.75rem; color: var(--text-dim);">
                 <span>${status}</span>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     ${downloadUrl ? `<a href="${downloadUrl}" download="${escapeHtml(name)}" class="file-download-link" style="color: var(--accent); font-weight: bold; display: ${myPermissions.canDownload ? 'inline' : 'none'};">Download</a>` : ''}
