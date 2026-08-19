@@ -25,7 +25,8 @@
 
         .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; align-items: center; }
         .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
-        .user-profile-badge { font-size: 0.85rem; color: var(--accent); font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); }
+        .user-profile-badge { font-size: 0.85rem; color: var(--accent); font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+        .user-profile-badge:hover { background: rgba(56, 189, 248, 0.2); }
 
         .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .container { width: 100%; max-width: 520px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
@@ -227,6 +228,22 @@
 </div>
 
 <!-- Modal Overlays -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal">
+        <h2>User Profile</h2>
+        <div style="background: rgba(0, 0, 0, 0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
+            <div class="info-row" style="margin-bottom: 0;">
+                <span>Username:</span>
+                <span id="profileUsername" class="info-value">------</span>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button onclick="logout()" class="btn-danger">Log Out</button>
+            <button id="closeProfileModalBtn" class="btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
 <div id="loginModal" class="modal-overlay">
     <div class="modal">
         <h2>Account Login</h2>
@@ -340,12 +357,17 @@
         localStorage.setItem('lb_accounts', JSON.stringify(accounts));
     }
 
+    function openProfileModal() {
+        if (!currentUser) return;
+        document.getElementById('profileUsername').textContent = currentUser.username;
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
     function updateAuthBarUI() {
         const authBar = document.getElementById('authBar');
         if (currentUser) {
             authBar.innerHTML = `
-                <div class="user-profile-badge">👤 ${escapeHtml(currentUser.username)}</div>
-                <button onclick="logout()" class="btn-secondary">Log Out</button>
+                <div class="user-profile-badge" onclick="openProfileModal()">👤 ${escapeHtml(currentUser.username)}</div>
             `;
             myName = currentUser.username;
         } else {
@@ -360,7 +382,12 @@
     window.logout = function() {
         localStorage.removeItem('lb_session');
         currentUser = null;
+        document.getElementById('profileModal').style.display = 'none';
         updateAuthBarUI();
+    };
+
+    document.getElementById('closeProfileModalBtn').onclick = () => {
+        document.getElementById('profileModal').style.display = 'none';
     };
 
     document.getElementById('doRegisterBtn').onclick = () => {
@@ -667,6 +694,10 @@
         document.getElementById('labelRoomId').textContent = data.roomId;
         document.getElementById('labelRoomPass').textContent = '••••••';
         mainWrapper.style.display = 'none';
+        
+        // Hide auth buttons bar when inside room
+        document.getElementById('authBar').style.display = 'none';
+        
         appLayout.style.display = 'flex';
         
         openSettingsBtn.style.display = isHost ? 'flex' : 'none';
