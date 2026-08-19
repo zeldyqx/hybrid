@@ -2479,4 +2479,406 @@
                     <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
                 </div>
 
-                <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: var(--radius
+                <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                    <label style="font-weight: bold; display: block; margin-bottom: 8px;">Privacy Settings:</label>
+                    <div class="switch-row"><span>Show ID to public</span><label class="switch"><input type="checkbox" id="privShowUuid"><span class="slider"></span></label></div>
+                    <div class="switch-row"><span>Show Creation Date</span><label class="switch"><input type="checkbox" id="privShowCreated"><span class="slider"></span></label></div>
+                    <div class="switch-row"><span>Show Bio</span><label class="switch"><input type="checkbox" id="privShowBio"><span class="slider"></span></label></div>
+                    <div class="switch-row"><span>Show Friends List</span><label class="switch"><input type="checkbox" id="privShowFriends"><span class="slider"></span></label></div>
+                </div>
+
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 6px;">Blacklist:</label>
+                    <div id="profileBlacklistContainer" class="list-container"></div>
+                </div>
+            </div>
+
+            <!-- Right Col: Friends List -->
+            <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border); height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-weight: bold;">Friends List:</label>
+                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="openAddFriendModal()">+ Add Friends</button>
+                </div>
+                <div id="profileFriendsContainer" class="list-container" style="flex: 1; max-height: 320px;"></div>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+            <button class="btn-secondary" style="width: 120px;" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
+            <button style="width: 140px;" onclick="saveProfileChanges()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- View User Profile Modal (Horizontally styled) -->
+<div id="viewUserProfileModal" class="modal-overlay">
+    <div class="modal modal-wide" style="max-width: 650px;">
+        <h2 id="viewUserHeaderTitle">User Profile</h2>
+        
+        <div class="view-profile-horizontal">
+            <!-- Left Side: User Avatar, Display Name, Username, Actions -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(0,0,0,0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
+                <div id="viewUserDisplayName" style="font-weight: bold; font-size: 1.1rem; text-align: center;"></div>
+                <div id="viewUserSubHeader" style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; text-align: center;"></div>
+                
+                <div class="modal-actions" style="width: 100%; margin-top: 10px;">
+                    <button id="addFriendBtn">Add Friend</button>
+                    <button id="openDirectChatBtn" class="btn-secondary">Message</button>
+                    <button id="blockUserBtn" class="btn-danger">Block</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Details & Friends -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: rgba(0,0,0,0.15); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                    <label style="font-weight: bold; font-size: 0.8rem;">About Me:</label>
+                    <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; word-break: break-word;"></div>
+                </div>
+
+                <div id="viewUserCreated" style="font-size: 0.75rem; color: var(--text-muted);"></div>
+
+                <div id="viewUserFriendsSection">
+                    <label style="font-weight: bold; font-size: 0.85rem;">Friends:</label>
+                    <div id="viewUserFriendsList" class="list-container" style="max-height: 140px; margin-top: 6px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; margin-top: 12px;">
+            <button class="btn-secondary" style="width: 100px;" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Direct Chat Modal -->
+<div id="directChatModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <h2 id="directChatTitle">Direct Chat</h2>
+        <div id="directChatMessages" class="chat-messages" style="height: 260px;"></div>
+        <div class="chat-input-row">
+            <input type="text" id="directChatInput" placeholder="Type a private message..." autocomplete="off">
+            <button id="sendDirectMsgBtn">Send</button>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="loginModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Account Login</h2>
+        <div><label for="loginUsername">Username:</label><input type="text" id="loginUsername" maxlength="20" placeholder="Enter username..."></div>
+        <div><label for="loginPassword">Password:</label><input type="password" id="loginPassword" placeholder="Enter password..."></div>
+        <div class="modal-actions">
+            <button id="doLoginBtn">Log In</button>
+            <button id="cancelLoginBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="registerModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Create Account</h2>
+        <div><label for="regUsername">Username (unique login):</label><input type="text" id="regUsername" maxlength="20" placeholder="Choose username..."></div>
+        <div><label for="regDisplayName">Display Name:</label><input type="text" id="regDisplayName" maxlength="25" placeholder="Choose display name..."></div>
+        <div><label for="regPassword">Password:</label><input type="password" id="regPassword" placeholder="Choose password..."></div>
+        <div class="modal-actions">
+            <button id="doRegisterBtn">Sign Up</button>
+            <button id="cancelRegBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="createModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Create New Room</h2>
+        <div><label for="modalRoomId">Room ID:</label><input type="text" id="modalRoomId" readonly style="font-family: 'JetBrains Mono', monospace; font-weight: bold; color: var(--cyan);"></div>
+        <div><label for="modalPassword">Set Room Password:</label><input type="password" id="modalPassword" placeholder="Enter password..."></div>
+        <div><label for="modalMaxUsers">User Limit (Optional):</label><input type="number" id="modalMaxUsers" placeholder="Unlimited" min="1"></div>
+
+        <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
+            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Default User Permissions:</label>
+            <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="defPermUpload" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="defPermDownload" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="defPermDelete" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span>Send Chat Messages</span><label class="switch"><input type="checkbox" id="defPermChat" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span>View Message History</span><label class="switch"><input type="checkbox" id="defPermViewMsg" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span>View File History</span><label class="switch"><input type="checkbox" id="defPermViewFile" checked><span class="slider"></span></label></div>
+        </div>
+
+        <div class="modal-actions">
+            <button id="confirmCreateBtn">Create Room</button>
+            <button id="cancelCreateBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="joinModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Join Existing Room</h2>
+        <div><label for="joinRoomId">Room ID:</label><input type="text" id="joinRoomId" placeholder="Enter 6-digit ID..." maxlength="6"></div>
+        <div><label for="joinPassword">Room Password:</label><input type="password" id="joinPassword" placeholder="Enter password..."></div>
+        <div class="modal-actions">
+            <button id="confirmJoinBtn">Join Room</button>
+            <button id="cancelJoinBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Room Settings</h2>
+        <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 8px;">
+            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Access Rules:</label>
+            <div class="switch-row">
+                <span>Require Account (Block Guests)</span>
+                <label class="switch"><input type="checkbox" id="toggleRequireAccount" onchange="toggleRequireAccountSetting()"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div>
+            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Blacklist:</label>
+            <div id="blacklistContainer" class="list-container">
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">No banned users</div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button id="closeSettingsModalBtn" class="btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="manageUserModal" class="modal-overlay">
+    <div class="modal">
+        <h2 id="manageUserName">Manage User</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: bold; margin-bottom: 4px;">Permissions:</label>
+            <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="permUpload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="permDownload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="permDelete" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span>Send Chat Messages</span><label class="switch"><input type="checkbox" id="permChat" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span>View Message History</span><label class="switch"><input type="checkbox" id="permViewMessageHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span>View File History</span><label class="switch"><input type="checkbox" id="permViewFileHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+        </div>
+        <div class="modal-actions">
+            <button id="kickUserBtn" class="btn-danger">Kick User</button>
+            <button id="banUserBtn" class="btn-danger" style="background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.4);">Ban User</button>
+            <button id="closeManageModalBtn" class="btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* Incremental Short ID Generator (Base62) */
+    const ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    function generateIncrementalId(index) {
+        let id = '';
+        let base = ALPHABET.length;
+        let num = index;
+        while (num >= 0) {
+            id = ALPHABET[num % base] + id;
+            num = Math.floor(num / base) - 1;
+        }
+        return id;
+    }
+
+    const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+
+    let currentUser = JSON.parse(localStorage.getItem('lb_session')) || null;
+
+    function getAccounts() {
+        return JSON.parse(localStorage.getItem('lb_accounts') || '{}');
+    }
+
+    function saveAccounts(accounts) {
+        localStorage.setItem('lb_accounts', JSON.stringify(accounts));
+    }
+
+    function isZeldy() {
+        return currentUser && currentUser.username === 'zeldy';
+    }
+
+    function updateAuthBarUI() {
+        const authBar = document.getElementById('authBar');
+        const accBaseBtn = document.getElementById('accountsBaseBtn');
+
+        accBaseBtn.style.display = isZeldy() ? 'inline-block' : 'none';
+
+        if (currentUser) {
+            const accounts = getAccounts();
+            const acc = accounts[currentUser.username] || {};
+            const avatar = acc.avatar || defaultAvatar;
+            const color = acc.color || '#818cf8';
+            const dispName = acc.displayName || currentUser.username;
+
+            authBar.innerHTML = `
+                <div class="user-profile-badge" onclick="openProfileModal()">
+                    <img class="avatar" src="${avatar}" alt="Avatar">
+                    <span style="color: ${color}">${escapeHtml(dispName)}</span>
+                </div>
+            `;
+            myName = dispName;
+        } else {
+            authBar.innerHTML = `
+                <button id="openLoginBtn" class="btn-secondary" onclick="document.getElementById('loginModal').style.display='flex'">Log In</button>
+                <button id="openRegisterBtn" onclick="document.getElementById('registerModal').style.display='flex'">Sign Up</button>
+            `;
+            if (!myName || myName.startsWith('User_')) {
+                myName = 'User_' + Math.floor(Math.random() * 1000);
+            }
+        }
+    }
+
+    window.logout = function() {
+        if (confirm("Are you sure you want to log out?")) {
+            localStorage.removeItem('lb_session');
+            currentUser = null;
+            document.getElementById('profileModal').style.display = 'none';
+            updateAuthBarUI();
+        }
+    };
+
+    /* Accounts Base Modal - Admin Zeldy Only */
+    window.openAccountsListModal = function() {
+        if (!isZeldy()) return alert("Access denied");
+
+        const accounts = getAccounts();
+        const container = document.getElementById('allAccountsContainer');
+        container.innerHTML = '';
+
+        const keys = Object.keys(accounts);
+        if (keys.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">No accounts found</div>';
+        } else {
+            keys.forEach(username => {
+                const acc = accounts[username];
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img class="avatar" src="${acc.avatar || defaultAvatar}">
+                        <div>
+                            <span style="color: ${acc.color || '#818cf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
+                            <span style="font-size: 0.7rem; color: var(--text-muted);"> (@${escapeHtml(username)}) | ID: ${acc.uuid}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
+                        ${username !== 'zeldy' ? `<button class="manage-user-btn" style="background: var(--danger);" onclick="deleteAccountByAdmin('${username}')">Delete</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        document.getElementById('accountsListModal').style.display = 'flex';
+    };
+
+    window.deleteAccountByAdmin = function(username) {
+        if (!isZeldy()) return;
+        if (confirm(`Are you sure you want to permanently delete user @${username}?`)) {
+            const accounts = getAccounts();
+            delete accounts[username];
+            saveAccounts(accounts);
+            openAccountsListModal();
+        }
+    };
+
+    /* Profile Modal Settings */
+    let tempAvatarBase64 = null;
+    window.openProfileModal = function() {
+        if (!currentUser) return;
+        const accounts = getAccounts();
+        const acc = accounts[currentUser.username] || {};
+
+        tempAvatarBase64 = acc.avatar || defaultAvatar;
+        document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
+        document.getElementById('profileDisplayNameInput').value = acc.displayName || currentUser.username;
+        document.getElementById('profileUsernameReadonly').value = currentUser.username;
+        document.getElementById('profileUuidInput').value = acc.uuid;
+        document.getElementById('profileColorInput').value = acc.color || '#818cf8';
+        document.getElementById('colorHexText').textContent = acc.color || '#818cf8';
+        document.getElementById('profileBioInput').value = acc.bio || '';
+        document.getElementById('profileCreatedAtText').textContent = acc.createdAt ? new Date(acc.createdAt).toLocaleDateString() : 'N/A';
+
+        const priv = acc.privacySettings || { showUuid: true, showCreated: true, showBio: true, showFriends: true };
+        document.getElementById('privShowUuid').checked = priv.showUuid;
+        document.getElementById('privShowCreated').checked = priv.showCreated;
+        document.getElementById('privShowBio').checked = priv.showBio;
+        document.getElementById('privShowFriends').checked = priv.showFriends;
+
+        renderProfileLists();
+        document.getElementById('profileModal').style.display = 'flex';
+    };
+
+    document.getElementById('profileColorInput').oninput = (e) => {
+        document.getElementById('colorHexText').textContent = e.target.value;
+    };
+
+    document.getElementById('avatarFileInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                tempAvatarBase64 = reader.result;
+                document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    function renderProfileLists() {
+        const accounts = getAccounts();
+        const acc = accounts[currentUser.username] || {};
+        
+        // Friends
+        const friendsCont = document.getElementById('profileFriendsContainer');
+        friendsCont.innerHTML = '';
+        const friends = acc.friends || [];
+        if (friends.length === 0) {
+            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 10px;">No friends added</div>';
+        } else {
+            friends.forEach(fUsername => {
+                const fAcc = accounts[fUsername] || {};
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 22px; height: 22px;">
+                        <span style="font-weight: bold; color: ${fAcc.color || '#818cf8'}">${escapeHtml(fAcc.displayName || fUsername)}</span>
+                    </div>
+                    <button class="manage-user-btn" onclick="openDirectChat('${fUsername}')">Chat</button>
+                `;
+                friendsCont.appendChild(div);
+            });
+        }
+
+        // Blacklist
+        const blockCont = document.getElementById('profileBlacklistContainer');
+        blockCont.innerHTML = '';
+        const blocked = acc.blocked || [];
+        if (blocked.length === 0) {
+            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">Blacklist is empty</div>';
+        } else {
+            blocked.forEach(bUsername => {
+                const bAcc = accounts[bUsername] || {};
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <span>@${escapeHtml(bUsername)}</span>
+                    <button class="manage-user-btn" onclick="unblockUser('${bUsername}')">Unblock</button>
+                `;
+                blockCont.appendChild(div);
+            });
+        }
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // Dynamic Auth Load
+    updateAuthBarUI();
+</script>
+</body>
+</html>
