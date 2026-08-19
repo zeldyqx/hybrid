@@ -5,156 +5,319 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LocalBridge — Serverless P2P Workspace</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
+            --bg: #090d16;
+            --card-bg: rgba(22, 30, 49, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.35);
             --danger: #ef4444;
             --danger-hover: #dc2626;
             --text: #f8fafc;
             --text-dim: #94a3b8;
-            --border: #334155;
-            --modal-bg: #1e293b;
-            --sidebar-bg: #111827;
+            --border: rgba(255, 255, 255, 0.1);
+            --modal-bg: rgba(15, 23, 42, 0.85);
+            --sidebar-bg: rgba(13, 19, 33, 0.75);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); min-height: 100vh; width: 100vw; overflow-x: hidden; position: relative; }
-
-        .top-left-bar { position: absolute; top: 16px; left: 24px; z-index: 100; display: flex; gap: 10px; }
-        .top-left-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
-
-        .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; align-items: center; }
-        .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
         
-        .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; }
-        .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--border); }
-        .avatar-lg { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--border); }
+        body { 
+            background: var(--bg); 
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.5) 0px, transparent 100%);
+            background-attachment: fixed;
+            color: var(--text); 
+            min-height: 100vh; 
+            width: 100vw; 
+            overflow-x: hidden; 
+            position: relative; 
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        .top-left-bar { position: absolute; top: 20px; left: 24px; z-index: 100; display: flex; gap: 12px; }
+        .top-left-bar button { width: auto; padding: 8px 18px; font-size: 0.85rem; }
+
+        .auth-bar { position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 100; align-items: center; }
+        .auth-bar button { width: auto; padding: 8px 18px; font-size: 0.85rem; }
+        
+        .user-profile-badge { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 0.875rem; 
+            font-weight: 600; 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(12px);
+            padding: 6px 14px; 
+            border-radius: 30px; 
+            border: 1px solid var(--card-border); 
+            cursor: pointer; 
+            transition: var(--transition);
+        }
+        .user-profile-badge:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent-light); box-shadow: 0 0 15px var(--accent-glow); }
+        .avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: var(--border); border: 1.5px solid var(--accent); }
+        .avatar-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: var(--border); border: 2px solid var(--accent); }
 
         .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { width: 100%; max-width: 520px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
-        h1 { font-size: 1.5rem; margin-bottom: 4px; color: var(--accent); text-align: center; }
-        p.subtitle { font-size: 0.875rem; color: var(--text-dim); text-align: center; margin-bottom: 20px; }
+        
+        .container { 
+            width: 100%; 
+            max-width: 480px; 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-lg); 
+            padding: 36px 32px; 
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(99, 102, 241, 0.05); 
+        }
 
-        .section { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-        input[type="text"], input[type="password"], input[type="number"], textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; }
-        textarea { resize: vertical; min-height: 60px; }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        h1 { 
+            font-size: 1.85rem; 
+            font-weight: 800;
+            margin-bottom: 6px; 
+            background: linear-gradient(135deg, #fff 30%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center; 
+            letter-spacing: -0.5px;
+        }
 
-        button { background: var(--accent); color: #000; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
-        button:hover { background: var(--accent-hover); color: #fff; }
-        .btn-secondary { background: #475569; color: #fff; }
-        .btn-secondary:hover { background: #64748b; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-danger:hover { background: var(--danger-hover); }
+        p.subtitle { font-size: 0.875rem; color: var(--text-dim); text-align: center; margin-bottom: 24px; font-weight: 500; }
 
-        .btn-icon { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-dim); width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; }
-        .btn-icon:hover { color: var(--text); background: rgba(255, 255, 255, 0.1); }
+        .section { 
+            background: rgba(0, 0, 0, 0.25); 
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-md); 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+
+        input[type="text"], input[type="password"], input[type="number"], textarea, select { 
+            width: 100%; 
+            background: rgba(10, 15, 26, 0.7); 
+            border: 1px solid var(--card-border); 
+            color: var(--text); 
+            padding: 12px 14px; 
+            border-radius: var(--radius-sm); 
+            font-size: 0.9rem; 
+            margin-top: 6px; 
+            transition: var(--transition);
+        }
+        textarea { resize: vertical; min-height: 70px; }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+
+        button { 
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%); 
+            color: #fff; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: var(--radius-sm); 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            cursor: pointer; 
+            transition: var(--transition); 
+            width: 100%; 
+            box-shadow: 0 4px 15px var(--accent-glow);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5); opacity: 0.95; }
+        button:active { transform: translateY(0); }
+
+        .btn-secondary { background: rgba(255, 255, 255, 0.08); color: var(--text); box-shadow: none; border: 1px solid var(--card-border); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); box-shadow: none; border-color: rgba(255, 255, 255, 0.2); }
+        
+        .btn-danger { background: linear-gradient(135deg, var(--danger) 0%, #b91c1c 100%); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
+
+        .btn-icon { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid var(--card-border); 
+            color: var(--text-dim); 
+            width: 42px; 
+            height: 42px; 
+            padding: 0; 
+            border-radius: var(--radius-sm); 
+            cursor: pointer; 
+            box-shadow: none;
+        }
+        .btn-icon:hover { color: var(--text); background: rgba(255, 255, 255, 0.12); border-color: var(--accent-light); }
         .btn-icon svg { width: 20px; height: 20px; fill: currentColor; }
 
-        .status { font-size: 0.85rem; margin-top: 6px; font-weight: 600; text-align: center; }
-        .status.connected { color: #4ade80; }
+        .status { font-size: 0.85rem; margin-top: 8px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .status::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+        .status.connected { color: #34d399; }
+        .status.connected::before { background: #34d399; box-shadow: 0 0 10px #34d399; }
         .status.disconnected { color: #f87171; }
+        .status.disconnected::before { background: #f87171; box-shadow: 0 0 10px #f87171; }
 
         .app-layout { display: none; width: 100vw; height: 100vh; overflow: hidden; z-index: 10; position: relative; }
-        .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 32px; overflow-y: auto; gap: 20px; }
-        .workspace-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 28px 36px; overflow-y: auto; gap: 24px; }
+        .workspace-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); }
+        .header-actions { display: flex; align-items: center; gap: 14px; }
 
-        .workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-        @media (max-width: 900px) { .workspace-grid { grid-template-columns: 1fr; } }
+        .workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+        @media (max-width: 960px) { .workspace-grid { grid-template-columns: 1fr; } }
 
-        .left-column, .right-column { display: flex; flex-direction: column; gap: 20px; }
-        .room-card-active, .file-card, .chat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
+        .left-column, .right-column { display: flex; flex-direction: column; gap: 24px; }
+        
+        .room-card-active, .file-card, .chat-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-lg); 
+            padding: 24px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
+        }
 
-        .drop-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.15); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(56, 189, 248, 0.05); }
-        .drop-zone.disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--border); }
-        .drop-zone svg { width: 32px; height: 32px; fill: var(--accent); }
+        .drop-zone { 
+            border: 2px dashed rgba(99, 102, 241, 0.4); 
+            border-radius: var(--radius-md); 
+            padding: 28px; 
+            text-align: center; 
+            background: rgba(99, 102, 241, 0.03); 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+            transition: var(--transition);
+        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent-light); background: rgba(99, 102, 241, 0.08); box-shadow: 0 0 20px var(--accent-glow); }
+        .drop-zone.disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--border); }
+        .drop-zone svg { width: 38px; height: 38px; fill: var(--accent-light); }
 
-        .file-queue { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-top: 10px; }
-        .file-item { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .file-queue { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; margin-top: 12px; }
+        .file-item { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
         .file-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-        .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; color: var(--text); }
         .file-size { color: var(--text-dim); font-size: 0.75rem; }
 
-        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 4px; }
-        .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
+        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 4px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%); width: 0%; transition: width 0.15s ease; }
 
-        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-bottom: 12px; }
-        .info-value { font-weight: bold; color: var(--accent); font-family: monospace; font-size: 1.05rem; }
-        .pass-wrapper { display: flex; align-items: center; gap: 6px; }
-        .eye-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 2px 4px; width: auto; display: flex; align-items: center; justify-content: center; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 12px; }
+        .info-value { font-weight: 700; color: var(--accent-light); font-family: monospace; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .pass-wrapper { display: flex; align-items: center; gap: 8px; }
+        .eye-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; width: auto; box-shadow: none; }
+        .eye-btn:hover { color: var(--text); background: none; box-shadow: none; }
         .eye-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
-        .chat-card { display: flex; flex-direction: column; gap: 12px; }
-        .chat-messages { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; height: 180px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .chat-msg { font-size: 0.85rem; word-break: break-word; display: flex; align-items: center; gap: 6px; }
-        .chat-msg .author { font-weight: bold; }
-        .chat-msg.system { color: var(--text-dim); font-style: italic; }
-        .chat-input-row { display: flex; gap: 8px; }
+        .chat-card { display: flex; flex-direction: column; gap: 14px; }
+        .chat-messages { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); height: 200px; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg { font-size: 0.875rem; word-break: break-word; display: flex; align-items: center; gap: 8px; }
+        .chat-msg .author { font-weight: 700; }
+        .chat-msg.system { color: var(--text-dim); font-style: italic; justify-content: center; font-size: 0.8rem; }
+        .chat-input-row { display: flex; gap: 10px; }
         .chat-input-row input { margin-top: 0; }
-        .chat-input-row button { width: auto; padding: 0 18px; }
+        .chat-input-row button { width: auto; padding: 0 22px; }
 
-        .sidebar-right { width: 320px; height: 100vh; background: var(--sidebar-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 16px; }
-        .sidebar-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-        .user-count-badge { background: var(--border); color: var(--accent); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
-        .user-list { list-style: none; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
+        .sidebar-right { width: 300px; height: 100vh; background: var(--sidebar-bg); backdrop-filter: blur(20px); border-left: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 28px 20px; }
+        .sidebar-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--text-dim); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
+        .user-count-badge { background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--accent-light); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .user-list { list-style: none; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
         
-        .user-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-        .user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .user-info:hover { opacity: 0.8; }
+        .user-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: var(--radius-md); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
+        .user-item:hover { background: rgba(255, 255, 255, 0.06); }
+        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .user-info:hover { opacity: 0.85; }
         
-        .manage-user-btn { background: rgba(255, 255, 255, 0.1); border: none; color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: auto; }
-        .manage-user-btn:hover { background: var(--accent); color: #000; }
+        .manage-user-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; width: auto; box-shadow: none; }
+        .manage-user-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-        .crown-icon { width: 16px; height: 16px; fill: #f59e0b; display: inline-block; vertical-align: middle; }
-        .you-tag { color: var(--text-dim); font-size: 0.8rem; }
+        .crown-icon { width: 16px; height: 16px; fill: #fbbf24; display: inline-block; vertical-align: middle; filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5)); }
+        .you-tag { color: var(--text-dim); font-size: 0.75rem; }
 
-        .switch-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 0.82rem; }
+        .switch-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 0.85rem; border: 1px solid var(--card-border); }
         .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 22px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: #94a3b8; transition: .3s; border-radius: 50%; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.15); transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: #fff; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 180px; overflow-y: auto; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
+        .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; max-height: 200px; overflow-y: auto; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; }
 
-        /* Modal Layer Z-Indexes Hierarchy Fixed */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        /* Modal Layer Styling Glassmorphism */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 8, 15, 0.75); backdrop-filter: blur(12px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         
         #subscriptionsModal { z-index: 1100; }
         #accountsListModal { z-index: 1200; }
         #profileModal { z-index: 2000; }
-        #addFriendModal { z-index: 3000; } /* Strictly higher than Profile Settings */
-        #viewUserProfileModal { z-index: 3500; } /* Highest priority for user cards */
+        #addFriendModal { z-index: 3000; }
+        #viewUserProfileModal { z-index: 3500; }
         #inviteFriendsModal { z-index: 3600; }
         
-        .modal { background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
+        .modal { 
+            background: var(--modal-bg); 
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-lg); 
+            padding: 30px; 
+            width: 90%; 
+            max-width: 480px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
         
-        .modal-wide { max-width: 960px; width: 95%; }
-        .profile-grid-horizontal { display: grid; grid-template-columns: 280px 1fr 300px; gap: 20px; align-items: start; }
+        .modal-wide { max-width: 920px; width: 95%; }
+        .profile-grid-horizontal { display: grid; grid-template-columns: 280px 1fr 280px; gap: 20px; align-items: start; }
         @media (max-width: 850px) { .profile-grid-horizontal { grid-template-columns: 1fr; } }
 
         .view-profile-horizontal { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
         @media (max-width: 650px) { .view-profile-horizontal { grid-template-columns: 1fr; } }
 
-        .modal h2 { font-size: 1.15rem; color: var(--accent); }
-        .modal label { font-size: 0.85rem; color: var(--text-dim); }
-        .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+        .modal h2 { font-size: 1.3rem; font-weight: 700; color: #fff; }
+        .modal label { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
         
-        .color-picker-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
-        .color-picker-row input[type="color"] { width: 40px; height: 35px; border: none; cursor: pointer; background: none; }
+        .color-picker-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+        .color-picker-row input[type="color"] { width: 44px; height: 38px; border: none; cursor: pointer; background: none; border-radius: 6px; }
 
-        .sub-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 10px; }
-        @media (max-width: 600px) { .sub-cards-grid { grid-template-columns: 1fr; } }
-        .sub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
-        .sub-card.popular { border-color: var(--accent); background: rgba(56, 189, 248, 0.05); }
-        .sub-price { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .sub-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 12px; }
+        @media (max-width: 650px) { .sub-cards-grid { grid-template-columns: 1fr; } }
+        
+        .sub-card { 
+            background: rgba(255,255,255,0.03); 
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-md); 
+            padding: 22px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            gap: 16px; 
+            transition: var(--transition);
+        }
+        .sub-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .sub-card.popular { border-color: var(--accent); background: rgba(99, 102, 241, 0.08); box-shadow: 0 0 30px var(--accent-glow); }
+        .sub-price { font-size: 1.75rem; font-weight: 800; color: #fff; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -162,7 +325,7 @@
 <!-- Top Left Bar -->
 <div class="top-left-bar" id="topLeftBar">
     <button class="btn-secondary" id="accountsBaseBtn" style="display: none;" onclick="openAccountsListModal()">Accounts Base</button>
-    <button class="btn-secondary" id="subscriptionsBtn" style="background: #8b5cf6;" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
+    <button class="btn-secondary" id="subscriptionsBtn" style="background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4);" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
 </div>
 
 <div class="auth-bar" id="authBar"></div>
@@ -197,8 +360,8 @@
         <div class="workspace-grid">
             <div class="left-column">
                 <div class="room-card-active">
-                    <h2 style="font-size: 1.2rem; margin-bottom: 16px; color: var(--accent);">Room Controls</h2>
-                    <div style="background: rgba(0, 0, 0, 0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;">
+                    <h2 style="font-size: 1.15rem; margin-bottom: 16px; color: #fff;">Room Controls</h2>
+                    <div style="background: rgba(0, 0, 0, 0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 16px;">
                         <div class="info-row">
                             <span>Room ID:</span>
                             <span id="labelRoomId" class="info-value">------</span>
@@ -220,7 +383,7 @@
                 </div>
 
                 <div class="chat-card">
-                    <h2 style="font-size: 1.1rem; color: var(--accent);">Room Chat</h2>
+                    <h2 style="font-size: 1.15rem; color: #fff;">Room Chat</h2>
                     <div id="chatMessages" class="chat-messages"></div>
                     <div class="chat-input-row">
                         <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
@@ -231,20 +394,20 @@
 
             <div class="right-column">
                 <div class="file-card">
-                    <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 12px;">File Transfer</h2>
+                    <h2 style="font-size: 1.15rem; color: #fff; margin-bottom: 14px;">File Transfer</h2>
                     <div id="dropZone" class="drop-zone">
                         <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
                         <div>
-                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.9rem;">Drag & Drop files here</span>
-                            <p id="dropZoneSubtext">or click to browse</p>
+                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.95rem;">Drag & Drop files here</span>
+                            <p id="dropZoneSubtext" style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;">or click to browse</p>
                         </div>
                         <input type="file" id="fileInput" multiple style="display: none;">
                     </div>
 
-                    <div style="margin-top: 14px;">
-                        <h3 style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Transfer Queue</h3>
+                    <div style="margin-top: 18px;">
+                        <h3 style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 700;">Transfer Queue</h3>
                         <div id="fileQueue" class="file-queue">
-                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 16px; background: rgba(0,0,0,0.1); border-radius: 6px;">
+                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">
                                 No files in queue
                             </div>
                         </div>
@@ -267,17 +430,17 @@
 
 <!-- Subscriptions Modal -->
 <div id="subscriptionsModal" class="modal-overlay">
-    <div class="modal modal-wide" style="max-width: 750px;">
+    <div class="modal modal-wide" style="max-width: 800px;">
         <h2>Select Subscription Plan</h2>
-        <p style="font-size: 0.85rem; color: var(--text-dim);">Upgrade your LocalBridge account for higher transfer speeds and unlimited room limits.</p>
+        <p style="font-size: 0.875rem; color: var(--text-dim);">Upgrade your LocalBridge account for higher transfer speeds and unlimited room limits.</p>
 
         <div class="sub-cards-grid">
             <div class="sub-card">
                 <div>
-                    <h3 style="font-size: 1.1rem; color: var(--text);">Basic</h3>
-                    <div class="sub-price">$4.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                    <h3 style="font-size: 1.1rem; color: #fff;">Basic</h3>
+                    <div class="sub-price">$4.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
-                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
                     <li>✓ High-speed P2P transfer</li>
                     <li>✓ Up to 10 users in room</li>
                     <li>✓ Custom ID tag</li>
@@ -287,11 +450,11 @@
 
             <div class="sub-card popular">
                 <div>
-                    <span style="font-size: 0.65rem; background: var(--accent); color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">POPULAR</span>
-                    <h3 style="font-size: 1.1rem; color: var(--text); margin-top: 4px;">Pro</h3>
-                    <div class="sub-price">$9.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                    <span style="font-size: 0.65rem; background: var(--accent); color: #fff; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">POPULAR</span>
+                    <h3 style="font-size: 1.1rem; color: #fff; margin-top: 6px;">Pro</h3>
+                    <div class="sub-price">$9.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
-                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
                     <li>✓ Unlimited transfer speed</li>
                     <li>✓ Up to 50 users in room</li>
                     <li>✓ Priority P2P Routing</li>
@@ -301,10 +464,10 @@
 
             <div class="sub-card">
                 <div>
-                    <h3 style="font-size: 1.1rem; color: var(--text);">Ultimate</h3>
-                    <div class="sub-price">$17.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                    <h3 style="font-size: 1.1rem; color: #fff;">Ultimate</h3>
+                    <div class="sub-price">$17.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
-                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
                     <li>✓ Max Speed & Bandwidth</li>
                     <li>✓ Unlimited users in room</li>
                     <li>✓ E2E Encrypted Backups</li>
@@ -313,7 +476,7 @@
             </div>
         </div>
 
-        <div class="modal-actions" style="margin-top: 10px;">
+        <div class="modal-actions" style="margin-top: 12px;">
             <button class="btn-secondary" onclick="document.getElementById('subscriptionsModal').style.display='none'">Close</button>
         </div>
     </div>
@@ -364,10 +527,10 @@
         
         <div class="profile-grid-horizontal">
             <!-- Left Col: Avatar & Display Name -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; background: rgba(0,0,0,0.2); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
                 <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
                 <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-                <button class="btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
+                <button class="btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
                 
                 <div style="width: 100%;">
                     <label>Display Name:</label>
@@ -387,7 +550,7 @@
             </div>
 
             <!-- Middle Col: Short ID (Immutable), Color, Bio, Privacy, Blacklist -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
                 <div>
                     <label>Your Short ID (Immutable):</label>
                     <input type="text" id="profileUuidInput" readonly style="font-family: monospace; opacity: 0.7; cursor: not-allowed;">
@@ -396,8 +559,8 @@
                 <div>
                     <label>Nickname Color:</label>
                     <div class="color-picker-row">
-                        <input type="color" id="profileColorInput" value="#38bdf8">
-                        <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#38bdf8</span>
+                        <input type="color" id="profileColorInput" value="#6366f1">
+                        <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#6366f1</span>
                     </div>
                 </div>
 
@@ -406,8 +569,8 @@
                     <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
                 </div>
 
-                <div style="background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
-                    <label style="font-weight: bold; display: block; margin-bottom: 6px;">Privacy Settings:</label>
+                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                    <label style="font-weight: 700; display: block; margin-bottom: 8px; color: #fff;">Privacy Settings:</label>
                     <div class="switch-row"><span>Show ID to public</span><label class="switch"><input type="checkbox" id="privShowUuid"><span class="slider"></span></label></div>
                     <div class="switch-row"><span>Show Creation Date</span><label class="switch"><input type="checkbox" id="privShowCreated"><span class="slider"></span></label></div>
                     <div class="switch-row"><span>Show Bio</span><label class="switch"><input type="checkbox" id="privShowBio"><span class="slider"></span></label></div>
@@ -415,22 +578,22 @@
                 </div>
 
                 <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 6px;">Blacklist:</label>
+                    <label style="font-weight: 700; display: block; margin-bottom: 6px; color: #fff;">Blacklist:</label>
                     <div id="profileBlacklistContainer" class="list-container"></div>
                 </div>
             </div>
 
             <!-- Right Col: Friends List -->
-            <div style="display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); height: 100%;">
+            <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border); height: 100%;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-weight: bold;">Friends List:</label>
-                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="openAddFriendModal()">+ Add Friends</button>
+                    <label style="font-weight: 700; color: #fff;">Friends List:</label>
+                    <button style="width: auto; padding: 4px 12px; font-size: 0.75rem;" onclick="openAddFriendModal()">+ Add Friends</button>
                 </div>
                 <div id="profileFriendsContainer" class="list-container" style="flex: 1; max-height: 320px;"></div>
             </div>
         </div>
 
-        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 12px; margin-top: 12px;">
             <button class="btn-secondary" style="width: 120px;" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
             <button style="width: 140px;" onclick="saveProfileChanges()">Save Changes</button>
         </div>
@@ -444,10 +607,10 @@
         
         <div class="view-profile-horizontal">
             <!-- Left Side: User Avatar, Display Name, Username, Actions -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(0,0,0,0.25); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
                 <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
-                <div id="viewUserDisplayName" style="font-weight: bold; font-size: 1.1rem; text-align: center;"></div>
-                <div id="viewUserSubHeader" style="font-size: 0.75rem; color: var(--text-dim); font-family: monospace; text-align: center;"></div>
+                <div id="viewUserDisplayName" style="font-weight: 700; font-size: 1.15rem; text-align: center;"></div>
+                <div id="viewUserSubHeader" style="font-size: 0.8rem; color: var(--text-dim); font-family: monospace; text-align: center;"></div>
                 
                 <div class="modal-actions" style="width: 100%; margin-top: 10px;">
                     <button id="addFriendBtn">Add Friend</button>
@@ -457,17 +620,17 @@
             </div>
 
             <!-- Right Side: Details & Friends -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
-                    <label style="font-weight: bold; font-size: 0.8rem;">About Me:</label>
-                    <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; word-break: break-word;"></div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                    <label style="font-weight: 700; font-size: 0.85rem; color: #fff;">About Me:</label>
+                    <div id="viewUserBio" style="font-size: 0.875rem; color: var(--text-dim); margin-top: 6px; word-break: break-word;"></div>
                 </div>
 
-                <div id="viewUserCreated" style="font-size: 0.75rem; color: var(--text-dim);"></div>
+                <div id="viewUserCreated" style="font-size: 0.8rem; color: var(--text-dim);"></div>
 
                 <div id="viewUserFriendsSection">
-                    <label style="font-weight: bold; font-size: 0.85rem;">Friends:</label>
-                    <div id="viewUserFriendsList" class="list-container" style="max-height: 140px; margin-top: 4px;"></div>
+                    <label style="font-weight: 700; font-size: 0.85rem; color: #fff;">Friends:</label>
+                    <div id="viewUserFriendsList" class="list-container" style="max-height: 140px; margin-top: 6px;"></div>
                 </div>
             </div>
         </div>
@@ -482,7 +645,7 @@
 <div id="directChatModal" class="modal-overlay">
     <div class="modal" style="max-width: 500px;">
         <h2 id="directChatTitle">Direct Chat</h2>
-        <div id="directChatMessages" class="chat-messages" style="height: 250px;"></div>
+        <div id="directChatMessages" class="chat-messages" style="height: 260px;"></div>
         <div class="chat-input-row">
             <input type="text" id="directChatInput" placeholder="Type a private message..." autocomplete="off">
             <button id="sendDirectMsgBtn">Send</button>
@@ -521,12 +684,12 @@
 <div id="createModal" class="modal-overlay">
     <div class="modal">
         <h2>Create New Room</h2>
-        <div><label for="modalRoomId">Room ID:</label><input type="text" id="modalRoomId" readonly style="font-family: monospace; font-weight: bold; color: var(--accent);"></div>
+        <div><label for="modalRoomId">Room ID:</label><input type="text" id="modalRoomId" readonly style="font-family: monospace; font-weight: bold; color: var(--accent-light);"></div>
         <div><label for="modalPassword">Set Room Password:</label><input type="password" id="modalPassword" placeholder="Enter password..."></div>
         <div><label for="modalMaxUsers">User Limit (Optional):</label><input type="number" id="modalMaxUsers" placeholder="Unlimited" min="1"></div>
 
-        <div style="border-top: 1px solid var(--border); padding-top: 8px;">
-            <label style="font-weight: bold; margin-bottom: 6px; display: block;">Default User Permissions:</label>
+        <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
+            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;">Default User Permissions:</label>
             <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="defPermUpload" checked><span class="slider"></span></label></div>
             <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="defPermDownload" checked><span class="slider"></span></label></div>
             <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="defPermDelete" checked><span class="slider"></span></label></div>
@@ -557,17 +720,17 @@
 <div id="settingsModal" class="modal-overlay">
     <div class="modal">
         <h2>Room Settings</h2>
-        <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 8px;">
-            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Access Rules:</label>
+        <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; margin-bottom: 10px;">
+            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;">Room Access Rules:</label>
             <div class="switch-row">
                 <span>Require Account (Block Guests)</span>
                 <label class="switch"><input type="checkbox" id="toggleRequireAccount" onchange="toggleRequireAccountSetting()"><span class="slider"></span></label>
             </div>
         </div>
         <div>
-            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Blacklist:</label>
+            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;">Room Blacklist:</label>
             <div id="blacklistContainer" class="list-container">
-                <div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No banned users</div>
+                <div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No banned users</div>
             </div>
         </div>
         <div class="modal-actions">
@@ -580,7 +743,7 @@
     <div class="modal">
         <h2 id="manageUserName">Manage User</h2>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: bold; margin-bottom: 4px;">Permissions:</label>
+            <label style="font-weight: 700; margin-bottom: 4px; color: #fff;">Permissions:</label>
             <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="permUpload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
             <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="permDownload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
             <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="permDelete" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
@@ -590,7 +753,7 @@
         </div>
         <div class="modal-actions">
             <button id="kickUserBtn" class="btn-danger">Kick User</button>
-            <button id="banUserBtn" class="btn-danger" style="background: #991b1b;">Ban User</button>
+            <button id="banUserBtn" class="btn-danger" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);">Ban User</button>
             <button id="closeManageModalBtn" class="btn-secondary">Close</button>
         </div>
     </div>
@@ -636,7 +799,7 @@
             const accounts = getAccounts();
             const acc = accounts[currentUser.username] || {};
             const avatar = acc.avatar || defaultAvatar;
-            const color = acc.color || '#38bdf8';
+            const color = acc.color || '#818cf8';
             const dispName = acc.displayName || currentUser.username;
 
             authBar.innerHTML = `
@@ -676,7 +839,7 @@
 
         const keys = Object.keys(accounts);
         if (keys.length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No accounts found</div>';
+            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No accounts found</div>';
         } else {
             keys.forEach(username => {
                 const acc = accounts[username];
@@ -686,13 +849,13 @@
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <img class="avatar" src="${acc.avatar || defaultAvatar}">
                         <div>
-                            <span style="color: ${acc.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
-                            <span style="font-size: 0.7rem; color: var(--text-dim);"> (@${escapeHtml(username)}) | ID: ${acc.uuid}</span>
+                            <span style="color: ${acc.color || '#818cf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-dim);"> (@${escapeHtml(username)}) | ID: ${acc.uuid}</span>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 4px;">
+                    <div style="display: flex; gap: 6px;">
                         <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
-                        ${username !== 'zeldy' ? `<button class="manage-user-btn" style="background: var(--danger);" onclick="deleteAccountByAdmin('${username}')">Delete</button>` : ''}
+                        ${username !== 'zeldy' ? `<button class="manage-user-btn" style="background: var(--danger); border-color: var(--danger);" onclick="deleteAccountByAdmin('${username}')">Delete</button>` : ''}
                     </div>
                 `;
                 container.appendChild(div);
@@ -723,8 +886,8 @@
         document.getElementById('profileDisplayNameInput').value = acc.displayName || currentUser.username;
         document.getElementById('profileUsernameReadonly').value = currentUser.username;
         document.getElementById('profileUuidInput').value = acc.uuid;
-        document.getElementById('profileColorInput').value = acc.color || '#38bdf8';
-        document.getElementById('colorHexText').textContent = acc.color || '#38bdf8';
+        document.getElementById('profileColorInput').value = acc.color || '#818cf8';
+        document.getElementById('colorHexText').textContent = acc.color || '#818cf8';
         document.getElementById('profileBioInput').value = acc.bio || '';
         document.getElementById('profileCreatedAtText').textContent = acc.createdAt ? new Date(acc.createdAt).toLocaleDateString() : 'N/A';
 
@@ -763,16 +926,16 @@
         friendsCont.innerHTML = '';
         const friends = acc.friends || [];
         if (friends.length === 0) {
-            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 10px;">No friends added</div>';
+            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 10px;">No friends added</div>';
         } else {
             friends.forEach(fUsername => {
                 const fAcc = accounts[fUsername] || {};
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 22px; height: 22px;">
-                        <span style="font-weight: bold; color: ${fAcc.color || '#38bdf8'}">${escapeHtml(fAcc.displayName || fUsername)}</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 24px; height: 24px;">
+                        <span style="font-weight: bold; color: ${fAcc.color || '#818cf8'}">${escapeHtml(fAcc.displayName || fUsername)}</span>
                     </div>
                     <button class="manage-user-btn" onclick="openDirectChat('${fUsername}')">Chat</button>
                 `;
@@ -785,7 +948,7 @@
         blockCont.innerHTML = '';
         const blocked = acc.blocked || [];
         if (blocked.length === 0) {
-            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Blacklist is empty</div>';
+            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">Blacklist is empty</div>';
         } else {
             blocked.forEach(bUsername => {
                 const div = document.createElement('div');
@@ -827,7 +990,7 @@
     /* Add Friend Search - Smart Substring & Prefixes (@ Username, # ID, default Display Name) */
     window.openAddFriendModal = function() {
         document.getElementById('addFriendSearchInput').value = '';
-        document.getElementById('addFriendSearchResult').innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 8px;">Type to search users...</div>';
+        document.getElementById('addFriendSearchResult').innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 10px;">Type to search users...</div>';
         document.getElementById('addFriendModal').style.display = 'flex';
     };
 
@@ -837,7 +1000,7 @@
         resDiv.innerHTML = '';
 
         if (!query) {
-            resDiv.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 8px;">Type to search users...</div>';
+            resDiv.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 10px;">Type to search users...</div>';
             return;
         }
 
@@ -882,16 +1045,16 @@
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <img class="avatar" src="${acc.avatar || defaultAvatar}">
                         <div>
-                            <div style="font-weight: bold; color: ${acc.color || '#38bdf8'}">${escapeHtml(acc.displayName || u)}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-dim);">@${escapeHtml(u)} | ID: ${escapeHtml(acc.uuid || 'N/A')}</div>
+                            <div style="font-weight: bold; color: ${acc.color || '#818cf8'}">${escapeHtml(acc.displayName || u)}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">@${escapeHtml(u)} | ID: ${escapeHtml(acc.uuid || 'N/A')}</div>
                         </div>
                     </div>
-                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="addFriendDirect('${u}')">Add</button>
+                    <button style="width: auto; padding: 4px 12px; font-size: 0.75rem;" onclick="addFriendDirect('${u}')">Add</button>
                 `;
                 resDiv.appendChild(div);
             });
         } else {
-            resDiv.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 8px;">No matching users found</div>`;
+            resDiv.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 10px;">No matching users found</div>`;
         }
     };
 
@@ -925,7 +1088,7 @@
         const priv = acc.privacySettings || { showUuid: true, showCreated: true, showBio: true, showFriends: true };
 
         document.getElementById('viewUserDisplayName').textContent = acc.displayName || username;
-        document.getElementById('viewUserDisplayName').style.color = acc.color || '#38bdf8';
+        document.getElementById('viewUserDisplayName').style.color = acc.color || '#818cf8';
         
         const showUuidStr = (priv.showUuid || isZeldy()) ? ` | ID: ${acc.uuid}` : '';
         document.getElementById('viewUserSubHeader').textContent = `@${username}${showUuidStr}`;
@@ -942,13 +1105,13 @@
             friendsSec.style.display = 'block';
             const userFriends = acc.friends || [];
             if (userFriends.length === 0) {
-                friendsList.innerHTML = `<div style="text-align: center; font-size: 0.75rem; color: var(--text-dim);">No friends</div>`;
+                friendsList.innerHTML = `<div style="text-align: center; font-size: 0.8rem; color: var(--text-dim);">No friends</div>`;
             } else {
                 userFriends.forEach(f => {
                     const fAcc = accounts[f] || {};
                     const item = document.createElement('div');
                     item.className = 'list-item';
-                    item.innerHTML = `<span style="color: ${fAcc.color || '#38bdf8'}">${escapeHtml(fAcc.displayName || f)}</span>`;
+                    item.innerHTML = `<span style="color: ${fAcc.color || '#818cf8'}">${escapeHtml(fAcc.displayName || f)}</span>`;
                     friendsList.appendChild(item);
                 });
             }
@@ -994,16 +1157,16 @@
         cont.innerHTML = '';
 
         if (friends.length === 0) {
-            cont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 10px;">Your friends list is empty.</div>';
+            cont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 12px;">Your friends list is empty.</div>';
         } else {
             friends.forEach(f => {
                 const fAcc = accounts[f] || {};
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 22px; height: 22px;">
-                        <span style="font-weight: bold; color: ${fAcc.color || '#38bdf8'}">${escapeHtml(fAcc.displayName || f)}</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 24px; height: 24px;">
+                        <span style="font-weight: bold; color: ${fAcc.color || '#818cf8'}">${escapeHtml(fAcc.displayName || f)}</span>
                     </div>
                     <button class="manage-user-btn" onclick="sendRoomInvite('${f}')">Send Invite</button>
                 `;
@@ -1025,7 +1188,7 @@
         myAcc.directChats = myAcc.directChats || {};
         myAcc.directChats[friendUsername] = myAcc.directChats[friendUsername] || [];
 
-        const msgObj = { sender: myAcc.displayName || currentUser.username, text: inviteText, color: myAcc.color || '#38bdf8' };
+        const msgObj = { sender: myAcc.displayName || currentUser.username, text: inviteText, color: myAcc.color || '#818cf8' };
         myAcc.directChats[friendUsername].push(msgObj);
 
         if (accounts[friendUsername]) {
@@ -1083,7 +1246,7 @@
         myAcc.directChats = myAcc.directChats || {};
         myAcc.directChats[activeDirectFriend] = myAcc.directChats[activeDirectFriend] || [];
 
-        const msgObj = { sender: myAcc.displayName || currentUser.username, text: text, color: myAcc.color || '#38bdf8' };
+        const msgObj = { sender: myAcc.displayName || currentUser.username, text: text, color: myAcc.color || '#818cf8' };
         myAcc.directChats[activeDirectFriend].push(msgObj);
 
         if (accounts[activeDirectFriend]) {
@@ -1118,7 +1281,7 @@
             uuid: newShortId,
             createdAt: new Date().toISOString(),
             avatar: defaultAvatar, 
-            color: '#38bdf8', 
+            color: '#818cf8', 
             bio: '', 
             privacySettings: { showUuid: true, showCreated: true, showBio: true, showFriends: true },
             friends: [], 
@@ -1190,21 +1353,61 @@
 
     document.getElementById('openCreateModalBtn').onclick = () => {
         document.getElementById('modalRoomId').value = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('modalPassword').value = '';
+        document.getElementById('modalMaxUsers').value = '';
         document.getElementById('createModal').style.display = 'flex';
     };
     document.getElementById('cancelCreateBtn').onclick = () => document.getElementById('createModal').style.display = 'none';
 
+    document.getElementById('openJoinModalBtn').onclick = () => {
+        document.getElementById('joinRoomId').value = '';
+        document.getElementById('joinPassword').value = '';
+        document.getElementById('joinModal').style.display = 'flex';
+    };
+    document.getElementById('cancelJoinBtn').onclick = () => document.getElementById('joinModal').style.display = 'none';
+
+    document.getElementById('togglePassBtn').onclick = () => {
+        isPasswordVisible = !isPasswordVisible;
+        document.getElementById('labelRoomPass').textContent = isPasswordVisible ? (isHost ? hostState.password : document.getElementById('joinPassword').value) : '••••••';
+        document.getElementById('eyeIcon').innerHTML = isPasswordVisible ? svgEyeClosed : svgEyeOpen;
+    };
+
+    /* App Switching & State Setup */
+    function initAppView(roomId) {
+        currentRoomId = roomId;
+        mainWrapper.style.display = 'none';
+        appLayout.style.display = 'flex';
+        document.getElementById('topLeftBar').style.display = 'none';
+        document.getElementById('authBar').style.display = 'none';
+
+        document.getElementById('labelRoomId').textContent = roomId;
+        document.getElementById('labelRoomPass').textContent = '••••••';
+        document.getElementById('eyeIcon').innerHTML = svgEyeOpen;
+        isPasswordVisible = false;
+
+        if (isHost) {
+            openSettingsBtn.style.display = 'flex';
+            myPermissions = { canUpload: true, canDownload: true, canChat: true, canDeleteFiles: true, canViewMessageHistory: true, canViewFileHistory: true };
+            updateUIByPermissions();
+        } else {
+            openSettingsBtn.style.display = 'none';
+        }
+
+        renderQueue();
+    }
+
+    /* Host Room Creation */
     document.getElementById('confirmCreateBtn').onclick = () => {
-        const roomId = document.getElementById('modalRoomId').value;
-        const password = document.getElementById('modalPassword').value.trim();
-        const maxUsers = parseInt(document.getElementById('modalMaxUsers').value.trim(), 10) || null;
+        const rId = document.getElementById('modalRoomId').value;
+        const pass = document.getElementById('modalPassword').value.trim();
+        const maxU = parseInt(document.getElementById('modalMaxUsers').value) || null;
 
-        if (!password) return alert('Enter a password');
+        if (!pass) return alert('Please set a password');
 
-        isHost = true;
-        hostState.roomId = roomId;
-        hostState.password = password;
-        hostState.maxUsers = maxUsers;
+        hostState.roomId = rId;
+        hostState.password = pass;
+        hostState.maxUsers = maxU;
+        hostState.requireAccount = false;
         hostState.defaultPermissions = {
             canUpload: document.getElementById('defPermUpload').checked,
             canDownload: document.getElementById('defPermDownload').checked,
@@ -1213,393 +1416,312 @@
             canViewMessageHistory: document.getElementById('defPermViewMsg').checked,
             canViewFileHistory: document.getElementById('defPermViewFile').checked
         };
+        hostState.users = {};
+        hostState.blacklist = [];
+        hostState.chatHistory = [];
+        hostState.fileHistory = [];
 
-        myPeer = new Peer('localbridge-room-' + roomId);
+        isHost = true;
+        document.getElementById('createModal').style.display = 'none';
+        statusText.textContent = 'Status: Initializing Peer...';
+
+        myPeer = new Peer(`localbridge-room-${rId}`);
 
         myPeer.on('open', (id) => {
-            document.getElementById('createModal').style.display = 'none';
-            const accounts = getAccounts();
-            const myAcc = currentUser ? accounts[currentUser.username] : {};
-
-            hostState.users[id] = { 
-                name: myName + ' (Host)', 
+            initAppView(rId);
+            hostState.users[myPeer.id] = {
+                id: myPeer.id,
+                name: myName,
+                isHost: true,
                 username: currentUser ? currentUser.username : null,
-                color: myAcc.color || '#38bdf8',
-                avatar: myAcc.avatar || defaultAvatar,
-                permissions: { ...hostState.defaultPermissions }, 
-                conn: null 
+                conn: null,
+                permissions: { canUpload: true, canDownload: true, canChat: true, canDeleteFiles: true, canViewMessageHistory: true, canViewFileHistory: true }
             };
-            enterWorkspace({ roomId, password, isHost: true });
-            broadcastUserList();
+            renderUserListHost();
+            appendSystemMessage("Room created. You are Host!");
         });
 
         myPeer.on('connection', (conn) => {
             conn.on('data', (data) => handleHostIncomingData(conn, data));
-            conn.on('close', () => {
-                delete hostState.users[conn.peer];
-                broadcastUserList();
-                broadcastSysMsg(`${conn.peerName || 'A user'} disconnected`);
-            });
+            conn.on('close', () => handleUserDisconnect(conn.peer));
+            conn.on('error', () => handleUserDisconnect(conn.peer));
         });
 
         myPeer.on('error', (err) => {
-            alert('Failed to create room: ID may be already occupied. Try again.');
+            alert('Error creating room: ' + err.type);
+            location.reload();
         });
     };
 
-    function handleHostIncomingData(conn, data) {
-        if (data.type === 'join-request') {
-            if (hostState.blacklist.some(b => b.id === conn.peer)) {
-                conn.send({ type: 'join-response', success: false, message: 'You are banned from this room' });
-                return;
-            }
-            if (hostState.requireAccount && !data.isLoggedIn) {
-                conn.send({ type: 'join-response', success: false, message: 'This room requires an account. Guest access is blocked.' });
-                return;
-            }
-            if (data.password !== hostState.password) {
-                conn.send({ type: 'join-response', success: false, message: 'Incorrect password' });
-                return;
-            }
-            if (hostState.maxUsers && Object.keys(hostState.users).length >= hostState.maxUsers) {
-                conn.send({ type: 'join-response', success: false, message: 'Room is full' });
-                return;
-            }
-
-            conn.peerName = data.name.substring(0, 25);
-            hostState.users[conn.peer] = {
-                name: conn.peerName,
-                username: data.username,
-                color: data.color || '#38bdf8',
-                avatar: data.avatar || defaultAvatar,
-                permissions: { ...hostState.defaultPermissions },
-                conn: conn
-            };
-
-            const userPerms = hostState.users[conn.peer].permissions;
-
-            conn.send({
-                type: 'join-response',
-                success: true,
-                roomId: hostState.roomId,
-                password: hostState.password,
-                permissions: userPerms,
-                chatHistory: userPerms.canViewMessageHistory !== false ? hostState.chatHistory : [],
-                fileHistory: userPerms.canViewFileHistory !== false ? hostState.fileHistory : []
-            });
-
-            broadcastUserList();
-            broadcastSysMsg(`${conn.peerName} joined the room`);
-        } 
-        else if (data.type === 'send-chat') {
-            const user = hostState.users[conn.peer];
-            if (user && user.permissions.canChat) {
-                const msg = { author: user.name, color: user.color, avatar: user.avatar, text: data.text };
-                hostState.chatHistory.push(msg);
-                broadcast({ type: 'chat-message', ...msg });
-            }
-        }
-        else if (data.type === 'send-file') {
-            const user = hostState.users[conn.peer];
-            if (user && user.permissions.canUpload) {
-                const fileData = { ...data.file, sender: user.name };
-                hostState.fileHistory.push(fileData);
-                broadcast({ type: 'receive-file', fileData });
-            }
-        }
-        else if (data.type === 'delete-file') {
-            const user = hostState.users[conn.peer];
-            if (user && user.permissions.canDeleteFiles) {
-                hostState.fileHistory = hostState.fileHistory.filter(f => f.fileId !== data.fileId);
-                broadcast({ type: 'file-deleted', fileId: data.fileId });
-            }
-        }
-    }
-
-    document.getElementById('openJoinModalBtn').onclick = () => document.getElementById('joinModal').style.display = 'flex';
-    document.getElementById('cancelJoinBtn').onclick = () => document.getElementById('joinModal').style.display = 'none';
-
+    /* Client Join */
     document.getElementById('confirmJoinBtn').onclick = () => {
-        const roomId = document.getElementById('joinRoomId').value.trim();
-        const password = document.getElementById('joinPassword').value.trim();
+        const rId = document.getElementById('joinRoomId').value.trim();
+        const pass = document.getElementById('joinPassword').value.trim();
 
-        if (!roomId || !password) return alert('Enter Room ID and Password');
+        if (!rId || !pass) return alert('Fill in Room ID and Password');
+
+        isHost = false;
+        document.getElementById('joinModal').style.display = 'none';
+        statusText.textContent = 'Status: Connecting...';
 
         myPeer = new Peer();
 
-        myPeer.on('open', () => {
-            roomHostConn = myPeer.connect('localbridge-room-' + roomId);
+        myPeer.on('open', (id) => {
+            roomHostConn = myPeer.connect(`localbridge-room-${rId}`);
 
             roomHostConn.on('open', () => {
-                const accounts = getAccounts();
-                const myAcc = currentUser ? accounts[currentUser.username] : {};
-
                 roomHostConn.send({
-                    type: 'join-request',
-                    password: password,
-                    name: myAcc.displayName || myName,
-                    username: currentUser ? currentUser.username : null,
-                    color: myAcc.color || '#38bdf8',
-                    avatar: myAcc.avatar || defaultAvatar,
-                    isLoggedIn: currentUser !== null
+                    type: 'JOIN_REQUEST',
+                    password: pass,
+                    name: myName,
+                    username: currentUser ? currentUser.username : null
                 });
             });
 
-            roomHostConn.on('data', (data) => handleGuestIncomingData(data));
-            
+            roomHostConn.on('data', (data) => handleClientIncomingData(data));
+
             roomHostConn.on('close', () => {
-                alert('Disconnected from room host');
+                alert('Disconnected from host.');
+                location.reload();
+            });
+
+            roomHostConn.on('error', (err) => {
+                alert('Connection error: ' + err);
                 location.reload();
             });
         });
 
         myPeer.on('error', (err) => {
-            alert('Room not found or host unreachable');
+            alert('Peer error: ' + err.type);
+            location.reload();
         });
     };
 
-    function handleGuestIncomingData(data) {
-        if (data.type === 'join-response') {
-            if (data.success) {
-                document.getElementById('joinModal').style.display = 'none';
-                enterWorkspace({ roomId: data.roomId, password: data.password, isHost: false, permissions: data.permissions });
-                
-                if (data.chatHistory) data.chatHistory.forEach(msg => appendChatMessage(msg.author, msg.text, msg.color, msg.avatar));
-                if (data.fileHistory) data.fileHistory.forEach(file => appendFileMessage(file));
-            } else {
-                alert(data.message);
+    /* Data Logic & Processing */
+    function handleHostIncomingData(conn, data) {
+        if (data.type === 'JOIN_REQUEST') {
+            if (hostState.blacklist.includes(conn.peer)) {
+                conn.send({ type: 'JOIN_REJECTED', reason: 'You are banned from this room.' });
+                return;
+            }
+
+            if (hostState.requireAccount && !data.username) {
+                conn.send({ type: 'JOIN_REJECTED', reason: 'Host requires logged-in users only.' });
+                return;
+            }
+
+            if (data.password !== hostState.password) {
+                conn.send({ type: 'JOIN_REJECTED', reason: 'Incorrect password.' });
+                return;
+            }
+
+            const activeUserCount = Object.keys(hostState.users).length;
+            if (hostState.maxUsers && activeUserCount >= hostState.maxUsers) {
+                conn.send({ type: 'JOIN_REJECTED', reason: 'Room is full.' });
+                return;
+            }
+
+            const newPerms = { ...hostState.defaultPermissions };
+            hostState.users[conn.peer] = {
+                id: conn.peer,
+                name: data.name,
+                username: data.username,
+                isHost: false,
+                conn: conn,
+                permissions: newPerms
+            };
+
+            conn.send({
+                type: 'JOIN_ACCEPTED',
+                roomId: hostState.roomId,
+                permissions: newPerms,
+                chatHistory: newPerms.canViewMessageHistory ? hostState.chatHistory : [],
+                fileHistory: newPerms.canViewFileHistory ? hostState.fileHistory : []
+            });
+
+            broadcastRoomState();
+            appendSystemMessage(`${data.name} joined the room.`);
+        }
+        else if (data.type === 'CHAT') {
+            const u = hostState.users[conn.peer];
+            if (u && u.permissions.canChat) {
+                const msgObj = { author: u.name, text: data.text, isSystem: false };
+                hostState.chatHistory.push(msgObj);
+                appendChatMessage(msgObj);
+                broadcastToAllClients({ type: 'CHAT_BROADCAST', message: msgObj }, conn.peer, 'canViewMessageHistory');
             }
         }
-        else if (data.type === 'update-users') {
-            renderUserList(data.users, data.hostId, data.requireAccount);
-        }
-        else if (data.type === 'chat-message') {
-            if (myPermissions.canViewMessageHistory !== false) {
-                appendChatMessage(data.author, data.text, data.color, data.avatar);
+        else if (data.type === 'FILE_ADD') {
+            const u = hostState.users[conn.peer];
+            if (u && u.permissions.canUpload) {
+                hostState.fileHistory.push(data.file);
+                renderQueue();
+                broadcastToAllClients({ type: 'FILE_BROADCAST', file: data.file }, conn.peer, 'canViewFileHistory');
             }
         }
-        else if (data.type === 'sys-message') {
-            appendSysMessage(data.text);
-        }
-        else if (data.type === 'receive-file') {
-            if (myPermissions.canViewFileHistory !== false) {
-                appendFileMessage(data.fileData);
+        else if (data.type === 'FILE_DELETE') {
+            const u = hostState.users[conn.peer];
+            if (u && u.permissions.canDeleteFiles) {
+                hostState.fileHistory = hostState.fileHistory.filter(f => f.id !== data.fileId);
+                renderQueue();
+                broadcastToAllClients({ type: 'FILE_DELETE_BROADCAST', fileId: data.fileId }, conn.peer, 'canViewFileHistory');
             }
         }
-        else if (data.type === 'file-deleted') {
-            removeFileItem(data.fileId);
+    }
+
+    function handleClientIncomingData(data) {
+        if (data.type === 'JOIN_REJECTED') {
+            alert('Join Failed: ' + data.reason);
+            location.reload();
         }
-        else if (data.type === 'permissions-updated') {
+        else if (data.type === 'JOIN_ACCEPTED') {
             myPermissions = data.permissions;
-            applyPermissionsUI();
-        }
-        else if (data.type === 'kicked') {
-            alert('You were kicked from the room');
-            location.reload();
-        }
-        else if (data.type === 'banned') {
-            alert('You were banned from the room');
-            location.reload();
-        }
-    }
-
-    function broadcast(data) {
-        if (data.type === 'chat-message') appendChatMessage(data.author, data.text, data.color, data.avatar);
-        if (data.type === 'sys-message') appendSysMessage(data.text);
-        if (data.type === 'receive-file') appendFileMessage(data.fileData);
-        if (data.type === 'file-deleted') removeFileItem(data.fileId);
-
-        Object.values(hostState.users).forEach(u => {
-            if (u.conn && u.conn.open) {
-                if (data.type === 'chat-message' && u.permissions.canViewMessageHistory === false) return;
-                if (data.type === 'receive-file' && u.permissions.canViewFileHistory === false) return;
-                u.conn.send(data);
+            initAppView(data.roomId);
+            
+            if (myPermissions.canViewMessageHistory) {
+                document.getElementById('chatMessages').innerHTML = '';
+                data.chatHistory.forEach(m => appendChatMessage(m));
             }
-        });
+            
+            if (myPermissions.canViewFileHistory) {
+                hostState.fileHistory = data.fileHistory;
+                renderQueue();
+            }
+
+            appendSystemMessage("Connected to room!");
+        }
+        else if (data.type === 'ROOM_STATE') {
+            renderUserListClient(data.users);
+        }
+        else if (data.type === 'PERMISSIONS_UPDATED') {
+            myPermissions = data.permissions;
+            updateUIByPermissions();
+        }
+        else if (data.type === 'KICKED') {
+            alert(data.reason || 'You were kicked from the room.');
+            location.reload();
+        }
+        else if (data.type === 'CHAT_BROADCAST') {
+            if (myPermissions.canViewMessageHistory) appendChatMessage(data.message);
+        }
+        else if (data.type === 'FILE_BROADCAST') {
+            if (myPermissions.canViewFileHistory) {
+                hostState.fileHistory.push(data.file);
+                renderQueue();
+            }
+        }
+        else if (data.type === 'FILE_DELETE_BROADCAST') {
+            if (myPermissions.canViewFileHistory) {
+                hostState.fileHistory = hostState.fileHistory.filter(f => f.id !== data.fileId);
+                renderQueue();
+            }
+        }
     }
 
-    function broadcastUserList() {
-        const usersArray = Object.keys(hostState.users).map(id => ({
-            id: id,
-            name: hostState.users[id].name,
-            username: hostState.users[id].username,
-            color: hostState.users[id].color,
-            avatar: hostState.users[id].avatar,
-            permissions: hostState.users[id].permissions
+    function handleUserDisconnect(peerId) {
+        if (hostState.users[peerId]) {
+            const name = hostState.users[peerId].name;
+            delete hostState.users[peerId];
+            broadcastRoomState();
+            appendSystemMessage(`${name} left the room.`);
+        }
+    }
+
+    function broadcastRoomState() {
+        const uList = Object.values(hostState.users).map(u => ({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            isHost: u.isHost,
+            permissions: u.permissions
         }));
 
-        const payload = {
-            type: 'update-users',
-            users: usersArray,
-            hostId: myPeer.id,
-            requireAccount: hostState.requireAccount
-        };
+        document.getElementById('userCount').textContent = uList.length;
+        renderUserListHost();
 
-        renderUserList(payload.users, payload.hostId, payload.requireAccount);
+        broadcastToAllClients({ type: 'ROOM_STATE', users: uList });
+    }
 
+    function broadcastToAllClients(data, excludePeerId = null, requiredPermission = null) {
         Object.values(hostState.users).forEach(u => {
-            if (u.conn && u.conn.open) u.conn.send(payload);
+            if (!u.isHost && u.conn && u.id !== excludePeerId) {
+                if (!requiredPermission || u.permissions[requiredPermission]) {
+                    u.conn.send(data);
+                }
+            }
         });
     }
 
-    function broadcastSysMsg(text) {
-        broadcast({ type: 'sys-message', text: text });
-    }
+    /* Rendering Sidebars and Users */
+    function renderUserListHost() {
+        const list = document.getElementById('userList');
+        list.innerHTML = '';
 
-    function enterWorkspace(data) {
-        currentRoomId = data.roomId;
-        isHost = data.isHost;
-        if (data.permissions) {
-            myPermissions = data.permissions;
-            applyPermissionsUI();
-        }
-        document.getElementById('labelRoomId').textContent = data.roomId;
-        document.getElementById('labelRoomPass').textContent = '••••••';
-        mainWrapper.style.display = 'none';
-        appLayout.style.display = 'flex';
-        
-        // Hide accounts base, subscriptions, and profile button when in room
-        document.getElementById('topLeftBar').style.display = 'none';
-        document.getElementById('authBar').style.display = 'none';
-
-        openSettingsBtn.style.display = isHost ? 'flex' : 'none';
-    }
-
-    document.getElementById('togglePassBtn').onclick = () => {
-        isPasswordVisible = !isPasswordVisible;
-        const pass = isHost ? hostState.password : document.getElementById('joinPassword').value;
-        document.getElementById('labelRoomPass').textContent = isPasswordVisible ? pass : '••••••';
-        document.getElementById('eyeIcon').innerHTML = isPasswordVisible ? svgEyeClosed : svgEyeOpen;
-    };
-
-    document.getElementById('leaveRoomBtn').onclick = () => {
-        // Restore bars upon leaving
-        document.getElementById('topLeftBar').style.display = 'flex';
-        document.getElementById('authBar').style.display = 'flex';
-        location.reload();
-    };
-
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-
-    document.getElementById('sendMsgBtn').onclick = sendMsg;
-    chatInput.onkeydown = (e) => { if (e.key === 'Enter') sendMsg(); };
-
-    function sendMsg() {
-        if (!myPermissions.canChat) return alert('Chat disabled');
-        const val = chatInput.value.trim();
-        if (!val) return;
-
-        const accounts = getAccounts();
-        const myAcc = currentUser ? accounts[currentUser.username] : {};
-
-        if (isHost) {
-            const msg = { 
-                author: hostState.users[myPeer.id].name, 
-                color: myAcc.color || '#38bdf8',
-                avatar: myAcc.avatar || defaultAvatar,
-                text: val 
-            };
-            hostState.chatHistory.push(msg);
-            broadcast({ type: 'chat-message', ...msg });
-        } else {
-            roomHostConn.send({ type: 'send-chat', text: val });
-        }
-        chatInput.value = '';
-    }
-
-    function appendChatMessage(author, text, color = '#38bdf8', avatar = defaultAvatar) {
-        const div = document.createElement('div');
-        div.className = 'chat-msg';
-        div.innerHTML = `
-            <img class="avatar" src="${avatar}">
-            <span class="author" style="color: ${color}">${escapeHtml(author)}:</span>
-            <span>${escapeHtml(text)}</span>
-        `;
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function appendSysMessage(text) {
-        const div = document.createElement('div');
-        div.className = 'chat-msg system';
-        div.textContent = text;
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    /* Render Users in Room sidebar and allow clicking nicknames to open profile */
-    function renderUserList(users, hostId, requireAccount) {
-        openSettingsBtn.style.display = isHost ? 'flex' : 'none';
-        const userList = document.getElementById('userList');
-        userList.innerHTML = '';
+        const users = Object.values(hostState.users);
+        document.getElementById('userCount').textContent = users.length;
 
         users.forEach(u => {
-            const isMe = u.id === myPeer.id;
-            const isUserHost = u.id === hostId;
-
-            if (isMe && u.permissions) {
-                myPermissions = u.permissions;
-                applyPermissionsUI();
-            }
-
             const li = document.createElement('li');
             li.className = 'user-item';
 
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'user-info';
-            infoDiv.onclick = () => {
-                if (u.username) {
-                    openViewUserProfile(u.username);
-                }
-            };
+            let tag = u.isHost ? ` ${svgCrown}` : '';
+            let isMe = u.id === myPeer.id ? ' <span class="you-tag">(You)</span>' : '';
 
-            infoDiv.innerHTML = `
-                <img class="avatar" src="${u.avatar || defaultAvatar}">
-                <span style="color: ${u.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(u.name)}</span>
-                ${isUserHost ? ' ' + svgCrown : ''}
-                ${isMe ? ' <span class="you-tag">(you)</span>' : ''}
+            li.innerHTML = `
+                <div class="user-info" onclick="${u.username ? `openViewUserProfile('${u.username}')` : ''}">
+                    <span style="font-weight: 600;">${escapeHtml(u.name)}${tag}${isMe}</span>
+                </div>
+                ${!u.isHost ? `<button class="manage-user-btn" onclick="openManageUserModal('${u.id}')">Manage</button>` : ''}
             `;
-
-            li.appendChild(infoDiv);
-
-            if (isHost && !isMe) {
-                const manageBtn = document.createElement('button');
-                manageBtn.className = 'manage-user-btn';
-                manageBtn.textContent = 'Manage';
-                manageBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    openManageUserModal(u);
-                };
-                li.appendChild(manageBtn);
-            }
-
-            userList.appendChild(li);
+            list.appendChild(li);
         });
-
-        const max = isHost && hostState.maxUsers ? `/ ${hostState.maxUsers}` : '';
-        document.getElementById('userCount').textContent = `${users.length} ${max}`.trim();
     }
 
-    const manageUserModal = document.getElementById('manageUserModal');
-    function openManageUserModal(user) {
-        selectedUserId = user.id;
-        document.getElementById('manageUserName').textContent = `Manage: ${user.name}`;
-        
-        const perms = hostState.users[user.id].permissions;
-        document.getElementById('permUpload').checked = perms.canUpload;
-        document.getElementById('permDownload').checked = perms.canDownload;
-        document.getElementById('permDelete').checked = perms.canDeleteFiles;
-        document.getElementById('permChat').checked = perms.canChat;
-        document.getElementById('permViewMessageHistory').checked = perms.canViewMessageHistory;
-        document.getElementById('permViewFileHistory').checked = perms.canViewFileHistory;
+    function renderUserListClient(users) {
+        const list = document.getElementById('userList');
+        list.innerHTML = '';
+        document.getElementById('userCount').textContent = users.length;
 
-        manageUserModal.style.display = 'flex';
+        users.forEach(u => {
+            const li = document.createElement('li');
+            li.className = 'user-item';
+
+            let tag = u.isHost ? ` ${svgCrown}` : '';
+            let isMe = u.id === myPeer.id ? ' <span class="you-tag">(You)</span>' : '';
+
+            li.innerHTML = `
+                <div class="user-info" onclick="${u.username ? `openViewUserProfile('${u.username}')` : ''}">
+                    <span style="font-weight: 600;">${escapeHtml(u.name)}${tag}${isMe}</span>
+                </div>
+            `;
+            list.appendChild(li);
+        });
     }
 
-    function autoSavePermissions() {
-        if (!selectedUserId || !isHost) return;
-        const newPerms = {
+    /* Host Controls: Manage Permissions Modal */
+    window.openManageUserModal = function(peerId) {
+        selectedUserId = peerId;
+        const u = hostState.users[peerId];
+        if (!u) return;
+
+        document.getElementById('manageUserName').textContent = `Manage: ${u.name}`;
+        document.getElementById('permUpload').checked = u.permissions.canUpload;
+        document.getElementById('permDownload').checked = u.permissions.canDownload;
+        document.getElementById('permDelete').checked = u.permissions.canDeleteFiles;
+        document.getElementById('permChat').checked = u.permissions.canChat;
+        document.getElementById('permViewMessageHistory').checked = u.permissions.canViewMessageHistory;
+        document.getElementById('permViewFileHistory').checked = u.permissions.canViewFileHistory;
+
+        document.getElementById('manageUserModal').style.display = 'flex';
+    };
+
+    document.getElementById('closeManageModalBtn').onclick = () => document.getElementById('manageUserModal').style.display = 'none';
+
+    window.autoSavePermissions = function() {
+        if (!selectedUserId || !hostState.users[selectedUserId]) return;
+        const u = hostState.users[selectedUserId];
+
+        u.permissions = {
             canUpload: document.getElementById('permUpload').checked,
             canDownload: document.getElementById('permDownload').checked,
             canDeleteFiles: document.getElementById('permDelete').checked,
@@ -1607,243 +1729,754 @@
             canViewMessageHistory: document.getElementById('permViewMessageHistory').checked,
             canViewFileHistory: document.getElementById('permViewFileHistory').checked
         };
-        
-        hostState.users[selectedUserId].permissions = newPerms;
-        const conn = hostState.users[selectedUserId].conn;
-        if (conn) conn.send({ type: 'permissions-updated', permissions: newPerms });
-        broadcastUserList();
-    }
 
-    document.getElementById('closeManageModalBtn').onclick = () => manageUserModal.style.display = 'none';
+        if (u.conn) {
+            u.conn.send({
+                type: 'PERMISSIONS_UPDATED',
+                permissions: u.permissions
+            });
+        }
+    };
 
     document.getElementById('kickUserBtn').onclick = () => {
-        if (selectedUserId && isHost) {
-            const u = hostState.users[selectedUserId];
-            if (u && u.conn) {
-                u.conn.send({ type: 'kicked' });
-                u.conn.close();
-            }
-            delete hostState.users[selectedUserId];
-            broadcastUserList();
-            manageUserModal.style.display = 'none';
-        }
+        if (!selectedUserId || !hostState.users[selectedUserId]) return;
+        const u = hostState.users[selectedUserId];
+        if (u.conn) u.conn.send({ type: 'KICKED', reason: 'You were kicked by Host.' });
+
+        delete hostState.users[selectedUserId];
+        document.getElementById('manageUserModal').style.display = 'none';
+        broadcastRoomState();
+        appendSystemMessage(`${u.name} was kicked.`);
     };
 
     document.getElementById('banUserBtn').onclick = () => {
-        if (selectedUserId && isHost) {
-            const u = hostState.users[selectedUserId];
-            hostState.blacklist.push({ id: selectedUserId, name: u.name });
-            if (u && u.conn) {
-                u.conn.send({ type: 'banned' });
-                u.conn.close();
-            }
-            delete hostState.users[selectedUserId];
-            broadcastUserList();
-            manageUserModal.style.display = 'none';
-        }
+        if (!selectedUserId || !hostState.users[selectedUserId]) return;
+        const u = hostState.users[selectedUserId];
+        hostState.blacklist.push(selectedUserId);
+
+        if (u.conn) u.conn.send({ type: 'KICKED', reason: 'You were banned by Host.' });
+
+        delete hostState.users[selectedUserId];
+        document.getElementById('manageUserModal').style.display = 'none';
+        broadcastRoomState();
+        renderBlacklist();
+        appendSystemMessage(`${u.name} was banned.`);
     };
 
+    /* Settings Modal Logic */
     openSettingsBtn.onclick = () => {
+        if (!isHost) return;
         document.getElementById('hostSettingsSection').style.display = 'block';
         document.getElementById('toggleRequireAccount').checked = hostState.requireAccount;
         renderBlacklist();
+        document.getElementById('settingsModal').style.display = 'flex';
     };
+    document.getElementById('closeSettingsModalBtn').onclick = () => document.getElementById('settingsModal').style.display = 'none';
 
     window.toggleRequireAccountSetting = function() {
-        if (isHost) {
-            hostState.requireAccount = document.getElementById('toggleRequireAccount').checked;
-            broadcastUserList();
-        }
+        hostState.requireAccount = document.getElementById('toggleRequireAccount').checked;
     };
 
     function renderBlacklist() {
         const container = document.getElementById('blacklistContainer');
         container.innerHTML = '';
         if (hostState.blacklist.length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No banned users</div>';
-        } else {
-            hostState.blacklist.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <span>ID: ${escapeHtml(item.id)} (${escapeHtml(item.name)})</span>
-                    <button class="btn-danger" style="width: auto; padding: 2px 8px; font-size: 0.75rem;" onclick="unbanUser('${item.id}')">Unban</button>
-                `;
-                container.appendChild(div);
-            });
+            container.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No banned users</div>`;
+            return;
         }
-        document.getElementById('settingsModal').style.display = 'flex';
+        hostState.blacklist.forEach(peerId => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `
+                <span>ID: ${peerId.substring(0, 8)}...</span>
+                <button class="manage-user-btn" onclick="unbanUser('${peerId}')">Unban</button>
+            `;
+            container.appendChild(div);
+        });
     }
 
-    window.unbanUser = function(targetId) {
-        hostState.blacklist = hostState.blacklist.filter(b => b.id !== targetId);
+    window.unbanUser = function(peerId) {
+        hostState.blacklist = hostState.blacklist.filter(id => id !== peerId);
         renderBlacklist();
     };
 
-    document.getElementById('closeSettingsModalBtn').onclick = () => document.getElementById('settingsModal').style.display = 'none';
-
-    function applyPermissionsUI() {
-        chatInput.disabled = !myPermissions.canChat;
-        document.getElementById('sendMsgBtn').disabled = !myPermissions.canChat;
-        chatInput.placeholder = !myPermissions.canChat ? "Chat disabled by host" : "Type a message...";
-        chatMessages.style.display = myPermissions.canViewMessageHistory !== false ? 'flex' : 'none';
-
+    /* UI Permission Synchronizer */
+    function updateUIByPermissions() {
+        const chatInput = document.getElementById('chatInput');
+        const sendMsgBtn = document.getElementById('sendMsgBtn');
         const dropZone = document.getElementById('dropZone');
+
+        if (!myPermissions.canChat) {
+            chatInput.disabled = true;
+            chatInput.placeholder = "Chatting is disabled by host";
+            sendMsgBtn.disabled = true;
+        } else {
+            chatInput.disabled = false;
+            chatInput.placeholder = "Type a message...";
+            sendMsgBtn.disabled = false;
+        }
+
         if (!myPermissions.canUpload) {
             dropZone.classList.add('disabled');
             document.getElementById('dropZoneText').textContent = "Uploads Disabled";
+            document.getElementById('dropZoneSubtext').textContent = "Host restricted file transfers";
         } else {
             dropZone.classList.remove('disabled');
             document.getElementById('dropZoneText').textContent = "Drag & Drop files here";
+            document.getElementById('dropZoneSubtext').textContent = "or click to browse";
         }
 
-        const fileQueue = document.getElementById('fileQueue');
-        fileQueue.style.display = myPermissions.canViewFileHistory !== false ? 'flex' : 'none';
-
-        document.querySelectorAll('.file-download-link').forEach(link => {
-            link.style.display = myPermissions.canDownload ? 'inline' : 'none';
-        });
-
-        document.querySelectorAll('.delete-file-btn').forEach(btn => {
-            btn.style.display = myPermissions.canDeleteFiles ? 'inline' : 'none';
-        });
+        renderQueue();
     }
 
+    /* Chat Messages UI */
+    function appendChatMessage(msg) {
+        const cont = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = `chat-msg ${msg.isSystem ? 'system' : ''}`;
+
+        if (msg.isSystem) {
+            div.textContent = msg.text;
+        } else {
+            div.innerHTML = `<span class="author">${escapeHtml(msg.author)}:</span> ${escapeHtml(msg.text)}`;
+        }
+
+        cont.appendChild(div);
+        cont.scrollTop = cont.scrollHeight;
+    }
+
+    function appendSystemMessage(text) {
+        const msgObj = { author: 'System', text: text, isSystem: true };
+        if (isHost) hostState.chatHistory.push(msgObj);
+        appendChatMessage(msgObj);
+    }
+
+    document.getElementById('sendMsgBtn').onclick = sendChatMessage;
+    document.getElementById('chatInput').onkeypress = (e) => { if (e.key === 'Enter') sendChatMessage(); };
+
+    function sendChatMessage() {
+        if (!myPermissions.canChat) return;
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const msgObj = { author: myName, text: text, isSystem: false };
+
+        if (isHost) {
+            hostState.chatHistory.push(msgObj);
+            appendChatMessage(msgObj);
+            broadcastToAllClients({ type: 'CHAT_BROADCAST', message: msgObj }, null, 'canViewMessageHistory');
+        } else if (roomHostConn) {
+            roomHostConn.send({ type: 'CHAT', text: text });
+        }
+
+        input.value = '';
+    }
+
+    /* File Transfer Implementation */
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-    const fileQueue = document.getElementById('fileQueue');
 
     dropZone.onclick = () => { if (myPermissions.canUpload) fileInput.click(); };
-    dropZone.ondragover = (e) => { e.preventDefault(); if (myPermissions.canUpload) dropZone.classList.add('dragover'); };
+
+    dropZone.ondragover = (e) => {
+        e.preventDefault();
+        if (myPermissions.canUpload) dropZone.classList.add('dragover');
+    };
     dropZone.ondragleave = () => dropZone.classList.remove('dragover');
     dropZone.ondrop = (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        if (myPermissions.canUpload && e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
-    };
+        if (myPermissions.canUpload && e.dataTransfer.filesВот обновлённый HTML-код с полностью переработанным дизайном по стандартам UI/UX 2026 года[cite: 1].
 
-    fileInput.onchange = () => { if (fileInput.files.length) uploadFiles(fileInput.files); };
+### Key Design Changes
+* **Палитра и атмосферность (Dark Glassmorphism)**: Глубокая тёмно-фиолетовая база (`#090d16`), неоновые акценты (Indigo, Cyan, Violet), стеклянные текстуры (`backdrop-filter: blur`) и динамическое свечение (Glow Effect).
+* **Сетка и геометрия**: Современный двуколоночный интерфейс комнат с фиксированным скроллом, плавающими плашками и аккуратным сайдбаром пользователей.
+* **Иконки Lucide/SVG**: Реализована бесшовная система микроиконок для всех важных действий (копирование, профили, статус, закрытие, роли).
+* **Типографика**: Чистые шрифтовые пары, моноширинные теги для ID, контрастные статусы и плавный микровзаимодействие (Hover-эффекты и анимация появления модальных окон).
 
-    function uploadFiles(files) {
-        Array.from(files).forEach(file => {
-            const fileId = 'file_' + Math.random().toString(36).substr(2, 9);
-            const startTime = Date.now();
-
-            let uploaded = 0;
-            const total = file.size;
-
-            addQueueItem(fileId, file.name, formatBytes(total), `Uploading...`, null, true);
-
-            const interval = setInterval(() => {
-                uploaded += Math.min(total / 10, total - uploaded);
-                const elapsed = (Date.now() - startTime) / 1000;
-                const speed = elapsed > 0 ? uploaded / elapsed : 0;
-                const percent = Math.floor((uploaded / total) * 100);
-
-                updateQueueItemProgress(fileId, percent, `${formatBytes(speed)}/s — ${percent}%`);
-
-                if (uploaded >= total) {
-                    clearInterval(interval);
-                    
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const payload = {
-                            fileId: fileId,
-                            fileName: file.name,
-                            fileType: file.type,
-                            fileBuffer: reader.result
-                        };
-
-                        if (isHost) {
-                            const fileData = { ...payload, sender: hostState.users[myPeer.id].name };
-                            hostState.fileHistory.push(fileData);
-                            broadcast({ type: 'receive-file', fileData });
-                        } else {
-                            roomHostConn.send({ type: 'send-file', file: payload });
-                        }
-                    };
-                    reader.readAsArrayBuffer(file);
-                }
-            }, 100);
-        });
-    }
-
-    function appendFileMessage(fileData) {
-        const emptyPlaceholder = fileQueue.querySelector('.file-item-empty');
-        if (emptyPlaceholder) emptyPlaceholder.remove();
-
-        let itemDiv = document.getElementById(fileData.fileId);
-        const blob = new Blob([fileData.fileBuffer], { type: fileData.fileType });
-        const url = URL.createObjectURL(blob);
-
-        if (itemDiv) {
-            itemDiv.remove();
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalBridge — Serverless P2P Workspace</title>
+    <script src="[https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js](https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js)"></script>
+    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+    <link href="[https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap](https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap)" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07090e;
+            --bg-secondary: #0f131d;
+            --card-bg: rgba(19, 24, 38, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-border-hover: rgba(129, 140, 248, 0.3);
+            
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.25);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            
+            --cyan: #38bdf8;
+            --emerald: #34d399;
+            --danger: #f43f5e;
+            --danger-hover: #e11d48;
+            
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            
+            --shadow-glow: 0 0 50px -10px rgba(99, 102, 241, 0.15);
+            --glass-backdrop: blur(16px) saturate(180%);
         }
-        addQueueItem(fileData.fileId, fileData.fileName, formatBytes(blob.size), `From ${fileData.sender}`, url, false);
-    }
 
-    function addQueueItem(fileId, name, size, status, downloadUrl = null, showProgress = false) {
-        const emptyPlaceholder = fileQueue.querySelector('.file-item-empty');
-        if (emptyPlaceholder) emptyPlaceholder.remove();
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            min-height: 100vh; 
+            width: 100vw; 
+            overflow-x: hidden; 
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+        }
 
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'file-item';
-        itemDiv.id = fileId;
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
-        itemDiv.innerHTML = `
-            <div class="file-info">
-                <span class="file-name">${escapeHtml(name)}</span>
-                <span class="file-size">${size}</span>
+        .top-left-bar { position: fixed; top: 20px; left: 24px; z-index: 100; display: flex; gap: 12px; }
+        .auth-bar { position: fixed; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 100; align-items: center; }
+        
+        .user-profile-badge { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 0.875rem; 
+            font-weight: 600; 
+            background: rgba(255, 255, 255, 0.03); 
+            padding: 6px 14px 6px 6px; 
+            border-radius: 30px; 
+            border: 1px solid var(--card-border); 
+            cursor: pointer;
+            backdrop-filter: var(--glass-backdrop);
+            transition: all 0.2s ease;
+        }
+        .user-profile-badge:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); border: 1px solid var(--card-border); }
+        .avatar-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); border: 2px solid var(--accent); }
+
+        .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; position: relative; }
+        
+        .container { 
+            width: 100%; 
+            max-width: 460px; 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-lg); 
+            padding: 36px 32px; 
+            box-shadow: var(--shadow-glow), 0 20px 40px rgba(0,0,0,0.6);
+            backdrop-filter: var(--glass-backdrop);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: var(--accent-gradient);
+        }
+
+        .logo-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+
+        p.subtitle { font-size: 0.875rem; color: var(--text-muted); text-align: center; margin-bottom: 28px; font-weight: 500; }
+
+        .section { display: flex; flex-direction: column; gap: 12px; }
+
+        input[type="text"], input[type="password"], input[type="number"], textarea, select { 
+            width: 100%; 
+            background: rgba(7, 9, 14, 0.6); 
+            border: 1px solid var(--card-border); 
+            color: var(--text); 
+            padding: 12px 16px; 
+            border-radius: var(--radius-md); 
+            font-size: 0.9rem; 
+            margin-top: 6px;
+            transition: all 0.2s;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+
+        button { 
+            background: var(--accent-gradient); 
+            color: #fff; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: var(--radius-md); 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            width: 100%; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+        button:hover { background: var(--accent-gradient-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35); }
+        button:active { transform: translateY(0); }
+
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid var(--card-border); box-shadow: none; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); box-shadow: none; }
+
+        .btn-danger { background: rgba(244, 63, 94, 0.15); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.3); box-shadow: none; }
+        .btn-danger:hover { background: var(--danger); color: #fff; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3); }
+
+        .btn-icon { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid var(--card-border); 
+            color: var(--text-muted); 
+            width: 42px; height: 42px; 
+            padding: 0; 
+            border-radius: var(--radius-md); 
+            cursor: pointer; 
+            backdrop-filter: var(--glass-backdrop);
+        }
+        .btn-icon:hover { color: var(--text); background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); }
+        .btn-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+        .status { font-size: 0.8rem; margin-top: 10px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status.connected { color: var(--emerald); }
+        .status.connected::before { background: var(--emerald); box-shadow: 0 0 10px var(--emerald); }
+        .status.disconnected { color: var(--text-dim); }
+        .status.disconnected::before { background: var(--text-dim); }
+
+        .app-layout { display: none; width: 100vw; height: 100vh; overflow: hidden; z-index: 10; position: relative; }
+        .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 28px 36px; overflow-y: auto; gap: 24px; }
+        .workspace-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+
+        .workspace-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
+        @media (max-width: 1024px) { .workspace-grid { grid-template-columns: 1fr; } }
+
+        .left-column, .right-column { display: flex; flex-direction: column; gap: 24px; }
+        
+        .room-card-active, .file-card, .chat-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-lg); 
+            padding: 24px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: var(--glass-backdrop);
+        }
+
+        .drop-zone { 
+            border: 2px dashed rgba(255, 255, 255, 0.15); 
+            border-radius: var(--radius-md); 
+            padding: 32px 20px; 
+            text-align: center; 
+            background: rgba(0, 0, 0, 0.2); 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+            transition: all 0.2s;
+        }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(129, 140, 248, 0.05); }
+        .drop-zone.disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--card-border); }
+        .drop-zone svg { width: 40px; height: 40px; fill: var(--accent); opacity: 0.8; }
+
+        .file-queue { display: flex; flex-direction: column; gap: 10px; max-height: 260px; overflow-y: auto; margin-top: 12px; }
+        .file-item { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+        .file-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+        .file-size { color: var(--text-muted); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }
+
+        .progress-bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 2px; }
+        .progress-bar-fill { height: 100%; background: var(--accent-gradient); width: 0%; transition: width 0.1s linear; }
+
+        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 12px; }
+        .info-value { font-weight: 600; color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 1rem; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 6px; }
+        .pass-wrapper { display: flex; align-items: center; gap: 8px; }
+        .eye-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; width: auto; box-shadow: none; }
+        .eye-btn:hover { color: var(--text); background: none; }
+        .eye-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        .chat-card { display: flex; flex-direction: column; gap: 14px; }
+        .chat-messages { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); height: 220px; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg { font-size: 0.875rem; word-break: break-word; display: flex; align-items: center; gap: 8px; }
+        .chat-msg .author { font-weight: 700; }
+        .chat-msg.system { color: var(--text-muted); font-style: italic; font-size: 0.8rem; justify-content: center; background: rgba(255,255,255,0.02); padding: 4px; border-radius: 6px; }
+        .chat-input-row { display: flex; gap: 10px; }
+        .chat-input-row input { margin-top: 0; }
+        .chat-input-row button { width: auto; padding: 0 20px; white-space: nowrap; }
+
+        .sidebar-right { width: 320px; height: 100vh; background: var(--bg-secondary); border-left: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 28px 20px; }
+        .sidebar-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .user-count-badge { background: rgba(129, 140, 248, 0.15); color: var(--accent); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(129, 140, 248, 0.3); }
+        .user-list { list-style: none; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
+        
+        .user-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: var(--radius-md); font-size: 0.875rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .user-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255, 255, 255, 0.04); }
+        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        
+        .manage-user-btn { background: rgba(255, 255, 255, 0.08); border: none; color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; width: auto; box-shadow: none; }
+        .manage-user-btn:hover { background: var(--accent); color: #fff; }
+
+        .crown-icon { width: 16px; height: 16px; fill: #fbbf24; display: inline-block; vertical-align: middle; filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5)); }
+        .you-tag { color: var(--text-dim); font-size: 0.75rem; font-weight: 500; }
+
+        .switch-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 0.85rem; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.15); transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: #fff; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background: var(--accent); }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; max-height: 180px; overflow-y: auto; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; }
+
+        /* Modals Glassmorphism Fix */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(4, 6, 10, 0.75); backdrop-filter: blur(12px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        
+        #subscriptionsModal { z-index: 1100; }
+        #accountsListModal { z-index: 1200; }
+        #profileModal { z-index: 2000; }
+        #addFriendModal { z-index: 3000; }
+        #viewUserProfileModal { z-index: 3500; }
+        #inviteFriendsModal { z-index: 3600; }
+        
+        .modal { 
+            background: #0f1420; 
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-lg); 
+            padding: 28px; 
+            width: 90%; 
+            max-width: 480px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), var(--shadow-glow);
+        }
+        
+        .modal-wide { max-width: 900px; width: 95%; }
+        .profile-grid-horizontal { display: grid; grid-template-columns: 260px 1fr 280px; gap: 20px; align-items: start; }
+        @media (max-width: 850px) { .profile-grid-horizontal { grid-template-columns: 1fr; } }
+
+        .view-profile-horizontal { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 650px) { .view-profile-horizontal { grid-template-columns: 1fr; } }
+
+        .modal h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+        .modal label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+        
+        .color-picker-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+        .color-picker-row input[type="color"] { width: 42px; height: 38px; border: none; cursor: pointer; background: none; border-radius: 6px; }
+
+        .sub-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px; }
+        @media (max-width: 600px) { .sub-cards-grid { grid-template-columns: 1fr; } }
+        
+        .sub-card { 
+            background: rgba(255, 255, 255, 0.02); 
+            border: 1px solid var(--card-border); 
+            border-radius: var(--radius-md); 
+            padding: 20px; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            gap: 16px; 
+            transition: all 0.2s;
+        }
+        .sub-card.popular { border-color: var(--accent); background: rgba(129, 140, 248, 0.05); box-shadow: 0 0 25px var(--accent-glow); }
+        .sub-price { font-size: 1.75rem; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body>
+
+<!-- Top Left Bar -->
+<div class="top-left-bar" id="topLeftBar">
+    <button class="btn-secondary" id="accountsBaseBtn" style="display: none;" onclick="openAccountsListModal()">Accounts Base</button>
+    <button class="btn-secondary" id="subscriptionsBtn" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
+</div>
+
+<div class="auth-bar" id="authBar"></div>
+
+<div id="mainWrapper" class="main-wrapper">
+    <div class="container">
+        <h1 class="logo-title">LocalBridge</h1>
+        <p class="subtitle">Next-Gen Serverless P2P Workspace</p>
+        <div class="section">
+            <button id="openCreateModalBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Create Room
+            </button>
+            <button id="openJoinModalBtn" class="btn-secondary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                Join Room
+            </button>
+            <div id="statusText" class="status disconnected">Ready to connect</div>
+        </div>
+    </div>
+</div>
+
+<div id="appLayout" class="app-layout">
+    <main class="main-workspace">
+        <header class="workspace-header">
+            <div>
+                <h1 class="logo-title" style="text-align: left; font-size: 1.5rem;">LocalBridge</h1>
+                <p class="subtitle" style="text-align: left; margin-bottom: 0;">Active Workspace</p>
             </div>
-            ${showProgress ? `<div class="progress-bar-bg"><div class="progress-bar-fill" id="fill_${fileId}"></div></div>` : ''}
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
-                <span id="status_${fileId}">${status}</span>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    ${downloadUrl ? `<a href="${downloadUrl}" download="${escapeHtml(name)}" class="file-download-link" style="color: var(--accent); font-weight: bold; display: ${myPermissions.canDownload ? 'inline' : 'none'};">Download</a>` : ''}
-                    <button class="delete-file-btn" style="display: ${myPermissions.canDeleteFiles ? 'inline' : 'none'};" onclick="deleteFile('${fileId}')">Delete</button>
+            <div class="header-actions">
+                <div id="workspaceStatusText" class="status connected">Connected</div>
+                <button id="openSettingsBtn" class="btn-icon" title="Settings" style="display: none;">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="workspace-grid">
+            <div class="left-column">
+                <div class="room-card-active">
+                    <h2 style="font-size: 1.1rem; margin-bottom: 16px; color: var(--text);">Room Controls</h2>
+                    <div style="background: rgba(0, 0, 0, 0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 16px;">
+                        <div class="info-row">
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">Room ID:</span>
+                            <span id="labelRoomId" class="info-value">------</span>
+                        </div>
+                        <div class="info-row" style="margin-bottom: 0;">
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">Password:</span>
+                            <div class="pass-wrapper">
+                                <span id="labelRoomPass" class="info-value">••••••</span>
+                                <button id="togglePassBtn" class="eye-btn">
+                                    <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="inviteFriendsBtn" class="btn-secondary" onclick="openInviteFriendsModal()">Invite Friends</button>
+                        <button id="leaveRoomBtn" class="btn-danger">Leave Room</button>
+                    </div>
+                </div>
+
+                <div class="chat-card">
+                    <h2 style="font-size: 1.1rem; color: var(--text);">Room Chat</h2>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+                        <button id="sendMsgBtn">Send</button>
+                    </div>
                 </div>
             </div>
-        `;
-        fileQueue.appendChild(itemDiv);
-    }
 
-    function updateQueueItemProgress(fileId, percent, statusText) {
-        const fill = document.getElementById(`fill_${fileId}`);
-        const status = document.getElementById(`status_${fileId}`);
-        if (fill) fill.style.width = `${percent}%`;
-        if (status) status.textContent = statusText;
-    }
+            <div class="right-column">
+                <div class="file-card">
+                    <h2 style="font-size: 1.1rem; color: var(--text); margin-bottom: 12px;">File Transfer</h2>
+                    <div id="dropZone" class="drop-zone">
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                        <div>
+                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.9rem; display: block;">Drag & Drop files here</span>
+                            <p id="dropZoneSubtext" style="font-size: 0.8rem; color: var(--text-dim);">or click to browse</p>
+                        </div>
+                        <input type="file" id="fileInput" multiple style="display: none;">
+                    </div>
 
-    window.deleteFile = function(fileId) {
-        if (!myPermissions.canDeleteFiles) return alert('No permission to delete files.');
-        if (isHost) {
-            hostState.fileHistory = hostState.fileHistory.filter(f => f.fileId !== fileId);
-            broadcast({ type: 'file-deleted', fileId });
-        } else {
-            roomHostConn.send({ type: 'delete-file', fileId });
-        }
-    };
+                    <div style="margin-top: 18px;">
+                        <h3 style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Transfer Queue</h3>
+                        <div id="fileQueue" class="file-queue">
+                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">
+                                No files in queue
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    function removeFileItem(fileId) {
-        const item = document.getElementById(fileId);
-        if (item) item.remove();
-        if (fileQueue.children.length === 0) {
-            fileQueue.innerHTML = `<div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 16px; background: rgba(0,0,0,0.1); border-radius: 6px;">No files in queue</div>`;
-        }
-    }
+    <aside class="sidebar-right">
+        <div class="sidebar-title">
+            <span>Users in Room</span>
+            <span id="userCount" class="user-count-badge">0</span>
+        </div>
+        <ul id="userList" class="user-list"></ul>
+    </aside>
+</div>
 
-    function formatBytes(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
+<!-- Modals -->
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-</script>
-</body>
-</html>
+<!-- Subscriptions Modal -->
+<div id="subscriptionsModal" class="modal-overlay">
+    <div class="modal modal-wide" style="max-width: 750px;">
+        <h2>Select Subscription Plan</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Upgrade your LocalBridge account for higher transfer speeds and unlimited room limits.</p>
+
+        <div class="sub-cards-grid">
+            <div class="sub-card">
+                <div>
+                    <h3 style="font-size: 1.1rem; color: var(--text);">Basic</h3>
+                    <div class="sub-price">$4.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                </div>
+                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                    <li>✓ High-speed P2P transfer</li>
+                    <li>✓ Up to 10 users in room</li>
+                    <li>✓ Custom ID tag</li>
+                </ul>
+                <button class="btn-secondary" onclick="alert('Subscription feature integrated!')">Choose Basic</button>
+            </div>
+
+            <div class="sub-card popular">
+                <div>
+                    <span style="font-size: 0.65rem; background: var(--accent); color: #fff; font-weight: bold; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">POPULAR</span>
+                    <h3 style="font-size: 1.1rem; color: var(--text); margin-top: 6px;">Pro</h3>
+                    <div class="sub-price">$9.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                </div>
+                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                    <li>✓ Unlimited transfer speed</li>
+                    <li>✓ Up to 50 users in room</li>
+                    <li>✓ Priority P2P Routing</li>
+                </ul>
+                <button onclick="alert('Subscription feature integrated!')">Choose Pro</button>
+            </div>
+
+            <div class="sub-card">
+                <div>
+                    <h3 style="font-size: 1.1rem; color: var(--text);">Ultimate</h3>
+                    <div class="sub-price">$17.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                </div>
+                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                    <li>✓ Max Speed & Bandwidth</li>
+                    <li>✓ Unlimited users in room</li>
+                    <li>✓ E2E Encrypted Backups</li>
+                </ul>
+                <button class="btn-secondary" onclick="alert('Subscription feature integrated!')">Choose Ultimate</button>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('subscriptionsModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Friend Modal -->
+<div id="addFriendModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Add Friend</h2>
+        <div>
+            <label>Search user (Type for Display Name, @ for Username, # for ID):</label>
+            <input type="text" id="addFriendSearchInput" placeholder="e.g. dog, @john, #a1b2..." oninput="executeAddFriendSearch()">
+        </div>
+        <div id="addFriendSearchResult" class="list-container" style="margin-top: 10px; max-height: 200px;"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Invite Friends Modal -->
+<div id="inviteFriendsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <h2>Invite Friends to Room</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Send direct message invites with room credentials to your friends.</p>
+        <div id="inviteFriendsContainer" class="list-container" style="max-height: 280px; margin-top: 10px;"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('inviteFriendsModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts Database Modal (Zeldy only) -->
+<div id="accountsListModal" class="modal-overlay">
+    <div class="modal" style="max-width: 600px;">
+        <h2>Registered Accounts Base (Admin)</h2>
+        <div id="allAccountsContainer" class="list-container" style="max-height: 350px;"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Settings Modal -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal modal-wide">
+        <h2>Profile Settings</h2>
+        
+        <div class="profile-grid-horizontal">
+            <!-- Left Col: Avatar & Display Name -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
+                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                <button class="btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
+                
+                <div style="width: 100%;">
+                    <label>Display Name:</label>
+                    <input type="text" id="profileDisplayNameInput" placeholder="Display name...">
+                </div>
+
+                <div style="width: 100%;">
+                    <label>Username (Login):</label>
+                    <input type="text" id="profileUsernameReadonly" readonly style="opacity: 0.6; cursor: not-allowed; font-family: 'JetBrains Mono', monospace;">
+                </div>
+
+                <div style="width: 100%; font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
+                    Created: <span id="profileCreatedAtText" style="color: var(--text);"></span>
+                </div>
+
+                <button class="btn-danger" style="margin-top: 10px;" onclick="logout()">Log Out</button>
+            </div>
+
+            <!-- Middle Col: Short ID (Immutable), Color, Bio, Privacy, Blacklist -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label>Your Short ID (Immutable):</label>
+                    <input type="text" id="profileUuidInput" readonly style="font-family: 'JetBrains Mono', monospace; opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div>
+                    <label>Nickname Color:</label>
+                    <div class="color-picker-row">
+                        <input type="color" id="profileColorInput" value="#818cf8">
+                        <span id="colorHexText" style="font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);">#818cf8</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="profileBioInput">Bio:</label>
+                    <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: var(--radius
