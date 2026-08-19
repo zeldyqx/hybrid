@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,14 +23,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg); color: var(--text); min-height: 100vh; width: 100vw; overflow-x: hidden; position: relative; }
 
-        /* Левая верхняя кнопка просмотра всех аккаунтов */
+        /* Top Left Accounts Base Button */
         .top-left-bar { position: absolute; top: 16px; left: 24px; z-index: 100; }
         .top-left-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
 
         .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; align-items: center; }
         .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
         
-        /* Профиль и аватарки */
+        /* Profile & Avatars */
         .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; }
         .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--border); }
         .avatar-lg { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--border); }
@@ -134,9 +134,9 @@
 </head>
 <body>
 
-<!-- Меню слева: Просмотр существующих аккаунтов -->
+<!-- Top Left Bar: Accounts Base -->
 <div class="top-left-bar">
-    <button class="btn-secondary" onclick="openAccountsListModal()">База аккаунтов</button>
+    <button class="btn-secondary" onclick="openAccountsListModal()">Accounts Base</button>
 </div>
 
 <div class="auth-bar" id="authBar"></div>
@@ -234,85 +234,85 @@
     </aside>
 </div>
 
-<!-- Модальные окна -->
+<!-- Modals -->
 
-<!-- Список всех зарегистрированных аккаунтов -->
+<!-- Accounts Database Modal -->
 <div id="accountsListModal" class="modal-overlay">
     <div class="modal">
-        <h2>Зарегистрированные аккаунты</h2>
+        <h2>Registered Accounts</h2>
         <div id="allAccountsContainer" class="list-container"></div>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'">Закрыть</button>
+            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
 
-<!-- Профиль пользователя -->
+<!-- User Profile Settings Modal -->
 <div id="profileModal" class="modal-overlay">
     <div class="modal">
-        <h2>Настройки Профиля</h2>
+        <h2>Profile Settings</h2>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
             <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
             <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-            <button class="btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Изменить аватар</button>
+            <button class="btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
         </div>
         <div>
-            <label>Цвет ника:</label>
+            <label>Nickname Color:</label>
             <div class="color-picker-row">
                 <input type="color" id="profileColorInput" value="#38bdf8">
                 <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#38bdf8</span>
             </div>
         </div>
         <div>
-            <label for="profileBioInput">Описание (Bio):</label>
-            <textarea id="profileBioInput" placeholder="Расскажите о себе..."></textarea>
+            <label for="profileBioInput">Bio:</label>
+            <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
         </div>
 
         <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Друзья:</label>
+            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Friends:</label>
             <div id="profileFriendsContainer" class="list-container"></div>
         </div>
 
         <div style="border-top: 1px solid var(--border); padding-top: 10px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Черный список:</label>
+            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Blacklist:</label>
             <div id="profileBlacklistContainer" class="list-container"></div>
         </div>
 
         <div class="modal-actions">
-            <button onclick="saveProfileChanges()">Сохранить</button>
-            <button class="btn-secondary" onclick="document.getElementById('profileModal').style.display='none'">Отмена</button>
+            <button onclick="saveProfileChanges()">Save Changes</button>
+            <button class="btn-secondary" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
         </div>
     </div>
 </div>
 
-<!-- Просмотр чужого профиля -->
+<!-- View User Profile Modal -->
 <div id="viewUserProfileModal" class="modal-overlay">
     <div class="modal">
-        <h2 id="viewUserName">Профиль</h2>
+        <h2 id="viewUserName">Profile</h2>
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
             <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
             <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-dim); text-align: center;"></div>
         </div>
         <div class="modal-actions">
-            <button id="addFriendBtn">Добавить в друзья</button>
-            <button id="openDirectChatBtn" class="btn-secondary">Написать сообщение</button>
-            <button id="blockUserBtn" class="btn-danger">Заблокировать</button>
-            <button class="btn-secondary" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Закрыть</button>
+            <button id="addFriendBtn">Add to Friends</button>
+            <button id="openDirectChatBtn" class="btn-secondary">Send Message</button>
+            <button id="blockUserBtn" class="btn-danger">Block User</button>
+            <button class="btn-secondary" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
 
-<!-- Личный чат с другом -->
+<!-- Direct Chat Modal -->
 <div id="directChatModal" class="modal-overlay">
     <div class="modal" style="max-width: 500px;">
-        <h2 id="directChatTitle">Личный чат</h2>
+        <h2 id="directChatTitle">Direct Chat</h2>
         <div id="directChatMessages" class="chat-messages" style="height: 250px;"></div>
         <div class="chat-input-row">
-            <input type="text" id="directChatInput" placeholder="Личное сообщение..." autocomplete="off">
-            <button id="sendDirectMsgBtn">Отправить</button>
+            <input type="text" id="directChatInput" placeholder="Type a private message..." autocomplete="off">
+            <button id="sendDirectMsgBtn">Send</button>
         </div>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'">Закрыть</button>
+            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
@@ -459,16 +459,16 @@
         }
     }
 
-    /* Предупреждение при выходе из аккаунта */
+    /* Warning on Logout */
     window.logout = function() {
-        if (confirm("Вы уверены, что хотите выйти из аккаунта?")) {
+        if (confirm("Are you sure you want to log out?")) {
             localStorage.removeItem('lb_session');
             currentUser = null;
             updateAuthBarUI();
         }
     };
 
-    /* Модальное окно просмотра всех зарегистрированных аккаунтов */
+    /* Accounts Base Modal */
     window.openAccountsListModal = function() {
         const accounts = getAccounts();
         const container = document.getElementById('allAccountsContainer');
@@ -476,7 +476,7 @@
 
         const keys = Object.keys(accounts);
         if (keys.length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Аккаунтов нет</div>';
+            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No accounts found</div>';
         } else {
             keys.forEach(username => {
                 const acc = accounts[username];
@@ -487,7 +487,7 @@
                         <img class="avatar" src="${acc.avatar || defaultAvatar}">
                         <span style="color: ${acc.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(username)}</span>
                     </div>
-                    <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Профиль</button>
+                    <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
                 `;
                 container.appendChild(div);
             });
@@ -495,7 +495,7 @@
         document.getElementById('accountsListModal').style.display = 'flex';
     };
 
-    /* Настройки собственного профиля */
+    /* Self Profile Settings */
     let tempAvatarBase64 = null;
     window.openProfileModal = function() {
         if (!currentUser) return;
@@ -532,37 +532,37 @@
         const accounts = getAccounts();
         const acc = accounts[currentUser.username] || {};
         
-        // Список друзей
+        // Friends
         const friendsCont = document.getElementById('profileFriendsContainer');
         friendsCont.innerHTML = '';
         const friends = acc.friends || [];
         if (friends.length === 0) {
-            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Нет друзей</div>';
+            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No friends yet</div>';
         } else {
             friends.forEach(fName => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
                     <span>${escapeHtml(fName)}</span>
-                    <button class="manage-user-btn" onclick="openDirectChat('${fName}')">Чат</button>
+                    <button class="manage-user-btn" onclick="openDirectChat('${fName}')">Chat</button>
                 `;
                 friendsCont.appendChild(div);
             });
         }
 
-        // Чёрный список
+        // Blacklist
         const blockCont = document.getElementById('profileBlacklistContainer');
         blockCont.innerHTML = '';
         const blocked = acc.blocked || [];
         if (blocked.length === 0) {
-            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Черный список пуст</div>';
+            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Blacklist is empty</div>';
         } else {
             blocked.forEach(bName => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
                     <span>${escapeHtml(bName)}</span>
-                    <button class="manage-user-btn" onclick="unblockUser('${bName}')">Разблокировать</button>
+                    <button class="manage-user-btn" onclick="unblockUser('${bName}')">Unblock</button>
                 `;
                 blockCont.appendChild(div);
             });
@@ -583,7 +583,7 @@
         document.getElementById('profileModal').style.display = 'none';
     };
 
-    /* Просмотр чужого профиля */
+    /* View Another User Profile */
     let selectedProfileUser = null;
     window.openViewUserProfile = function(username) {
         if (currentUser && username === currentUser.username) {
@@ -598,35 +598,35 @@
         document.getElementById('viewUserName').textContent = username;
         document.getElementById('viewUserName').style.color = acc.color || '#38bdf8';
         document.getElementById('viewUserAvatar').src = acc.avatar || defaultAvatar;
-        document.getElementById('viewUserBio').textContent = acc.bio || 'Описание отсутствует.';
+        document.getElementById('viewUserBio').textContent = acc.bio || 'No bio available.';
 
         document.getElementById('accountsListModal').style.display = 'none';
         document.getElementById('viewUserProfileModal').style.display = 'flex';
     };
 
     document.getElementById('addFriendBtn').onclick = () => {
-        if (!currentUser) return alert('Войдите в аккаунт');
+        if (!currentUser) return alert('Please log in first');
         const accounts = getAccounts();
         const myAcc = accounts[currentUser.username] || {};
         myAcc.friends = myAcc.friends || [];
         if (!myAcc.friends.includes(selectedProfileUser)) {
             myAcc.friends.push(selectedProfileUser);
             saveAccounts(accounts);
-            alert('Пользователь добавлен в друзья!');
+            alert('Added to friends!');
         } else {
-            alert('Уже в друзьях');
+            alert('Already in friends list');
         }
     };
 
     document.getElementById('blockUserBtn').onclick = () => {
-        if (!currentUser) return alert('Войдите в аккаунт');
+        if (!currentUser) return alert('Please log in first');
         const accounts = getAccounts();
         const myAcc = accounts[currentUser.username] || {};
         myAcc.blocked = myAcc.blocked || [];
         if (!myAcc.blocked.includes(selectedProfileUser)) {
             myAcc.blocked.push(selectedProfileUser);
             saveAccounts(accounts);
-            alert('Пользователь заблокирован');
+            alert('User blocked');
             document.getElementById('viewUserProfileModal').style.display = 'none';
         }
     };
@@ -640,11 +640,11 @@
         renderProfileLists();
     };
 
-    /* Личные чаты */
+    /* Direct Private Messaging */
     let activeDirectFriend = null;
     window.openDirectChat = function(friendName) {
         activeDirectFriend = friendName;
-        document.getElementById('directChatTitle').textContent = `Чат с ${friendName}`;
+        document.getElementById('directChatTitle').textContent = `Chat with ${friendName}`;
         document.getElementById('profileModal').style.display = 'none';
         document.getElementById('viewUserProfileModal').style.display = 'none';
         renderDirectMessages();
@@ -652,7 +652,7 @@
     };
 
     document.getElementById('openDirectChatBtn').onclick = () => {
-        if (!currentUser) return alert('Войдите в аккаунт');
+        if (!currentUser) return alert('Please log in first');
         openDirectChat(selectedProfileUser);
     };
 
@@ -686,7 +686,7 @@
         const msgObj = { sender: currentUser.username, text: text, color: myAcc.color || '#38bdf8' };
         myAcc.directChats[activeDirectFriend].push(msgObj);
 
-        // Дублируем сообщение в аккаунт получателя
+        // Sync to recipient's local account storage
         if (accounts[activeDirectFriend]) {
             accounts[activeDirectFriend].directChats = accounts[activeDirectFriend].directChats || {};
             accounts[activeDirectFriend].directChats[currentUser.username] = accounts[activeDirectFriend].directChats[currentUser.username] || [];
@@ -698,7 +698,7 @@
         renderDirectMessages();
     };
 
-    /* Авторизация и регистрация */
+    /* Auth & Reg */
     document.getElementById('doRegisterBtn').onclick = () => {
         const u = document.getElementById('regUsername').value.trim();
         const p = document.getElementById('regPassword').value.trim();
