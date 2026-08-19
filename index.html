@@ -124,17 +124,24 @@
         .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 180px; overflow-y: auto; }
         .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
 
-        /* Modal Layer Z-Indexes */
+        /* Modal Layer Z-Indexes Hierarchy Fixed */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         
-        #addFriendModal { z-index: 1500; }
-        #profileModal, #viewUserProfileModal { z-index: 2500; } /* Profile strictly higher than room and add friends */
+        #subscriptionsModal { z-index: 1100; }
+        #accountsListModal { z-index: 1200; }
+        #profileModal { z-index: 2000; }
+        #addFriendModal { z-index: 3000; } /* Strictly higher than Profile Settings */
+        #viewUserProfileModal { z-index: 3500; } /* Highest priority for user cards */
+        #inviteFriendsModal { z-index: 3600; }
         
         .modal { background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
         
         .modal-wide { max-width: 960px; width: 95%; }
         .profile-grid-horizontal { display: grid; grid-template-columns: 280px 1fr 300px; gap: 20px; align-items: start; }
         @media (max-width: 850px) { .profile-grid-horizontal { grid-template-columns: 1fr; } }
+
+        .view-profile-horizontal { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 650px) { .view-profile-horizontal { grid-template-columns: 1fr; } }
 
         .modal h2 { font-size: 1.15rem; color: var(--accent); }
         .modal label { font-size: 0.85rem; color: var(--text-dim); }
@@ -153,9 +160,9 @@
 <body>
 
 <!-- Top Left Bar -->
-<div class="top-left-bar">
+<div class="top-left-bar" id="topLeftBar">
     <button class="btn-secondary" id="accountsBaseBtn" style="display: none;" onclick="openAccountsListModal()">Accounts Base</button>
-    <button class="btn-secondary" style="background: #8b5cf6;" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
+    <button class="btn-secondary" id="subscriptionsBtn" style="background: #8b5cf6;" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
 </div>
 
 <div class="auth-bar" id="authBar"></div>
@@ -206,7 +213,10 @@
                             </div>
                         </div>
                     </div>
-                    <button id="leaveRoomBtn" class="btn-danger">Leave Room</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="inviteFriendsBtn" class="btn-secondary" onclick="openInviteFriendsModal()">Invite Friends</button>
+                        <button id="leaveRoomBtn" class="btn-danger">Leave Room</button>
+                    </div>
                 </div>
 
                 <div class="chat-card">
@@ -314,13 +324,24 @@
     <div class="modal">
         <h2>Add Friend</h2>
         <div>
-            <label>Search by ID or Username:</label>
-            <input type="text" id="addFriendSearchInput" placeholder="Enter ID or username...">
+            <label>Search user (Type for Display Name, @ for Username, # for ID):</label>
+            <input type="text" id="addFriendSearchInput" placeholder="e.g. dog, @john, #a1b2..." oninput="executeAddFriendSearch()">
         </div>
-        <div id="addFriendSearchResult" style="margin-top: 10px;"></div>
+        <div id="addFriendSearchResult" class="list-container" style="margin-top: 10px; max-height: 200px;"></div>
         <div class="modal-actions">
-            <button onclick="executeAddFriendSearch()">Search User</button>
-            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'">Cancel</button>
+            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Invite Friends Modal -->
+<div id="inviteFriendsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <h2>Invite Friends to Room</h2>
+        <p style="font-size: 0.85rem; color: var(--text-dim);">Send direct message invites with room credentials to your friends.</p>
+        <div id="inviteFriendsContainer" class="list-container" style="max-height: 280px; margin-top: 10px;"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('inviteFriendsModal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
@@ -416,27 +437,43 @@
     </div>
 </div>
 
-<!-- View User Profile Modal -->
+<!-- View User Profile Modal (Horizontally styled) -->
 <div id="viewUserProfileModal" class="modal-overlay">
-    <div class="modal">
-        <h2 id="viewUserDisplayName">Profile</h2>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-top: -8px;" id="viewUserSubHeader"></div>
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
-            <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
-            <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-dim); text-align: center;"></div>
-            <div id="viewUserCreated" style="font-size: 0.75rem; color: var(--text-dim);"></div>
-        </div>
+    <div class="modal modal-wide" style="max-width: 650px;">
+        <h2 id="viewUserHeaderTitle">User Profile</h2>
         
-        <div id="viewUserFriendsSection" style="margin-top: 10px; display: none;">
-            <label style="font-weight: bold; font-size: 0.85rem;">Friends:</label>
-            <div id="viewUserFriendsList" class="list-container" style="max-height: 120px;"></div>
+        <div class="view-profile-horizontal">
+            <!-- Left Side: User Avatar, Display Name, Username, Actions -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(0,0,0,0.25); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
+                <div id="viewUserDisplayName" style="font-weight: bold; font-size: 1.1rem; text-align: center;"></div>
+                <div id="viewUserSubHeader" style="font-size: 0.75rem; color: var(--text-dim); font-family: monospace; text-align: center;"></div>
+                
+                <div class="modal-actions" style="width: 100%; margin-top: 10px;">
+                    <button id="addFriendBtn">Add Friend</button>
+                    <button id="openDirectChatBtn" class="btn-secondary">Message</button>
+                    <button id="blockUserBtn" class="btn-danger">Block</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Details & Friends -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                    <label style="font-weight: bold; font-size: 0.8rem;">About Me:</label>
+                    <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; word-break: break-word;"></div>
+                </div>
+
+                <div id="viewUserCreated" style="font-size: 0.75rem; color: var(--text-dim);"></div>
+
+                <div id="viewUserFriendsSection">
+                    <label style="font-weight: bold; font-size: 0.85rem;">Friends:</label>
+                    <div id="viewUserFriendsList" class="list-container" style="max-height: 140px; margin-top: 4px;"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="modal-actions" style="margin-top: 12px;">
-            <button id="addFriendBtn">Add to Friends</button>
-            <button id="openDirectChatBtn" class="btn-secondary">Send Message</button>
-            <button id="blockUserBtn" class="btn-danger">Block User</button>
-            <button class="btn-secondary" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Close</button>
+        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; margin-top: 12px;">
+            <button class="btn-secondary" style="width: 100px;" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
@@ -593,7 +630,6 @@
         const authBar = document.getElementById('authBar');
         const accBaseBtn = document.getElementById('accountsBaseBtn');
 
-        // Accounts base visible only to zeldy
         accBaseBtn.style.display = isZeldy() ? 'inline-block' : 'none';
 
         if (currentUser) {
@@ -788,46 +824,74 @@
         document.getElementById('profileModal').style.display = 'none';
     };
 
-    /* Add Friend Search */
+    /* Add Friend Search - Smart Substring & Prefixes (@ Username, # ID, default Display Name) */
     window.openAddFriendModal = function() {
         document.getElementById('addFriendSearchInput').value = '';
-        document.getElementById('addFriendSearchResult').innerHTML = '';
+        document.getElementById('addFriendSearchResult').innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 8px;">Type to search users...</div>';
         document.getElementById('addFriendModal').style.display = 'flex';
     };
 
     window.executeAddFriendSearch = function() {
-        const query = document.getElementById('addFriendSearchInput').value.trim().toLowerCase();
+        let query = document.getElementById('addFriendSearchInput').value.trim().toLowerCase();
         const resDiv = document.getElementById('addFriendSearchResult');
         resDiv.innerHTML = '';
+
+        if (!query) {
+            resDiv.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 8px;">Type to search users...</div>';
+            return;
+        }
+
+        let searchMode = 'displayName'; // Default search mode
+        if (query.startsWith('@')) {
+            searchMode = 'username';
+            query = query.substring(1);
+        } else if (query.startsWith('#')) {
+            searchMode = 'uuid';
+            query = query.substring(1);
+        }
 
         if (!query) return;
 
         const accounts = getAccounts();
-        let matchedUsername = null;
+        const matches = [];
 
         Object.keys(accounts).forEach(u => {
             const acc = accounts[u];
-            if (u.toLowerCase() === query || (acc.uuid && acc.uuid.toLowerCase() === query) || (acc.displayName && acc.displayName.toLowerCase() === query)) {
-                matchedUsername = u;
+            if (currentUser && u === currentUser.username) return; // Skip self
+
+            let matched = false;
+            if (searchMode === 'username') {
+                if (u.toLowerCase().includes(query)) matched = true;
+            } else if (searchMode === 'uuid') {
+                if (acc.uuid && acc.uuid.toLowerCase().includes(query)) matched = true;
+            } else {
+                // Default display name substring match
+                const disp = (acc.displayName || u).toLowerCase();
+                if (disp.includes(query)) matched = true;
             }
+
+            if (matched) matches.push(u);
         });
 
-        if (matchedUsername) {
-            const acc = accounts[matchedUsername];
-            resDiv.innerHTML = `
-                <div class="list-item">
+        if (matches.length > 0) {
+            matches.forEach(u => {
+                const acc = accounts[u];
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <img class="avatar" src="${acc.avatar || defaultAvatar}">
                         <div>
-                            <div style="font-weight: bold; color: ${acc.color || '#38bdf8'}">${escapeHtml(acc.displayName || matchedUsername)}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-dim);">ID: ${escapeHtml(acc.uuid || 'N/A')}</div>
+                            <div style="font-weight: bold; color: ${acc.color || '#38bdf8'}">${escapeHtml(acc.displayName || u)}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-dim);">@${escapeHtml(u)} | ID: ${escapeHtml(acc.uuid || 'N/A')}</div>
                         </div>
                     </div>
-                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="addFriendDirect('${matchedUsername}')">Add</button>
-                </div>
-            `;
+                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="addFriendDirect('${u}')">Add</button>
+                `;
+                resDiv.appendChild(div);
+            });
         } else {
-            resDiv.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No user found with specified Username/ID</div>`;
+            resDiv.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 8px;">No matching users found</div>`;
         }
     };
 
@@ -843,7 +907,6 @@
             myAcc.friends.push(targetUsername);
             saveAccounts(accounts);
             alert('Friend added!');
-            document.getElementById('addFriendModal').style.display = 'none';
             renderProfileLists();
         } else {
             alert('Already in friends list');
@@ -864,12 +927,10 @@
         document.getElementById('viewUserDisplayName').textContent = acc.displayName || username;
         document.getElementById('viewUserDisplayName').style.color = acc.color || '#38bdf8';
         
-        // Show UUID if privacy allows or if zeldy
         const showUuidStr = (priv.showUuid || isZeldy()) ? ` | ID: ${acc.uuid}` : '';
         document.getElementById('viewUserSubHeader').textContent = `@${username}${showUuidStr}`;
         document.getElementById('viewUserAvatar').src = acc.avatar || defaultAvatar;
 
-        // Privacy filters
         document.getElementById('viewUserBio').textContent = (priv.showBio || isZeldy()) ? (acc.bio || 'No bio available.') : '[Bio Hidden]';
         document.getElementById('viewUserCreated').textContent = (priv.showCreated || isZeldy()) ? `Registered: ${acc.createdAt ? new Date(acc.createdAt).toLocaleDateString() : 'N/A'}` : '';
 
@@ -920,6 +981,61 @@
         myAcc.blocked = (myAcc.blocked || []).filter(b => b !== username);
         saveAccounts(accounts);
         renderProfileLists();
+    };
+
+    /* Room Invites Feature */
+    window.openInviteFriendsModal = function() {
+        if (!currentUser) return alert('Log in to invite friends');
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        const friends = myAcc.friends || [];
+
+        const cont = document.getElementById('inviteFriendsContainer');
+        cont.innerHTML = '';
+
+        if (friends.length === 0) {
+            cont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 10px;">Your friends list is empty.</div>';
+        } else {
+            friends.forEach(f => {
+                const fAcc = accounts[f] || {};
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 22px; height: 22px;">
+                        <span style="font-weight: bold; color: ${fAcc.color || '#38bdf8'}">${escapeHtml(fAcc.displayName || f)}</span>
+                    </div>
+                    <button class="manage-user-btn" onclick="sendRoomInvite('${f}')">Send Invite</button>
+                `;
+                cont.appendChild(div);
+            });
+        }
+
+        document.getElementById('inviteFriendsModal').style.display = 'flex';
+    };
+
+    window.sendRoomInvite = function(friendUsername) {
+        if (!currentRoomId) return;
+        const pass = isHost ? hostState.password : document.getElementById('joinPassword').value;
+
+        const inviteText = `Hey! Join my LocalBridge room! Room ID: ${currentRoomId} | Password: ${pass}`;
+
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        myAcc.directChats = myAcc.directChats || {};
+        myAcc.directChats[friendUsername] = myAcc.directChats[friendUsername] || [];
+
+        const msgObj = { sender: myAcc.displayName || currentUser.username, text: inviteText, color: myAcc.color || '#38bdf8' };
+        myAcc.directChats[friendUsername].push(msgObj);
+
+        if (accounts[friendUsername]) {
+            accounts[friendUsername].directChats = accounts[friendUsername].directChats || {};
+            accounts[friendUsername].directChats[currentUser.username] = accounts[friendUsername].directChats[currentUser.username] || [];
+            accounts[friendUsername].directChats[currentUser.username].push(msgObj);
+        }
+
+        saveAccounts(accounts);
+        alert(`Invite sent to ${friendUsername}!`);
     };
 
     /* Private Chat */
@@ -1342,6 +1458,10 @@
         mainWrapper.style.display = 'none';
         appLayout.style.display = 'flex';
         
+        // Hide accounts base, subscriptions, and profile button when in room
+        document.getElementById('topLeftBar').style.display = 'none';
+        document.getElementById('authBar').style.display = 'none';
+
         openSettingsBtn.style.display = isHost ? 'flex' : 'none';
     }
 
@@ -1352,7 +1472,12 @@
         document.getElementById('eyeIcon').innerHTML = isPasswordVisible ? svgEyeClosed : svgEyeOpen;
     };
 
-    document.getElementById('leaveRoomBtn').onclick = () => location.reload();
+    document.getElementById('leaveRoomBtn').onclick = () => {
+        // Restore bars upon leaving
+        document.getElementById('topLeftBar').style.display = 'flex';
+        document.getElementById('authBar').style.display = 'flex';
+        location.reload();
+    };
 
     const chatMessages = document.getElementById('chatMessages');
     const chatInput = document.getElementById('chatInput');
