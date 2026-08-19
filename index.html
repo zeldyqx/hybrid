@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalBridge — Rooms</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #334155;
+            --modal-bg: #1e293b;
+            --sidebar-bg: #111827;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; width: 100vw; overflow-x: hidden; position: relative; }
+
+        /* Auth Bar Upper Right */
+        .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; }
+        .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
+
+        .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 520px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
+        h1 { font-size: 1.5rem; margin-bottom: 4px; color: var(--accent); text-align: center; }
+        p.subtitle { font-size: 0.875rem; color: var(--text-dim); text-align: center; margin-bottom: 20px; }
+
+        .section { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        input[type="text"], input[type="password"], input[type="number"] { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; }
+        input:focus { outline: none; border-color: var(--accent); }
+
+        button { background: var(--accent); color: #000; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
+        button:hover { background: var(--accent-hover); color: #fff; }
+        .btn-secondary { background: #475569; color: #fff; }
+        .btn-secondary:hover { background: #64748b; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: var(--danger-hover); }
+
+        .btn-icon { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-dim); width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; }
+        .btn-icon:hover { color: var(--text); background: rgba(255, 255, 255, 0.1); }
+        .btn-icon svg { width: 20px; height: 20px; fill: currentColor; }
+
+        .status { font-size: 0.85rem; margin-top: 6px; font-weight: 600; text-align: center; }
+        .status.connected { color: #4ade80; }
+        .status.disconnected { color: #f87171; }
+
+        .app-layout { display: none; width: 100vw; height: 100vh; overflow: hidden; }
+        .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 32px; overflow-y: auto; gap: 20px; }
+        .workspace-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+
+        .workspace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+        @media (max-width: 900px) { .workspace-grid { grid-template-columns: 1fr; } }
+
+        .left-column, .right-column { display: flex; flex-direction: column; gap: 20px; }
+        .room-card-active, .file-card, .chat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
+
+        .drop-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.15); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(56, 189, 248, 0.05); }
+        .drop-zone.disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--border); }
+        .drop-zone svg { width: 32px; height: 32px; fill: var(--accent); }
+
+        .file-queue { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-top: 10px; }
+        .file-item { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .file-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .file-size { color: var(--text-dim); font-size: 0.75rem; }
+        
+        .delete-file-btn { background: none; border: none; color: var(--danger); cursor: pointer; padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; width: auto; font-weight: bold; }
+        .delete-file-btn:hover { background: rgba(239, 68, 68, 0.15); }
+
+        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-bottom: 12px; }
+        .info-value { font-weight: bold; color: var(--accent); font-family: monospace; font-size: 1.05rem; }
+        .pass-wrapper { display: flex; align-items: center; gap: 6px; }
+        .eye-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 2px 4px; width: auto; display: flex; align-items: center; justify-content: center; }
+        .eye-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        .chat-card { display: flex; flex-direction: column; gap: 12px; }
+        .chat-messages { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; height: 180px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .chat-msg { font-size: 0.85rem; word-break: break-word; }
+        .chat-msg .author { font-weight: bold; color: var(--accent); margin-right: 6px; }
+        .chat-msg.system { color: var(--text-dim); font-style: italic; }
+        .chat-input-row { display: flex; gap: 8px; }
+        .chat-input-row input { margin-top: 0; }
+        .chat-input-row button { width: auto; padding: 0 18px; }
+
+        .sidebar-right { width: 320px; height: 100vh; background: var(--sidebar-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 16px; }
+        .sidebar-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .user-count-badge { background: var(--border); color: var(--accent); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
+        .user-list { list-style: none; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
+        
+        .user-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 10px 12px; border-radius: 6px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .user-info { display: flex; align-items: center; gap: 6px; }
+        .user-info::before { content: "•"; color: #4ade80; font-weight: bold; font-size: 1.2rem; }
+        
+        .manage-user-btn { background: rgba(255, 255, 255, 0.1); border: none; color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: auto; }
+        .manage-user-btn:hover { background: var(--accent); color: #000; }
+
+        .crown-icon { width: 16px; height: 16px; fill: #f59e0b; display: inline-block; vertical-align: middle; }
+        .you-tag { color: var(--text-dim); font-size: 0.8rem; }
+
+        .switch-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 0.82rem; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: #94a3b8; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
+
+        .blacklist-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto; }
+        .blacklist-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
+        .unban-btn { background: var(--danger); color: #fff; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: auto; }
+        .unban-btn:hover { background: var(--danger-hover); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
+        .modal h2 { font-size: 1.15rem; color: var(--accent); }
+        .modal label { font-size: 0.85rem; color: var(--text-dim); }
+        .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- Upper Right Auth Navigation -->
+<div class="auth-bar">
+    <button id="openLoginBtn" class="btn-secondary">Log In</button>
+    <button id="openRegisterBtn">Sign Up</button>
+</div>
+
+<div id="mainWrapper" class="main-wrapper">
+    <div class="container">
+        <h1>LocalBridge</h1>
+        <p class="subtitle">Room Management</p>
+        <div class="section">
+            <button id="openCreateModalBtn">Create Room</button>
+            <button id="openJoinModalBtn" class="btn-secondary">Join Room</button>
+            <div id="statusText" class="status disconnected">Status: Disconnected</div>
+        </div>
+    </div>
+</div>
+
+<div id="appLayout" class="app-layout">
+    <main class="main-workspace">
+        <header class="workspace-header">
+            <div>
+                <h1 style="text-align: left;">LocalBridge</h1>
+                <p class="subtitle" style="text-align: left; margin-bottom: 0;">Active Workspace</p>
+            </div>
+            <div class="header-actions">
+                <div id="workspaceStatusText" class="status connected">Status: Connected!</div>
+                <button id="openSettingsBtn" class="btn-icon" title="Settings" style="display: none;">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="workspace-grid">
+            <div class="left-column">
+                <div class="room-card-active">
+                    <h2 style="font-size: 1.2rem; margin-bottom: 16px; color: var(--accent);">Room Controls</h2>
+                    <div style="background: rgba(0, 0, 0, 0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;">
+                        <div class="info-row">
+                            <span>Room ID:</span>
+                            <span id="labelRoomId" class="info-value">------</span>
+                        </div>
+                        <div class="info-row" style="margin-bottom: 0;">
+                            <span>Password:</span>
+                            <div class="pass-wrapper">
+                                <span id="labelRoomPass" class="info-value">••••••</span>
+                                <button id="togglePassBtn" class="eye-btn">
+                                    <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="leaveRoomBtn" class="btn-danger">Leave Room</button>
+                </div>
+
+                <div class="chat-card">
+                    <h2 style="font-size: 1.1rem; color: var(--accent);">Room Chat</h2>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+                        <button id="sendMsgBtn">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="file-card">
+                    <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 12px;">File Transfer</h2>
+                    <div id="dropZone" class="drop-zone">
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                        <div>
+                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.9rem;">Drag & Drop files here</span>
+                            <p id="dropZoneSubtext">or click to browse</p>
+                        </div>
+                        <input type="file" id="fileInput" multiple style="display: none;">
+                    </div>
+
+                    <div style="margin-top: 14px;">
+                        <h3 style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Transfer Queue</h3>
+                        <div id="fileQueue" class="file-queue">
+                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 16px; background: rgba(0,0,0,0.1); border-radius: 6px;">
+                                No files in queue
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <aside class="sidebar-right">
+        <div class="sidebar-title">
+            <span>Users in Room</span>
+            <span id="userCount" class="user-count-badge">0</span>
+        </div>
+        <ul id="userList" class="user-list"></ul>
+    </aside>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Account Login</h2>
+        <div>
+            <label for="loginUsername">Username:</label>
+            <input type="text" id="loginUsername" placeholder="Enter username...">
+        </div>
+        <div>
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" placeholder="Enter password...">
+        </div>
+        <div class="modal-actions">
+            <button onclick="alert('Login functionality goes here'); document.getElementById('loginModal').style.display='none';">Log In</button>
+            <button id="cancelLoginBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div id="registerModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Create Account</h2>
+        <div>
+            <label for="regUsername">Username:</label>
+            <input type="text" id="regUsername" placeholder="Choose username...">
+        </div>
+        <div>
+            <label for="regPassword">Password:</label>
+            <input type="password" id="regPassword" placeholder="Choose password...">
+        </div>
+        <div class="modal-actions">
+            <button onclick="alert('Registration functionality goes here'); document.getElementById('registerModal').style.display='none';">Sign Up</button>
+            <button id="cancelRegBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Create New Room</h2>
+        <div>
+            <label for="modalRoomId">Room ID:</label>
+            <input type="text" id="modalRoomId" readonly style="font-family: monospace; font-weight: bold; color: var(--accent);">
+        </div>
+        <div>
+            <label for="modalPassword">Set Room Password:</label>
+            <input type="password" id="modalPassword" placeholder="Enter password...">
+        </div>
+        <div>
+            <label for="modalMaxUsers">User Limit (Optional):</label>
+            <input type="number" id="modalMaxUsers" placeholder="Unlimited" min="1">
+        </div>
+
+        <!-- Default Permissions Config -->
+        <div style="border-top: 1px solid var(--border); padding-top: 8px;">
+            <label style="font-weight: bold; margin-bottom: 6px; display: block;">Default User Permissions:</label>
+            <div class="switch-row">
+                <span>Upload Files</span>
+                <label class="switch"><input type="checkbox" id="defPermUpload" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span>Download Files</span>
+                <label class="switch"><input type="checkbox" id="defPermDownload" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span>Delete Files</span>
+                <label class="switch"><input type="checkbox" id="defPermDelete" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span>Send Chat Messages</span>
+                <label class="switch"><input type="checkbox" id="defPermChat" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span>View Message History</span>
+                <label class="switch"><input type="checkbox" id="defPermViewMsg" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span>View File History</span>
+                <label class="switch"><input type="checkbox" id="defPermViewFile" checked><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button id="confirmCreateBtn">Create</button>
+            <button id="cancelCreateBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Join Modal -->
+<div id="joinModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Join Existing Room</h2>
+        <div>
+            <label for="joinRoomId">Room ID:</label>
+            <input type="text" id="joinRoomId" placeholder="Enter 6-digit ID..." maxlength="6">
+        </div>
+        <div>
+            <label for="joinPassword">Room Password:</label>
+            <input type="password" id="joinPassword" placeholder="Enter password...">
+        </div>
+        <div class="modal-actions">
+            <button id="confirmJoinBtn">Join</button>
+            <button id="cancelJoinBtn" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Room Settings</h2>
+        <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 8px;">
+            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Access Rules:</label>
+            <div class="switch-row">
+                <span>Require Account (Block Guests)</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleRequireAccount" onchange="toggleRequireAccountSetting()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        <div>
+            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Blacklist:</label>
+            <div id="blacklistContainer" class="blacklist-container">
+                <div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No banned users</div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button id="closeSettingsModalBtn" class="btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Manage User Modal (Host only) -->
+<div id="manageUserModal" class="modal-overlay">
+    <div class="modal">
+        <h2 id="manageUserName">Manage User</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: bold; margin-bottom: 4px;">Permissions:</label>
+            <div class="switch-row">
+                <span>Upload Files</span>
+                <label class="switch">
+                    <input type="checkbox" id="permUpload" onchange="autoSavePermissions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span>Download Files</span>
+                <label class="switch">
+                    <input type="checkbox" id="permDownload" onchange="autoSavePermissions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span>Delete Files</span>
+                <label class="switch">
+                    <input type="checkbox" id="permDelete" onchange="autoSavePermissions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span>Send Chat Messages</span>
+                <label class="switch">
+                    <input type="checkbox" id="permChat" onchange="autoSavePermissions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span>View Message History</span>
+                <label class="switch">
+                    <input type="checkbox" id="permViewMessageHistory" onchange="autoSavePermissions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-row">
+                <span>View File History</span>
+                <label class="switch">
+                    <input type="checkbox" id="permViewFileHistory" onchange="autoSavePermissions()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button id="kickUserBtn" class="btn-danger">Kick User</button>
+            <button id="banUserBtn" class="btn-danger" style="background: #991b1b;">Ban User</button>
+            <button id="closeManageModalBtn" class="btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    let currentRoom = {};
+    let myPermissions = { canUpload: true, canDownload: true, canChat: true, canDeleteFiles: true, canViewMessageHistory: true, canViewFileHistory: true };
+    let isPasswordVisible = false;
+    let selectedUserId = null;
+
+    const svgCrown = `<svg class="crown-icon" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>`;
+    const svgEyeOpen = `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`;
+    const svgEyeClosed = `<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.17c0-1.66-1.34-3-3-3l-.17.02z"/>`;
+
+    const statusText = document.getElementById('statusText');
+    const mainWrapper = document.getElementById('mainWrapper');
+    const appLayout = document.getElementById('appLayout');
+    const openSettingsBtn = document.getElementById('openSettingsBtn');
+
+    // Auth Handlers
+    document.getElementById('openLoginBtn').onclick = () => document.getElementById('loginModal').style.display = 'flex';
+    document.getElementById('cancelLoginBtn').onclick = () => document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('openRegisterBtn').onclick = () => document.getElementById('registerModal').style.display = 'flex';
+    document.getElementById('cancelRegBtn').onclick = () => document.getElementById('registerModal').style.display = 'none';
+
+    socket.on('connect', () => {
+        statusText.textContent = "Status: Connected!";
+        statusText.className = "status connected";
+    });
+
+    socket.on('disconnect', () => {
+        statusText.textContent = "Status: Disconnected";
+        statusText.className = "status disconnected";
+    });
+
+    document.getElementById('openCreateModalBtn').onclick = () => {
+        document.getElementById('modalRoomId').value = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('createModal').style.display = 'flex';
+    };
+    document.getElementById('cancelCreateBtn').onclick = () => document.getElementById('createModal').style.display = 'none';
+
+    document.getElementById('confirmCreateBtn').onclick = () => {
+        const roomId = document.getElementById('modalRoomId').value;
+        const password = document.getElementById('modalPassword').value.trim();
+        const maxUsers = parseInt(document.getElementById('modalMaxUsers').value.trim(), 10) || null;
+
+        if (!password) return alert('Enter a password');
+
+        const defaultPermissions = {
+            canUpload: document.getElementById('defPermUpload').checked,
+            canDownload: document.getElementById('defPermDownload').checked,
+            canDeleteFiles: document.getElementById('defPermDelete').checked,
+            canChat: document.getElementById('defPermChat').checked,
+            canViewMessageHistory: document.getElementById('defPermViewMsg').checked,
+            canViewFileHistory: document.getElementById('defPermViewFile').checked
+        };
+
+        socket.emit('create-room', { roomId, password, maxUsers, defaultPermissions }, (res) => {
+            if (res.success) {
+                document.getElementById('createModal').style.display = 'none';
+                enterWorkspace(res);
+            } else {
+                alert(res.message);
+            }
+        });
+    };
+
+    document.getElementById('openJoinModalBtn').onclick = () => document.getElementById('joinModal').style.display = 'flex';
+    document.getElementById('cancelJoinBtn').onclick = () => document.getElementById('joinModal').style.display = 'none';
+
+    document.getElementById('confirmJoinBtn').onclick = () => {
+        const roomId = document.getElementById('joinRoomId').value.trim();
+        const password = document.getElementById('joinPassword').value.trim();
+
+        socket.emit('join-room', { roomId, password }, (res) => {
+            if (res.success) {
+                document.getElementById('joinModal').style.display = 'none';
+                enterWorkspace(res);
+            } else {
+                alert(res.message);
+            }
+        });
+    };
+
+    openSettingsBtn.onclick = () => {
+        const hostSection = document.getElementById('hostSettingsSection');
+        if (currentRoom.isHost) {
+            hostSection.style.display = 'block';
+            document.getElementById('toggleRequireAccount').checked = !!currentRoom.requireAccount;
+        } else {
+            hostSection.style.display = 'none';
+        }
+
+        renderBlacklist();
+    };
+
+    function renderBlacklist() {
+        socket.emit('get-blacklist', (list) => {
+            const container = document.getElementById('blacklistContainer');
+            container.innerHTML = '';
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No banned users</div>';
+            } else {
+                list.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'blacklist-item';
+                    div.innerHTML = `
+                        <span>ID: ${escapeHtml(item.id)} (${escapeHtml(item.name)})</span>
+                        <button class="unban-btn" onclick="unbanUser('${item.id}')">Unban</button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            document.getElementById('settingsModal').style.display = 'flex';
+        });
+    }
+
+    function unbanUser(targetId) {
+        socket.emit('unban-user', targetId, (res) => {
+            if (res && res.success) {
+                renderBlacklist();
+            }
+        });
+    }
+
+    function toggleRequireAccountSetting() {
+        const requireAccount = document.getElementById('toggleRequireAccount').checked;
+        currentRoom.requireAccount = requireAccount;
+        socket.emit('update-room-settings', { requireAccount });
+    }
+
+    document.getElementById('closeSettingsModalBtn').onclick = () => document.getElementById('settingsModal').style.display = 'none';
+
+    function enterWorkspace(data) {
+        currentRoom = data;
+        if (data.permissions) {
+            myPermissions = data.permissions;
+            applyPermissionsUI();
+        }
+        document.getElementById('labelRoomId').textContent = data.roomId;
+        document.getElementById('labelRoomPass').textContent = '••••••';
+        mainWrapper.style.display = 'none';
+        appLayout.style.display = 'flex';
+        
+        openSettingsBtn.style.display = currentRoom.isHost ? 'flex' : 'none';
+
+        // Загрузка историй
+        if (data.chatHistory) {
+            data.chatHistory.forEach(msg => appendChatMessage(msg.author, msg.text));
+        }
+        if (data.fileHistory) {
+            data.fileHistory.forEach(file => appendFileMessage(file));
+        }
+    }
+
+    document.getElementById('togglePassBtn').onclick = () => {
+        isPasswordVisible = !isPasswordVisible;
+        document.getElementById('labelRoomPass').textContent = isPasswordVisible ? currentRoom.password : '••••••';
+        document.getElementById('eyeIcon').innerHTML = isPasswordVisible ? svgEyeClosed : svgEyeOpen;
+    };
+
+    document.getElementById('leaveRoomBtn').onclick = () => location.reload();
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+
+    document.getElementById('sendMsgBtn').onclick = sendMsg;
+    chatInput.onkeydown = (e) => { if (e.key === 'Enter') sendMsg(); };
+
+    function sendMsg() {
+        if (!myPermissions.canChat) {
+            alert('You do not have permission to send messages.');
+            return;
+        }
+        const val = chatInput.value.trim();
+        if (val) {
+            socket.emit('send-chat', val);
+            chatInput.value = '';
+        }
+    }
+
+    function appendChatMessage(author, text) {
+        const div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="author">${escapeHtml(author)}:</span>${escapeHtml(text)}`;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    socket.on('chat-message', ({ author, text }) => {
+        appendChatMessage(author, text);
+    });
+
+    socket.on('sys-message', (text) => {
+        const div = document.createElement('div');
+        div.className = 'chat-msg system';
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+
+    let currentUsers = [];
+    socket.on('update-users', ({ users, hostId, requireAccount }) => {
+        currentRoom.hostId = hostId;
+        currentRoom.isHost = socket.id === hostId;
+        currentRoom.requireAccount = requireAccount;
+        currentUsers = users;
+
+        openSettingsBtn.style.display = currentRoom.isHost ? 'flex' : 'none';
+
+        const userList = document.getElementById('userList');
+        userList.innerHTML = '';
+
+        users.forEach(u => {
+            const isMe = u.id === socket.id;
+            const isHost = u.id === hostId;
+
+            if (isMe && u.permissions) {
+                myPermissions = u.permissions;
+                applyPermissionsUI();
+            }
+
+            const li = document.createElement('li');
+            li.className = 'user-item';
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'user-info';
+            infoDiv.innerHTML = `${escapeHtml(u.name)}${isHost ? ' ' + svgCrown : ''}${isMe ? ' <span class="you-tag">(you)</span>' : ''}`;
+
+            li.appendChild(infoDiv);
+
+            if (currentRoom.isHost && !isMe) {
+                const manageBtn = document.createElement('button');
+                manageBtn.className = 'manage-user-btn';
+                manageBtn.textContent = 'Manage';
+                manageBtn.onclick = () => openManageUserModal(u);
+                li.appendChild(manageBtn);
+            }
+
+            userList.appendChild(li);
+        });
+
+        const max = currentRoom.maxUsers ? `/ ${currentRoom.maxUsers}` : '';
+        document.getElementById('userCount').textContent = `${users.length} ${max}`.trim();
+    });
+
+    const manageUserModal = document.getElementById('manageUserModal');
+    const permUpload = document.getElementById('permUpload');
+    const permDownload = document.getElementById('permDownload');
+    const permDelete = document.getElementById('permDelete');
+    const permChat = document.getElementById('permChat');
+    const permViewMessageHistory = document.getElementById('permViewMessageHistory');
+    const permViewFileHistory = document.getElementById('permViewFileHistory');
+
+    function openManageUserModal(user) {
+        selectedUserId = user.id;
+        document.getElementById('manageUserName').textContent = `Manage: ${user.name}`;
+        
+        const perms = user.permissions || { canUpload: true, canDownload: true, canDeleteFiles: true, canChat: true, canViewMessageHistory: true, canViewFileHistory: true };
+        permUpload.checked = perms.canUpload;
+        permDownload.checked = perms.canDownload;
+        permDelete.checked = perms.canDeleteFiles;
+        permChat.checked = perms.canChat;
+        permViewMessageHistory.checked = perms.canViewMessageHistory !== false;
+        permViewFileHistory.checked = perms.canViewFileHistory !== false;
+
+        manageUserModal.style.display = 'flex';
+    }
+
+    function autoSavePermissions() {
+        if (!selectedUserId) return;
+        socket.emit('update-permissions', {
+            targetId: selectedUserId,
+            permissions: {
+                canUpload: permUpload.checked,
+                canDownload: permDownload.checked,
+                canDeleteFiles: permDelete.checked,
+                canChat: permChat.checked,
+                canViewMessageHistory: permViewMessageHistory.checked,
+                canViewFileHistory: permViewFileHistory.checked
+            }
+        });
+    }
+
+    document.getElementById('closeManageModalBtn').onclick = () => manageUserModal.style.display = 'none';
+
+    document.getElementById('kickUserBtn').onclick = () => {
+        if (selectedUserId) {
+            socket.emit('kick-user', selectedUserId);
+            manageUserModal.style.display = 'none';
+        }
+    };
+
+    document.getElementById('banUserBtn').onclick = () => {
+        if (selectedUserId) {
+            socket.emit('ban-user', selectedUserId);
+            manageUserModal.style.display = 'none';
+        }
+    };
+
+    socket.on('permissions-updated', (newPerms) => {
+        myPermissions = newPerms;
+        applyPermissionsUI();
+    });
+
+    // Мгновенный кик/бан без нажатия "OK"
+    socket.on('kicked', () => {
+        location.reload();
+    });
+
+    socket.on('banned', () => {
+        location.reload();
+    });
+
+    function applyPermissionsUI() {
+        chatInput.disabled = !myPermissions.canChat;
+        document.getElementById('sendMsgBtn').disabled = !myPermissions.canChat;
+        if (!myPermissions.canChat) chatInput.placeholder = "Chat disabled by host";
+        else chatInput.placeholder = "Type a message...";
+
+        chatMessages.style.display = myPermissions.canViewMessageHistory !== false ? 'flex' : 'none';
+
+        const dropZone = document.getElementById('dropZone');
+        if (!myPermissions.canUpload) {
+            dropZone.classList.add('disabled');
+            document.getElementById('dropZoneText').textContent = "Uploads Disabled";
+            document.getElementById('dropZoneSubtext').textContent = "Host restricted uploading";
+        } else {
+            dropZone.classList.remove('disabled');
+            document.getElementById('dropZoneText').textContent = "Drag & Drop files here";
+            document.getElementById('dropZoneSubtext').textContent = "or click to browse";
+        }
+
+        const fileQueue = document.getElementById('fileQueue');
+        fileQueue.style.display = myPermissions.canViewFileHistory !== false ? 'flex' : 'none';
+
+        document.querySelectorAll('.file-download-link').forEach(link => {
+            link.style.display = myPermissions.canDownload ? 'inline' : 'none';
+        });
+
+        document.querySelectorAll('.delete-file-btn').forEach(btn => {
+            btn.style.display = myPermissions.canDeleteFiles ? 'inline' : 'none';
+        });
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileQueue = document.getElementById('fileQueue');
+
+    dropZone.onclick = () => {
+        if (!myPermissions.canUpload) return;
+        fileInput.click();
+    };
+
+    dropZone.ondragover = (e) => { 
+        e.preventDefault(); 
+        if (myPermissions.canUpload) dropZone.classList.add('dragover'); 
+    };
+
+    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (!myPermissions.canUpload) return;
+        if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
+    };
+
+    fileInput.onchange = () => { if (fileInput.files.length) uploadFiles(fileInput.files); };
+
+    function uploadFiles(files) {
+        Array.from(files).forEach(file => {
+            const fileId = 'file_' + Math.random().toString(36).substr(2, 9);
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                socket.emit('send-file', {
+                    fileId: fileId,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileBuffer: reader.result
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    function appendFileMessage({ fileId, fileName, fileType, fileBuffer, sender }) {
+        const emptyPlaceholder = fileQueue.querySelector('.file-item-empty');
+        if (emptyPlaceholder) emptyPlaceholder.remove();
+
+        const blob = new Blob([fileBuffer], { type: fileType });
+        const url = URL.createObjectURL(blob);
+
+        addQueueItem(fileId, fileName, formatBytes(blob.size), `From ${sender}`, url);
+    }
+
+    socket.on('receive-file', (fileData) => {
+        appendFileMessage(fileData);
+    });
+
+    socket.on('file-deleted', ({ fileId }) => {
+        const item = document.getElementById(fileId);
+        if (item) {
+            item.remove();
+        }
+        if (fileQueue.children.length === 0) {
+            fileQueue.innerHTML = `
+                <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 16px; background: rgba(0,0,0,0.1); border-radius: 6px;">
+                    No files in queue
+                </div>`;
+        }
+    });
+
+    function addQueueItem(fileId, name, size, status, downloadUrl = null) {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'file-item';
+        itemDiv.id = fileId;
+
+        itemDiv.innerHTML = `
+            <div class="file-info">
+                <span class="file-name">${escapeHtml(name)}</span>
+                <span class="file-size">${size}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim);">
+                <span>${status}</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    ${downloadUrl ? `<a href="${downloadUrl}" download="${escapeHtml(name)}" class="file-download-link" style="color: var(--accent); font-weight: bold; display: ${myPermissions.canDownload ? 'inline' : 'none'};">Download</a>` : ''}
+                    <button class="delete-file-btn" style="display: ${myPermissions.canDeleteFiles ? 'inline' : 'none'};" onclick="deleteFile('${fileId}')">Delete</button>
+                </div>
+            </div>
+        `;
+        fileQueue.appendChild(itemDiv);
+    }
+
+    function deleteFile(fileId) {
+        if (!myPermissions.canDeleteFiles) {
+            return alert('You do not have permission to delete files.');
+        }
+        socket.emit('delete-file', { fileId });
+    }
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>
