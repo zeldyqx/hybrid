@@ -23,17 +23,15 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg); color: var(--text); min-height: 100vh; width: 100vw; overflow-x: hidden; position: relative; }
 
-        /* Top Left Accounts Base Button */
-        .top-left-bar { position: absolute; top: 16px; left: 24px; z-index: 100; }
+        .top-left-bar { position: absolute; top: 16px; left: 24px; z-index: 100; display: flex; gap: 10px; }
         .top-left-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
 
         .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; align-items: center; }
         .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
         
-        /* Profile & Avatars */
         .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; }
         .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--border); }
-        .avatar-lg { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--border); }
+        .avatar-lg { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--border); }
 
         .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .container { width: 100%; max-width: 520px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
@@ -82,6 +80,9 @@
         .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
         .file-size { color: var(--text-dim); font-size: 0.75rem; }
 
+        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
+
         .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-bottom: 12px; }
         .info-value { font-weight: bold; color: var(--accent); font-family: monospace; font-size: 1.05rem; }
         .pass-wrapper { display: flex; align-items: center; gap: 6px; }
@@ -124,19 +125,33 @@
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal { background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
+        
+        /* Wide Horizontal Modal for Profile */
+        .modal-wide { max-width: 960px; width: 95%; }
+        .profile-grid-horizontal { display: grid; grid-template-columns: 280px 1fr 300px; gap: 20px; align-items: start; }
+        @media (max-width: 850px) { .profile-grid-horizontal { grid-template-columns: 1fr; } }
+
         .modal h2 { font-size: 1.15rem; color: var(--accent); }
         .modal label { font-size: 0.85rem; color: var(--text-dim); }
         .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
         
         .color-picker-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
         .color-picker-row input[type="color"] { width: 40px; height: 35px; border: none; cursor: pointer; background: none; }
+
+        /* Subscription Cards */
+        .sub-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 10px; }
+        @media (max-width: 600px) { .sub-cards-grid { grid-template-columns: 1fr; } }
+        .sub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+        .sub-card.popular { border-color: var(--accent); background: rgba(56, 189, 248, 0.05); }
+        .sub-price { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
 
-<!-- Top Left Bar: Accounts Base -->
+<!-- Top Left Bar -->
 <div class="top-left-bar">
     <button class="btn-secondary" onclick="openAccountsListModal()">Accounts Base</button>
+    <button class="btn-secondary" style="background: #8b5cf6;" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
 </div>
 
 <div class="auth-bar" id="authBar"></div>
@@ -236,6 +251,76 @@
 
 <!-- Modals -->
 
+<!-- Subscriptions Modal -->
+<div id="subscriptionsModal" class="modal-overlay">
+    <div class="modal modal-wide" style="max-width: 750px;">
+        <h2>Select Subscription Plan</h2>
+        <p style="font-size: 0.85rem; color: var(--text-dim);">Upgrade your LocalBridge account for higher transfer speeds and unlimited room limits.</p>
+
+        <div class="sub-cards-grid">
+            <div class="sub-card">
+                <div>
+                    <h3 style="font-size: 1.1rem; color: var(--text);">Basic</h3>
+                    <div class="sub-price">$4.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                </div>
+                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                    <li>✓ High-speed P2P transfer</li>
+                    <li>✓ Up to 10 users in room</li>
+                    <li>✓ Custom UUID tag</li>
+                </ul>
+                <button onclick="alert('Subscription feature integrated!')">Choose Basic</button>
+            </div>
+
+            <div class="sub-card popular">
+                <div>
+                    <span style="font-size: 0.65rem; background: var(--accent); color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">POPULAR</span>
+                    <h3 style="font-size: 1.1rem; color: var(--text); margin-top: 4px;">Pro</h3>
+                    <div class="sub-price">$9.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                </div>
+                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                    <li>✓ Unlimited transfer speed</li>
+                    <li>✓ Up to 50 users in room</li>
+                    <li>✓ Priority P2P Routing</li>
+                </ul>
+                <button onclick="alert('Subscription feature integrated!')">Choose Pro</button>
+            </div>
+
+            <div class="sub-card">
+                <div>
+                    <h3 style="font-size: 1.1rem; color: var(--text);">Ultimate</h3>
+                    <div class="sub-price">$17.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
+                </div>
+                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 6px;">
+                    <li>✓ Max Speed & Bandwidth</li>
+                    <li>✓ Unlimited users in room</li>
+                    <li>✓ E2E Encrypted Backups</li>
+                </ul>
+                <button onclick="alert('Subscription feature integrated!')">Choose Ultimate</button>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 10px;">
+            <button class="btn-secondary" onclick="document.getElementById('subscriptionsModal').style.display='none'">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Friend Modal -->
+<div id="addFriendModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Add Friend</h2>
+        <div>
+            <label>Search by UUID or Username:</label>
+            <input type="text" id="addFriendSearchInput" placeholder="Enter UUID or username...">
+        </div>
+        <div id="addFriendSearchResult" style="margin-top: 10px;"></div>
+        <div class="modal-actions">
+            <button onclick="executeAddFriendSearch()">Search User</button>
+            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Accounts Database Modal -->
 <div id="accountsListModal" class="modal-overlay">
     <div class="modal">
@@ -247,40 +332,68 @@
     </div>
 </div>
 
-<!-- User Profile Settings Modal -->
+<!-- Horizontal User Profile Settings Modal -->
 <div id="profileModal" class="modal-overlay">
-    <div class="modal">
+    <div class="modal modal-wide">
         <h2>Profile Settings</h2>
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-            <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
-            <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-            <button class="btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
-        </div>
-        <div>
-            <label>Nickname Color:</label>
-            <div class="color-picker-row">
-                <input type="color" id="profileColorInput" value="#38bdf8">
-                <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#38bdf8</span>
+        
+        <div class="profile-grid-horizontal">
+            <!-- Left Col: Avatar & Display Name -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
+                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                <button class="btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
+                
+                <div style="width: 100%;">
+                    <label>Display Name:</label>
+                    <input type="text" id="profileDisplayNameInput" placeholder="Display name...">
+                </div>
+
+                <div style="width: 100%;">
+                    <label>Username (System Login):</label>
+                    <input type="text" id="profileUsernameReadonly" readonly style="opacity: 0.6; cursor: not-allowed; font-family: monospace;">
+                </div>
+            </div>
+
+            <!-- Middle Col: UUID, Color, Bio, Blacklist -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label>Your UUID (Customizable):</label>
+                    <input type="text" id="profileUuidInput" placeholder="Set custom UUID..." style="font-family: monospace;">
+                </div>
+
+                <div>
+                    <label>Nickname Color:</label>
+                    <div class="color-picker-row">
+                        <input type="color" id="profileColorInput" value="#38bdf8">
+                        <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#38bdf8</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="profileBioInput">Bio:</label>
+                    <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
+                </div>
+
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 6px;">Blacklist:</label>
+                    <div id="profileBlacklistContainer" class="list-container"></div>
+                </div>
+            </div>
+
+            <!-- Right Col: Friends List Maximized to Right -->
+            <div style="display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-weight: bold;">Friends List:</label>
+                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="openAddFriendModal()">+ Add Friends</button>
+                </div>
+                <div id="profileFriendsContainer" class="list-container" style="flex: 1; max-height: 320px;"></div>
             </div>
         </div>
-        <div>
-            <label for="profileBioInput">Bio:</label>
-            <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
-        </div>
 
-        <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Friends:</label>
-            <div id="profileFriendsContainer" class="list-container"></div>
-        </div>
-
-        <div style="border-top: 1px solid var(--border); padding-top: 10px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Blacklist:</label>
-            <div id="profileBlacklistContainer" class="list-container"></div>
-        </div>
-
-        <div class="modal-actions">
-            <button onclick="saveProfileChanges()">Save Changes</button>
-            <button class="btn-secondary" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
+        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+            <button class="btn-secondary" style="width: 120px;" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
+            <button style="width: 140px;" onclick="saveProfileChanges()">Save Changes</button>
         </div>
     </div>
 </div>
@@ -288,8 +401,9 @@
 <!-- View User Profile Modal -->
 <div id="viewUserProfileModal" class="modal-overlay">
     <div class="modal">
-        <h2 id="viewUserName">Profile</h2>
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <h2 id="viewUserDisplayName">Profile</h2>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-dim); margin-top: -8px;" id="viewUserSubHeader"></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">
             <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
             <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-dim); text-align: center;"></div>
         </div>
@@ -320,7 +434,7 @@
 <div id="loginModal" class="modal-overlay">
     <div class="modal">
         <h2>Account Login</h2>
-        <div><label for="loginUsername">Username (max 20 chars):</label><input type="text" id="loginUsername" maxlength="20" placeholder="Enter username..."></div>
+        <div><label for="loginUsername">Username:</label><input type="text" id="loginUsername" maxlength="20" placeholder="Enter username..."></div>
         <div><label for="loginPassword">Password:</label><input type="password" id="loginPassword" placeholder="Enter password..."></div>
         <div class="modal-actions">
             <button id="doLoginBtn">Log In</button>
@@ -332,7 +446,8 @@
 <div id="registerModal" class="modal-overlay">
     <div class="modal">
         <h2>Create Account</h2>
-        <div><label for="regUsername">Username (max 20 chars):</label><input type="text" id="regUsername" maxlength="20" placeholder="Choose username..."></div>
+        <div><label for="regUsername">Username (unique login):</label><input type="text" id="regUsername" maxlength="20" placeholder="Choose username..."></div>
+        <div><label for="regDisplayName">Display Name:</label><input type="text" id="regDisplayName" maxlength="25" placeholder="Choose display name..."></div>
         <div><label for="regPassword">Password:</label><input type="password" id="regPassword" placeholder="Choose password..."></div>
         <div class="modal-actions">
             <button id="doRegisterBtn">Sign Up</button>
@@ -420,6 +535,13 @@
 </div>
 
 <script>
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
     let currentUser = JSON.parse(localStorage.getItem('lb_session')) || null;
@@ -439,15 +561,16 @@
             const acc = accounts[currentUser.username] || {};
             const avatar = acc.avatar || defaultAvatar;
             const color = acc.color || '#38bdf8';
+            const dispName = acc.displayName || currentUser.username;
 
             authBar.innerHTML = `
                 <div class="user-profile-badge" onclick="openProfileModal()">
                     <img class="avatar" src="${avatar}" alt="Avatar">
-                    <span style="color: ${color}">${escapeHtml(currentUser.username)}</span>
+                    <span style="color: ${color}">${escapeHtml(dispName)}</span>
                 </div>
                 <button onclick="logout()" class="btn-secondary">Log Out</button>
             `;
-            myName = currentUser.username;
+            myName = dispName;
         } else {
             authBar.innerHTML = `
                 <button id="openLoginBtn" class="btn-secondary" onclick="document.getElementById('loginModal').style.display='flex'">Log In</button>
@@ -459,7 +582,6 @@
         }
     }
 
-    /* Warning on Logout */
     window.logout = function() {
         if (confirm("Are you sure you want to log out?")) {
             localStorage.removeItem('lb_session');
@@ -468,7 +590,6 @@
         }
     };
 
-    /* Accounts Base Modal */
     window.openAccountsListModal = function() {
         const accounts = getAccounts();
         const container = document.getElementById('allAccountsContainer');
@@ -485,7 +606,10 @@
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <img class="avatar" src="${acc.avatar || defaultAvatar}">
-                        <span style="color: ${acc.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(username)}</span>
+                        <div>
+                            <span style="color: ${acc.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
+                            <span style="font-size: 0.7rem; color: var(--text-dim);"> (@${escapeHtml(username)})</span>
+                        </div>
                     </div>
                     <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
                 `;
@@ -495,7 +619,7 @@
         document.getElementById('accountsListModal').style.display = 'flex';
     };
 
-    /* Self Profile Settings */
+    /* Profile Modal Settings */
     let tempAvatarBase64 = null;
     window.openProfileModal = function() {
         if (!currentUser) return;
@@ -504,6 +628,9 @@
 
         tempAvatarBase64 = acc.avatar || defaultAvatar;
         document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
+        document.getElementById('profileDisplayNameInput').value = acc.displayName || currentUser.username;
+        document.getElementById('profileUsernameReadonly').value = currentUser.username;
+        document.getElementById('profileUuidInput').value = acc.uuid || generateUUID();
         document.getElementById('profileColorInput').value = acc.color || '#38bdf8';
         document.getElementById('colorHexText').textContent = acc.color || '#38bdf8';
         document.getElementById('profileBioInput').value = acc.bio || '';
@@ -532,19 +659,23 @@
         const accounts = getAccounts();
         const acc = accounts[currentUser.username] || {};
         
-        // Friends
+        // Friends Right Panel
         const friendsCont = document.getElementById('profileFriendsContainer');
         friendsCont.innerHTML = '';
         const friends = acc.friends || [];
         if (friends.length === 0) {
-            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No friends yet</div>';
+            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 10px;">No friends added</div>';
         } else {
-            friends.forEach(fName => {
+            friends.forEach(fUsername => {
+                const fAcc = accounts[fUsername] || {};
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
-                    <span>${escapeHtml(fName)}</span>
-                    <button class="manage-user-btn" onclick="openDirectChat('${fName}')">Chat</button>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 22px; height: 22px;">
+                        <span style="font-weight: bold; color: ${fAcc.color || '#38bdf8'}">${escapeHtml(fAcc.displayName || fUsername)}</span>
+                    </div>
+                    <button class="manage-user-btn" onclick="openDirectChat('${fUsername}')">Chat</button>
                 `;
                 friendsCont.appendChild(div);
             });
@@ -557,12 +688,12 @@
         if (blocked.length === 0) {
             blockCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Blacklist is empty</div>';
         } else {
-            blocked.forEach(bName => {
+            blocked.forEach(bUsername => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
-                    <span>${escapeHtml(bName)}</span>
-                    <button class="manage-user-btn" onclick="unblockUser('${bName}')">Unblock</button>
+                    <span>${escapeHtml(bUsername)}</span>
+                    <button class="manage-user-btn" onclick="unblockUser('${bUsername}')">Unblock</button>
                 `;
                 blockCont.appendChild(div);
             });
@@ -574,6 +705,14 @@
         const accounts = getAccounts();
         if (!accounts[currentUser.username]) accounts[currentUser.username] = {};
 
+        const newDisp = document.getElementById('profileDisplayNameInput').value.trim();
+        const newUuid = document.getElementById('profileUuidInput').value.trim();
+
+        if (!newDisp) return alert('Display name cannot be empty');
+        if (!newUuid) return alert('UUID cannot be empty');
+
+        accounts[currentUser.username].displayName = newDisp;
+        accounts[currentUser.username].uuid = newUuid;
         accounts[currentUser.username].avatar = tempAvatarBase64;
         accounts[currentUser.username].color = document.getElementById('profileColorInput').value;
         accounts[currentUser.username].bio = document.getElementById('profileBioInput').value.trim();
@@ -583,7 +722,68 @@
         document.getElementById('profileModal').style.display = 'none';
     };
 
-    /* View Another User Profile */
+    /* Add Friend Search */
+    window.openAddFriendModal = function() {
+        document.getElementById('addFriendSearchInput').value = '';
+        document.getElementById('addFriendSearchResult').innerHTML = '';
+        document.getElementById('addFriendModal').style.display = 'flex';
+    };
+
+    window.executeAddFriendSearch = function() {
+        const query = document.getElementById('addFriendSearchInput').value.trim().toLowerCase();
+        const resDiv = document.getElementById('addFriendSearchResult');
+        resDiv.innerHTML = '';
+
+        if (!query) return;
+
+        const accounts = getAccounts();
+        let matchedUsername = null;
+
+        Object.keys(accounts).forEach(u => {
+            const acc = accounts[u];
+            if (u.toLowerCase() === query || (acc.uuid && acc.uuid.toLowerCase() === query) || (acc.displayName && acc.displayName.toLowerCase() === query)) {
+                matchedUsername = u;
+            }
+        });
+
+        if (matchedUsername) {
+            const acc = accounts[matchedUsername];
+            resDiv.innerHTML = `
+                <div class="list-item">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img class="avatar" src="${acc.avatar || defaultAvatar}">
+                        <div>
+                            <div style="font-weight: bold; color: ${acc.color || '#38bdf8'}">${escapeHtml(acc.displayName || matchedUsername)}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-dim);">UUID: ${escapeHtml(acc.uuid || 'N/A')}</div>
+                        </div>
+                    </div>
+                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="addFriendDirect('${matchedUsername}')">Add</button>
+                </div>
+            `;
+        } else {
+            resDiv.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No user found with specified Username/UUID</div>`;
+        }
+    };
+
+    window.addFriendDirect = function(targetUsername) {
+        if (!currentUser) return alert('Log in first');
+        if (targetUsername === currentUser.username) return alert("You cannot add yourself");
+
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        myAcc.friends = myAcc.friends || [];
+
+        if (!myAcc.friends.includes(targetUsername)) {
+            myAcc.friends.push(targetUsername);
+            saveAccounts(accounts);
+            alert('Friend added!');
+            document.getElementById('addFriendModal').style.display = 'none';
+            renderProfileLists();
+        } else {
+            alert('Already in friends list');
+        }
+    };
+
     let selectedProfileUser = null;
     window.openViewUserProfile = function(username) {
         if (currentUser && username === currentUser.username) {
@@ -595,8 +795,9 @@
         const accounts = getAccounts();
         const acc = accounts[username] || {};
 
-        document.getElementById('viewUserName').textContent = username;
-        document.getElementById('viewUserName').style.color = acc.color || '#38bdf8';
+        document.getElementById('viewUserDisplayName').textContent = acc.displayName || username;
+        document.getElementById('viewUserDisplayName').style.color = acc.color || '#38bdf8';
+        document.getElementById('viewUserSubHeader').textContent = `@${username} | UUID: ${acc.uuid || 'N/A'}`;
         document.getElementById('viewUserAvatar').src = acc.avatar || defaultAvatar;
         document.getElementById('viewUserBio').textContent = acc.bio || 'No bio available.';
 
@@ -604,19 +805,7 @@
         document.getElementById('viewUserProfileModal').style.display = 'flex';
     };
 
-    document.getElementById('addFriendBtn').onclick = () => {
-        if (!currentUser) return alert('Please log in first');
-        const accounts = getAccounts();
-        const myAcc = accounts[currentUser.username] || {};
-        myAcc.friends = myAcc.friends || [];
-        if (!myAcc.friends.includes(selectedProfileUser)) {
-            myAcc.friends.push(selectedProfileUser);
-            saveAccounts(accounts);
-            alert('Added to friends!');
-        } else {
-            alert('Already in friends list');
-        }
-    };
+    document.getElementById('addFriendBtn').onclick = () => addFriendDirect(selectedProfileUser);
 
     document.getElementById('blockUserBtn').onclick = () => {
         if (!currentUser) return alert('Please log in first');
@@ -640,11 +829,14 @@
         renderProfileLists();
     };
 
-    /* Direct Private Messaging */
+    /* Private Chat */
     let activeDirectFriend = null;
     window.openDirectChat = function(friendName) {
         activeDirectFriend = friendName;
-        document.getElementById('directChatTitle').textContent = `Chat with ${friendName}`;
+        const accounts = getAccounts();
+        const fAcc = accounts[friendName] || {};
+
+        document.getElementById('directChatTitle').textContent = `Chat with ${fAcc.displayName || friendName}`;
         document.getElementById('profileModal').style.display = 'none';
         document.getElementById('viewUserProfileModal').style.display = 'none';
         renderDirectMessages();
@@ -683,10 +875,9 @@
         myAcc.directChats = myAcc.directChats || {};
         myAcc.directChats[activeDirectFriend] = myAcc.directChats[activeDirectFriend] || [];
 
-        const msgObj = { sender: currentUser.username, text: text, color: myAcc.color || '#38bdf8' };
+        const msgObj = { sender: myAcc.displayName || currentUser.username, text: text, color: myAcc.color || '#38bdf8' };
         myAcc.directChats[activeDirectFriend].push(msgObj);
 
-        // Sync to recipient's local account storage
         if (accounts[activeDirectFriend]) {
             accounts[activeDirectFriend].directChats = accounts[activeDirectFriend].directChats || {};
             accounts[activeDirectFriend].directChats[currentUser.username] = accounts[activeDirectFriend].directChats[currentUser.username] || [];
@@ -698,18 +889,29 @@
         renderDirectMessages();
     };
 
-    /* Auth & Reg */
+    /* Registration & Login */
     document.getElementById('doRegisterBtn').onclick = () => {
         const u = document.getElementById('regUsername').value.trim();
+        const disp = document.getElementById('regDisplayName').value.trim() || u;
         const p = document.getElementById('regPassword').value.trim();
 
-        if (!u || !p) return alert('Fill in all fields');
+        if (!u || !p) return alert('Fill in username and password');
         if (u.length > 20) return alert('Username must be 20 characters max');
 
         const accounts = getAccounts();
         if (accounts[u]) return alert('Username already taken');
 
-        accounts[u] = { password: p, avatar: defaultAvatar, color: '#38bdf8', bio: '', friends: [], blocked: [], directChats: {} };
+        accounts[u] = { 
+            password: p, 
+            displayName: disp,
+            uuid: generateUUID(),
+            avatar: defaultAvatar, 
+            color: '#38bdf8', 
+            bio: '', 
+            friends: [], 
+            blocked: [], 
+            directChats: {} 
+        };
         saveAccounts(accounts);
 
         currentUser = { username: u };
@@ -717,7 +919,7 @@
 
         document.getElementById('registerModal').style.display = 'none';
         updateAuthBarUI();
-        alert('Account created and logged in!');
+        alert('Account created!');
     };
 
     document.getElementById('doLoginBtn').onclick = () => {
@@ -736,6 +938,7 @@
         updateAuthBarUI();
     };
 
+    /* PeerJS Core */
     let myPeer = null;
     let isHost = false;
     let roomHostConn = null;
@@ -849,7 +1052,7 @@
                 return;
             }
 
-            conn.peerName = data.name.substring(0, 20);
+            conn.peerName = data.name.substring(0, 25);
             hostState.users[conn.peer] = {
                 name: conn.peerName,
                 color: data.color || '#38bdf8',
@@ -919,7 +1122,7 @@
                 roomHostConn.send({
                     type: 'join-request',
                     password: password,
-                    name: myName,
+                    name: myAcc.displayName || myName,
                     color: myAcc.color || '#38bdf8',
                     avatar: myAcc.avatar || defaultAvatar,
                     isLoggedIn: currentUser !== null
@@ -1285,27 +1488,49 @@
 
     fileInput.onchange = () => { if (fileInput.files.length) uploadFiles(fileInput.files); };
 
+    /* Speed Meter & File Upload */
     function uploadFiles(files) {
         Array.from(files).forEach(file => {
-            const fileId = 'file_' + Math.random().toString(36).substr(2, 9);
-            const reader = new FileReader();
-            reader.onload = () => {
-                const payload = {
-                    fileId: fileId,
-                    fileName: file.name,
-                    fileType: file.type,
-                    fileBuffer: reader.result
-                };
+            const fileId = 'file_' + generateUUID();
+            const startTime = Date.now();
 
-                if (isHost) {
-                    const fileData = { ...payload, sender: hostState.users[myPeer.id].name };
-                    hostState.fileHistory.push(fileData);
-                    broadcast({ type: 'receive-file', fileData });
-                } else {
-                    roomHostConn.send({ type: 'send-file', file: payload });
+            // Simulate progress and speed
+            let uploaded = 0;
+            const total = file.size;
+
+            addQueueItem(fileId, file.name, formatBytes(total), `Uploading...`, null, true);
+
+            const interval = setInterval(() => {
+                uploaded += Math.min(total / 10, total - uploaded);
+                const elapsed = (Date.now() - startTime) / 1000;
+                const speed = elapsed > 0 ? uploaded / elapsed : 0;
+                const percent = Math.floor((uploaded / total) * 100);
+
+                updateQueueItemProgress(fileId, percent, `${formatBytes(speed)}/s — ${percent}%`);
+
+                if (uploaded >= total) {
+                    clearInterval(interval);
+                    
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const payload = {
+                            fileId: fileId,
+                            fileName: file.name,
+                            fileType: file.type,
+                            fileBuffer: reader.result
+                        };
+
+                        if (isHost) {
+                            const fileData = { ...payload, sender: hostState.users[myPeer.id].name };
+                            hostState.fileHistory.push(fileData);
+                            broadcast({ type: 'receive-file', fileData });
+                        } else {
+                            roomHostConn.send({ type: 'send-file', file: payload });
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
                 }
-            };
-            reader.readAsArrayBuffer(file);
+            }, 100);
         });
     }
 
@@ -1313,13 +1538,21 @@
         const emptyPlaceholder = fileQueue.querySelector('.file-item-empty');
         if (emptyPlaceholder) emptyPlaceholder.remove();
 
+        // Check if item already exists to update
+        let itemDiv = document.getElementById(fileData.fileId);
         const blob = new Blob([fileData.fileBuffer], { type: fileData.fileType });
         const url = URL.createObjectURL(blob);
 
-        addQueueItem(fileData.fileId, fileData.fileName, formatBytes(blob.size), `From ${fileData.sender}`, url);
+        if (itemDiv) {
+            itemDiv.remove();
+        }
+        addQueueItem(fileData.fileId, fileData.fileName, formatBytes(blob.size), `From ${fileData.sender}`, url, false);
     }
 
-    function addQueueItem(fileId, name, size, status, downloadUrl = null) {
+    function addQueueItem(fileId, name, size, status, downloadUrl = null, showProgress = false) {
+        const emptyPlaceholder = fileQueue.querySelector('.file-item-empty');
+        if (emptyPlaceholder) emptyPlaceholder.remove();
+
         const itemDiv = document.createElement('div');
         itemDiv.className = 'file-item';
         itemDiv.id = fileId;
@@ -1329,8 +1562,9 @@
                 <span class="file-name">${escapeHtml(name)}</span>
                 <span class="file-size">${size}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim);">
-                <span>${status}</span>
+            ${showProgress ? `<div class="progress-bar-bg"><div class="progress-bar-fill" id="fill_${fileId}"></div></div>` : ''}
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
+                <span id="status_${fileId}">${status}</span>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     ${downloadUrl ? `<a href="${downloadUrl}" download="${escapeHtml(name)}" class="file-download-link" style="color: var(--accent); font-weight: bold; display: ${myPermissions.canDownload ? 'inline' : 'none'};">Download</a>` : ''}
                     <button class="delete-file-btn" style="display: ${myPermissions.canDeleteFiles ? 'inline' : 'none'};" onclick="deleteFile('${fileId}')">Delete</button>
@@ -1338,6 +1572,13 @@
             </div>
         `;
         fileQueue.appendChild(itemDiv);
+    }
+
+    function updateQueueItemProgress(fileId, percent, statusText) {
+        const fill = document.getElementById(`fill_${fileId}`);
+        const status = document.getElementById(`status_${fileId}`);
+        if (fill) fill.style.width = `${percent}%`;
+        if (status) status.textContent = statusText;
     }
 
     window.deleteFile = function(fileId) {
