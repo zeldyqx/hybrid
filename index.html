@@ -11,18 +11,20 @@
     <style>
         :root {
             --bg: #090d16;
-            --card-bg: rgba(22, 30, 49, 0.65);
+            --card-bg: rgba(22, 30, 49, 0.75);
             --card-border: rgba(255, 255, 255, 0.08);
             --accent: #6366f1;
             --accent-light: #818cf8;
             --accent-glow: rgba(99, 102, 241, 0.35);
             --danger: #ef4444;
             --danger-hover: #dc2626;
+            --success: #34d399;
+            --warning: #fbbf24;
             --text: #f8fafc;
             --text-dim: #94a3b8;
             --border: rgba(255, 255, 255, 0.1);
-            --modal-bg: rgba(15, 23, 42, 0.85);
-            --sidebar-bg: rgba(13, 19, 33, 0.75);
+            --modal-bg: rgba(15, 23, 42, 0.9);
+            --sidebar-bg: rgba(13, 19, 33, 0.85);
             --radius-lg: 20px;
             --radius-md: 12px;
             --radius-sm: 8px;
@@ -34,15 +36,21 @@
         body { 
             background: var(--bg); 
             background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.5) 0px, transparent 100%);
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.6) 0px, transparent 100%);
             background-attachment: fixed;
             color: var(--text); 
             min-height: 100vh; 
             width: 100vw; 
             overflow-x: hidden; 
             position: relative; 
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Custom Scrollbar */
@@ -57,6 +65,11 @@
         .auth-bar { position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 100; align-items: center; }
         .auth-bar button { width: auto; padding: 8px 18px; font-size: 0.85rem; }
         
+        /* Footer Bottom Bar */
+        .footer-bar { position: fixed; bottom: 20px; right: 24px; z-index: 100; display: flex; gap: 12px; font-size: 0.8rem; color: var(--text-dim); }
+        .footer-bar button { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px 8px; width: auto; box-shadow: none; font-size: 0.8rem; }
+        .footer-bar button:hover { color: var(--text); text-decoration: underline; background: none; box-shadow: none; }
+
         .user-profile-badge { 
             display: flex; 
             align-items: center; 
@@ -72,6 +85,10 @@
             transition: var(--transition);
         }
         .user-profile-badge:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent-light); box-shadow: 0 0 15px var(--accent-glow); }
+        
+        .zeldy-badge { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #000; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 4px; }
+        .sub-badge { background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 4px; }
+
         .avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: var(--border); border: 1.5px solid var(--accent); }
         .avatar-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: var(--border); border: 2px solid var(--accent); }
 
@@ -86,6 +103,7 @@
             border-radius: var(--radius-lg); 
             padding: 36px 32px; 
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(99, 102, 241, 0.05); 
+            animation: fadeIn 0.3s ease-out;
         }
 
         h1 { 
@@ -123,7 +141,8 @@
             transition: var(--transition);
         }
         textarea { resize: vertical; min-height: 70px; }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        select option { background: var(--bg); color: var(--text); }
 
         button { 
             background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%); 
@@ -167,12 +186,12 @@
 
         .status { font-size: 0.85rem; margin-top: 8px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .status::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
-        .status.connected { color: #34d399; }
-        .status.connected::before { background: #34d399; box-shadow: 0 0 10px #34d399; }
-        .status.disconnected { color: #f87171; }
-        .status.disconnected::before { background: #f87171; box-shadow: 0 0 10px #f87171; }
+        .status.connected { color: var(--success); }
+        .status.connected::before { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .status.disconnected { color: var(--danger); }
+        .status.disconnected::before { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
 
-        .app-layout { display: none; width: 100vw; height: 100vh; overflow: hidden; z-index: 10; position: relative; }
+        .app-layout { display: none; width: 100vw; height: 100vh; overflow: hidden; z-index: 10; position: relative; animation: fadeIn 0.3s ease-out; }
         .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 28px 36px; overflow-y: auto; gap: 24px; }
         .workspace-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); }
         .header-actions { display: flex; align-items: center; gap: 14px; }
@@ -214,9 +233,6 @@
         .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; color: var(--text); }
         .file-size { color: var(--text-dim); font-size: 0.75rem; }
 
-        .progress-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 4px; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%); width: 0%; transition: width 0.15s ease; }
-
         .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 12px; }
         .info-value { font-weight: 700; color: var(--accent-light); font-family: monospace; font-size: 1.1rem; letter-spacing: 0.5px; }
         .pass-wrapper { display: flex; align-items: center; gap: 8px; }
@@ -246,7 +262,7 @@
         .manage-user-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; width: auto; box-shadow: none; }
         .manage-user-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-        .crown-icon { width: 16px; height: 16px; fill: #fbbf24; display: inline-block; vertical-align: middle; filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5)); }
+        .crown-icon { width: 16px; height: 16px; fill: var(--warning); display: inline-block; vertical-align: middle; filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5)); }
         .you-tag { color: var(--text-dim); font-size: 0.75rem; }
 
         .switch-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 0.85rem; border: 1px solid var(--card-border); }
@@ -260,15 +276,13 @@
         .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; max-height: 200px; overflow-y: auto; }
         .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; }
 
-        /* Modal Layer Styling Glassmorphism */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 8, 15, 0.75); backdrop-filter: blur(12px); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        
-        #subscriptionsModal { z-index: 1100; }
-        #accountsListModal { z-index: 1200; }
-        #profileModal { z-index: 2000; }
-        #addFriendModal { z-index: 3000; }
-        #viewUserProfileModal { z-index: 3500; }
-        #inviteFriendsModal { z-index: 3600; }
+        /* Modal Layer Styling Glassmorphism with Smooth Animations */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: rgba(5, 8, 15, 0.8); backdrop-filter: blur(12px); 
+            display: none; justify-content: center; align-items: center; z-index: 1000; 
+            animation: fadeIn 0.2s ease-out;
+        }
         
         .modal { 
             background: var(--modal-bg); 
@@ -283,7 +297,13 @@
             gap: 16px; 
             max-height: 90vh; 
             overflow-y: auto; 
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleUp {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         .modal-wide { max-width: 920px; width: 95%; }
@@ -318,41 +338,73 @@
         .sub-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
         .sub-card.popular { border-color: var(--accent); background: rgba(99, 102, 241, 0.08); box-shadow: 0 0 30px var(--accent-glow); }
         .sub-price { font-size: 1.75rem; font-weight: 800; color: #fff; margin-top: 4px; }
+
+        /* Settings Tabs */
+        .settings-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 14px; overflow-x: auto; }
+        .settings-tab-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-dim); padding: 6px 14px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; width: auto; box-shadow: none; white-space: nowrap; }
+        .settings-tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .settings-panel { display: none; flex-direction: column; gap: 14px; }
+        .settings-panel.active { display: flex; }
+
+        /* Custom Toast Notification System */
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: var(--modal-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 14px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.875rem; color: #fff; display: flex; align-items: center; gap: 12px; pointer-events: auto; animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-width: 280px; }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.info { border-left: 4px solid var(--accent); }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="toast-container"></div>
+
 <!-- Top Left Bar -->
 <div class="top-left-bar" id="topLeftBar">
     <button class="btn-secondary" id="accountsBaseBtn" style="display: none;" onclick="openAccountsListModal()">Accounts Base</button>
-    <button class="btn-secondary" id="subscriptionsBtn" style="background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4);" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
+    <button class="btn-secondary" id="subscriptionsBtn" style="background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4);" onclick="openSubscriptionsModal()">Subscriptions</button>
+    <button class="btn-icon" id="globalSettingsBtn" title="Settings" onclick="openGlobalSettingsModal()">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
+    </button>
 </div>
 
+<!-- Auth Bar -->
 <div class="auth-bar" id="authBar"></div>
 
+<!-- Footer Links Bar -->
+<div class="footer-bar" id="footerBar">
+    <button onclick="openFooterModal('about')">About</button>
+    <button onclick="openFooterModal('support')">Support</button>
+    <button onclick="openFooterModal('terms')">Terms</button>
+    <button onclick="openFooterModal('privacy')">Privacy</button>
+</div>
+
+<!-- Main Workspace Screen -->
 <div id="mainWrapper" class="main-wrapper">
     <div class="container">
-        <h1>LocalBridge</h1>
-        <p class="subtitle">P2P Serverless Room Management</p>
+        <h1 data-i18n="appTitle">LocalBridge</h1>
+        <p class="subtitle" data-i18n="appSubtitle">P2P Serverless Room Management</p>
         <div class="section">
-            <button id="openCreateModalBtn">Create Room</button>
-            <button id="openJoinModalBtn" class="btn-secondary">Join Room</button>
-            <div id="statusText" class="status disconnected">Status: Ready</div>
+            <button id="openCreateModalBtn" data-i18n="createRoom">Create Room</button>
+            <button id="openJoinModalBtn" class="btn-secondary" data-i18n="joinRoom">Join Room</button>
+            <div id="statusText" class="status disconnected" data-i18n="statusReady">Status: Ready</div>
         </div>
     </div>
 </div>
 
+<!-- Active Room App Layout -->
 <div id="appLayout" class="app-layout">
     <main class="main-workspace">
         <header class="workspace-header">
             <div>
-                <h1 style="text-align: left;">LocalBridge</h1>
-                <p class="subtitle" style="text-align: left; margin-bottom: 0;">Active P2P Workspace</p>
+                <h1 style="text-align: left;" data-i18n="appTitle">LocalBridge</h1>
+                <p class="subtitle" style="text-align: left; margin-bottom: 0;" data-i18n="activeWorkspace">Active P2P Workspace</p>
             </div>
             <div class="header-actions">
-                <div id="workspaceStatusText" class="status connected">Status: Connected!</div>
-                <button id="openSettingsBtn" class="btn-icon" title="Settings" style="display: none;">
-                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
+                <div id="workspaceStatusText" class="status connected" data-i18n="statusConnected">Status: Connected!</div>
+                <button id="openSettingsBtn" class="btn-icon" title="Settings" style="display: none;" onclick="openRoomSettingsModal()">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
                 </button>
             </div>
         </header>
@@ -360,14 +412,14 @@
         <div class="workspace-grid">
             <div class="left-column">
                 <div class="room-card-active">
-                    <h2 style="font-size: 1.15rem; margin-bottom: 16px; color: #fff;">Room Controls</h2>
+                    <h2 style="font-size: 1.15rem; margin-bottom: 16px; color: #fff;" data-i18n="roomControls">Room Controls</h2>
                     <div style="background: rgba(0, 0, 0, 0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 16px;">
                         <div class="info-row">
-                            <span>Room ID:</span>
+                            <span data-i18n="roomId">Room ID:</span>
                             <span id="labelRoomId" class="info-value">------</span>
                         </div>
                         <div class="info-row" style="margin-bottom: 0;">
-                            <span>Password:</span>
+                            <span data-i18n="password">Password:</span>
                             <div class="pass-wrapper">
                                 <span id="labelRoomPass" class="info-value">••••••</span>
                                 <button id="togglePassBtn" class="eye-btn">
@@ -377,37 +429,37 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button id="inviteFriendsBtn" class="btn-secondary" onclick="openInviteFriendsModal()">Invite Friends</button>
-                        <button id="leaveRoomBtn" class="btn-danger">Leave Room</button>
+                        <button id="inviteFriendsBtn" class="btn-secondary" onclick="openInviteFriendsModal()" data-i18n="inviteFriends">Invite Friends</button>
+                        <button id="leaveRoomBtn" class="btn-danger" onclick="leaveRoom()" data-i18n="leaveRoom">Leave Room</button>
                     </div>
                 </div>
 
                 <div class="chat-card">
-                    <h2 style="font-size: 1.15rem; color: #fff;">Room Chat</h2>
+                    <h2 style="font-size: 1.15rem; color: #fff;" data-i18n="roomChat">Room Chat</h2>
                     <div id="chatMessages" class="chat-messages"></div>
                     <div class="chat-input-row">
-                        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
-                        <button id="sendMsgBtn">Send</button>
+                        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" data-i18n-placeholder="typeMessage">
+                        <button id="sendMsgBtn" data-i18n="send">Send</button>
                     </div>
                 </div>
             </div>
 
             <div class="right-column">
                 <div class="file-card">
-                    <h2 style="font-size: 1.15rem; color: #fff; margin-bottom: 14px;">File Transfer</h2>
+                    <h2 style="font-size: 1.15rem; color: #fff; margin-bottom: 14px;" data-i18n="fileTransfer">File Transfer</h2>
                     <div id="dropZone" class="drop-zone">
                         <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
                         <div>
-                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.95rem;">Drag & Drop files here</span>
-                            <p id="dropZoneSubtext" style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;">or click to browse</p>
+                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.95rem;" data-i18n="dragDropFiles">Drag & Drop files here</span>
+                            <p id="dropZoneSubtext" style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;" data-i18n="orClickBrowse">or click to browse</p>
                         </div>
                         <input type="file" id="fileInput" multiple style="display: none;">
                     </div>
 
                     <div style="margin-top: 18px;">
-                        <h3 style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 700;">Transfer Queue</h3>
+                        <h3 style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 700;" data-i18n="transferQueue">Transfer Queue</h3>
                         <div id="fileQueue" class="file-queue">
-                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">
+                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);" data-i18n="noFilesInQueue">
                                 No files in queue
                             </div>
                         </div>
@@ -419,7 +471,7 @@
 
     <aside class="sidebar-right">
         <div class="sidebar-title">
-            <span>Users in Room</span>
+            <span data-i18n="usersInRoom">Users in Room</span>
             <span id="userCount" class="user-count-badge">0</span>
         </div>
         <ul id="userList" class="user-list"></ul>
@@ -431,8 +483,17 @@
 <!-- Subscriptions Modal -->
 <div id="subscriptionsModal" class="modal-overlay">
     <div class="modal modal-wide" style="max-width: 800px;">
-        <h2>Select Subscription Plan</h2>
-        <p style="font-size: 0.875rem; color: var(--text-dim);">Upgrade your LocalBridge account for higher transfer speeds and unlimited room limits.</p>
+        <h2 data-i18n="selectSubPlan">Select Subscription Plan</h2>
+        <p style="font-size: 0.875rem; color: var(--text-dim);" data-i18n="subModalDesc">Upgrade your LocalBridge account for higher transfer speeds, unlimited room limits, and exclusive advanced features.</p>
+
+        <!-- Free Trial Banner -->
+        <div id="freeTrialBanner" style="background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.4); padding: 16px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+            <div>
+                <h4 style="color: #fff; font-size: 0.95rem; font-weight: 700;" data-i18n="freeTrialTitle">🎁 Free Pro Trial (7 Days)</h4>
+                <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;" data-i18n="freeTrialDesc">Try all Pro features free for 7 days with zero commitments!</p>
+            </div>
+            <button id="claimTrialBtn" style="width: auto; padding: 8px 16px; font-size: 0.8rem;" onclick="claimFreeTrial()" data-i18n="claimTrial">Claim Free Trial</button>
+        </div>
 
         <div class="sub-cards-grid">
             <div class="sub-card">
@@ -441,25 +502,25 @@
                     <div class="sub-price">$4.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                    <li>✓ High-speed P2P transfer</li>
-                    <li>✓ Up to 10 users in room</li>
-                    <li>✓ Custom ID tag</li>
+                    <li data-i18n="subBasic1">✓ High-speed P2P transfer</li>
+                    <li data-i18n="subBasic2">✓ Up to 10 users in room</li>
+                    <li data-i18n="subBasic3">✓ Priority connection routing</li>
                 </ul>
-                <button onclick="alert('Subscription feature integrated!')">Choose Basic</button>
+                <button onclick="purchaseSubscription('basic')" data-i18n="chooseBasic">Choose Basic</button>
             </div>
 
             <div class="sub-card popular">
                 <div>
-                    <span style="font-size: 0.65rem; background: var(--accent); color: #fff; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">POPULAR</span>
+                    <span style="font-size: 0.65rem; background: var(--accent); color: #fff; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="popular">POPULAR</span>
                     <h3 style="font-size: 1.1rem; color: #fff; margin-top: 6px;">Pro</h3>
                     <div class="sub-price">$9.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                    <li>✓ Unlimited transfer speed</li>
-                    <li>✓ Up to 50 users in room</li>
-                    <li>✓ Priority P2P Routing</li>
+                    <li data-i18n="subPro1">✓ Unlimited transfer speed</li>
+                    <li data-i18n="subPro2">✓ Up to 50 users in room</li>
+                    <li data-i18n="subPro3">✓ Advanced room security</li>
                 </ul>
-                <button onclick="alert('Subscription feature integrated!')">Choose Pro</button>
+                <button onclick="purchaseSubscription('pro')" data-i18n="choosePro">Choose Pro</button>
             </div>
 
             <div class="sub-card">
@@ -468,16 +529,16 @@
                     <div class="sub-price">$17.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                    <li>✓ Max Speed & Bandwidth</li>
-                    <li>✓ Unlimited users in room</li>
-                    <li>✓ E2E Encrypted Backups</li>
+                    <li data-i18n="subUlt1">✓ Max Speed & Bandwidth</li>
+                    <li data-i18n="subUlt2">✓ Unlimited users in room</li>
+                    <li data-i18n="subUlt3">✓ E2E Encrypted Backups</li>
                 </ul>
-                <button onclick="alert('Subscription feature integrated!')">Choose Ultimate</button>
+                <button onclick="purchaseSubscription('ultimate')" data-i18n="chooseUltimate">Choose Ultimate</button>
             </div>
         </div>
 
         <div class="modal-actions" style="margin-top: 12px;">
-            <button class="btn-secondary" onclick="document.getElementById('subscriptionsModal').style.display='none'">Close</button>
+            <button class="btn-secondary" onclick="document.getElementById('subscriptionsModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
@@ -485,14 +546,14 @@
 <!-- Add Friend Modal -->
 <div id="addFriendModal" class="modal-overlay">
     <div class="modal">
-        <h2>Add Friend</h2>
+        <h2 data-i18n="addFriend">Add Friend</h2>
         <div>
-            <label>Search user (Type for Display Name, @ for Username, # for ID):</label>
-            <input type="text" id="addFriendSearchInput" placeholder="e.g. dog, @john, #a1b2..." oninput="executeAddFriendSearch()">
+            <label data-i18n="searchUserLabel">Search user (Type for Display Name, @ for Username, # for ID):</label>
+            <input type="text" id="addFriendSearchInput" placeholder="e.g. dog, @john, #a1b2..." oninput="executeAddFriendSearch()" data-i18n-placeholder="searchUserPlaceholder">
         </div>
         <div id="addFriendSearchResult" class="list-container" style="margin-top: 10px; max-height: 200px;"></div>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'">Close</button>
+            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
@@ -500,22 +561,100 @@
 <!-- Invite Friends Modal -->
 <div id="inviteFriendsModal" class="modal-overlay">
     <div class="modal" style="max-width: 500px;">
-        <h2>Invite Friends to Room</h2>
-        <p style="font-size: 0.85rem; color: var(--text-dim);">Send direct message invites with room credentials to your friends.</p>
+        <h2 data-i18n="inviteFriendsTitle">Invite Friends to Room</h2>
+        <p style="font-size: 0.85rem; color: var(--text-dim);" data-i18n="inviteFriendsDesc">Send direct message invites with room credentials to your friends.</p>
         <div id="inviteFriendsContainer" class="list-container" style="max-height: 280px; margin-top: 10px;"></div>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('inviteFriendsModal').style.display='none'">Close</button>
+            <button class="btn-secondary" onclick="document.getElementById('inviteFriendsModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
 
-<!-- Accounts Database Modal (Zeldy only) -->
+<!-- Accounts Database Modal (Zeldy only) with Subscription Manager -->
 <div id="accountsListModal" class="modal-overlay">
-    <div class="modal" style="max-width: 600px;">
-        <h2>Registered Accounts Base (Admin)</h2>
-        <div id="allAccountsContainer" class="list-container" style="max-height: 350px;"></div>
+    <div class="modal modal-wide" style="max-width: 750px;">
+        <h2 data-i18n="adminAccountsBase">Registered Accounts Base & Subscriptions (Admin)</h2>
+        <div id="allAccountsContainer" class="list-container" style="max-height: 380px;"></div>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'">Close</button>
+            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'" data-i18n="close">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Global Settings Modal (Discord / Telegram Style) -->
+<div id="globalSettingsModal" class="modal-overlay">
+    <div class="modal modal-wide" style="max-width: 650px;">
+        <h2 data-i18n="settingsTitle">Platform Settings</h2>
+        
+        <div class="settings-tabs">
+            <button class="settings-tab-btn active" onclick="switchSettingsTab('general')" data-i18n="tabGeneral">General</button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('appearance')" data-i18n="tabAppearance">Appearance</button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('p2p')" data-i18n="tabP2P">P2P Network</button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('security')" data-i18n="tabSecurity">Security</button>
+        </div>
+
+        <!-- General Tab -->
+        <div id="panel-general" class="settings-panel active">
+            <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <label style="font-weight: 700; display: block; margin-bottom: 8px; color: #fff;" data-i18n="languageSelect">Language / Язык:</label>
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English (Default)</option>
+                    <option value="ru">Русский</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="pt">Português</option>
+                    <option value="de">Deutsch</option>
+                </select>
+            </div>
+            <div class="switch-row">
+                <span data-i18n="settingDesktopNotif">Desktop Notifications</span>
+                <label class="switch"><input type="checkbox" id="setDesktopNotif" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span data-i18n="settingSoundEffects">Sound Effects on Chat & Files</span>
+                <label class="switch"><input type="checkbox" id="setSoundEffects" checked><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <!-- Appearance Tab -->
+        <div id="panel-appearance" class="settings-panel">
+            <div class="switch-row">
+                <span data-i18n="settingGlassBlur">High Performance Glassmorphism Blur</span>
+                <label class="switch"><input type="checkbox" id="setGlassBlur" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span data-i18n="settingCompactQueue">Compact Transfer Queue View</span>
+                <label class="switch"><input type="checkbox" id="setCompactQueue"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <!-- P2P Network Tab -->
+        <div id="panel-p2p" class="settings-panel">
+            <div class="switch-row">
+                <span data-i18n="settingAggressiveICE">Aggressive STUN/TURN Candidate Gathering</span>
+                <label class="switch"><input type="checkbox" id="setAggressiveICE" checked><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span data-i18n="settingDirectConnect">Force Direct P2P (Bypass Relay)</span>
+                <label class="switch"><input type="checkbox" id="setDirectConnect" checked><span class="slider"></span></label>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="proOnlyFeature">🔒 Custom routing features require Pro or Ultimate subscription.</p>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="panel-security" class="settings-panel">
+            <div class="switch-row">
+                <span data-i18n="settingAutoLock">Auto-lock rooms after 30 minutes of inactivity</span>
+                <label class="switch"><input type="checkbox" id="setAutoLock"><span class="slider"></span></label>
+            </div>
+            <div class="switch-row">
+                <span data-i18n="settingE2E">End-to-End Encryption (AES-256)</span>
+                <label class="switch"><input type="checkbox" id="setE2E" checked><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 12px;">
+            <button class="btn-secondary" onclick="document.getElementById('globalSettingsModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
@@ -523,41 +662,41 @@
 <!-- Profile Settings Modal -->
 <div id="profileModal" class="modal-overlay">
     <div class="modal modal-wide">
-        <h2>Profile Settings</h2>
+        <h2 data-i18n="profileSettings">Profile Settings</h2>
         
         <div class="profile-grid-horizontal">
             <!-- Left Col: Avatar & Display Name -->
             <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; background: rgba(0,0,0,0.2); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
                 <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
                 <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-                <button class="btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
+                <button class="btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()" data-i18n="changeAvatar">Change Avatar</button>
                 
                 <div style="width: 100%;">
-                    <label>Display Name:</label>
+                    <label data-i18n="displayName">Display Name:</label>
                     <input type="text" id="profileDisplayNameInput" placeholder="Display name...">
                 </div>
 
                 <div style="width: 100%;">
-                    <label>Username (Login):</label>
+                    <label data-i18n="usernameLogin">Username (Login):</label>
                     <input type="text" id="profileUsernameReadonly" readonly style="opacity: 0.6; cursor: not-allowed; font-family: monospace;">
                 </div>
 
                 <div style="width: 100%; font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-top: 4px;">
-                    Created: <span id="profileCreatedAtText" style="color: var(--text);"></span>
+                    <span data-i18n="created">Created:</span> <span id="profileCreatedAtText" style="color: var(--text);"></span>
                 </div>
 
-                <button class="btn-danger" style="margin-top: 10px;" onclick="logout()">Log Out</button>
+                <button class="btn-danger" style="margin-top: 10px;" onclick="logout()" data-i18n="logOut">Log Out</button>
             </div>
 
             <!-- Middle Col: Short ID (Immutable), Color, Bio, Privacy, Blacklist -->
             <div style="display: flex; flex-direction: column; gap: 14px;">
                 <div>
-                    <label>Your Short ID (Immutable):</label>
+                    <label data-i18n="shortIdImmutable">Your Short ID (Immutable):</label>
                     <input type="text" id="profileUuidInput" readonly style="font-family: monospace; opacity: 0.7; cursor: not-allowed;">
                 </div>
 
                 <div>
-                    <label>Nickname Color:</label>
+                    <label data-i18n="nicknameColor">Nickname Color:</label>
                     <div class="color-picker-row">
                         <input type="color" id="profileColorInput" value="#6366f1">
                         <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#6366f1</span>
@@ -565,20 +704,20 @@
                 </div>
 
                 <div>
-                    <label for="profileBioInput">Bio:</label>
+                    <label for="profileBioInput" data-i18n="bio">Bio:</label>
                     <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
                 </div>
 
                 <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                    <label style="font-weight: 700; display: block; margin-bottom: 8px; color: #fff;">Privacy Settings:</label>
-                    <div class="switch-row"><span>Show ID to public</span><label class="switch"><input type="checkbox" id="privShowUuid"><span class="slider"></span></label></div>
-                    <div class="switch-row"><span>Show Creation Date</span><label class="switch"><input type="checkbox" id="privShowCreated"><span class="slider"></span></label></div>
-                    <div class="switch-row"><span>Show Bio</span><label class="switch"><input type="checkbox" id="privShowBio"><span class="slider"></span></label></div>
-                    <div class="switch-row"><span>Show Friends List</span><label class="switch"><input type="checkbox" id="privShowFriends"><span class="slider"></span></label></div>
+                    <label style="font-weight: 700; display: block; margin-bottom: 8px; color: #fff;" data-i18n="privacySettings">Privacy Settings:</label>
+                    <div class="switch-row"><span data-i18n="showIdPublic">Show ID to public</span><label class="switch"><input type="checkbox" id="privShowUuid"><span class="slider"></span></label></div>
+                    <div class="switch-row"><span data-i18n="showCreationDate">Show Creation Date</span><label class="switch"><input type="checkbox" id="privShowCreated"><span class="slider"></span></label></div>
+                    <div class="switch-row"><span data-i18n="showBio">Show Bio</span><label class="switch"><input type="checkbox" id="privShowBio"><span class="slider"></span></label></div>
+                    <div class="switch-row"><span data-i18n="showFriendsList">Show Friends List</span><label class="switch"><input type="checkbox" id="privShowFriends"><span class="slider"></span></label></div>
                 </div>
 
                 <div>
-                    <label style="font-weight: 700; display: block; margin-bottom: 6px; color: #fff;">Blacklist:</label>
+                    <label style="font-weight: 700; display: block; margin-bottom: 6px; color: #fff;" data-i18n="blacklist">Blacklist:</label>
                     <div id="profileBlacklistContainer" class="list-container"></div>
                 </div>
             </div>
@@ -586,57 +725,57 @@
             <!-- Right Col: Friends List -->
             <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.2); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border); height: 100%;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-weight: 700; color: #fff;">Friends List:</label>
-                    <button style="width: auto; padding: 4px 12px; font-size: 0.75rem;" onclick="openAddFriendModal()">+ Add Friends</button>
+                    <label style="font-weight: 700; color: #fff;" data-i18n="friendsList">Friends List:</label>
+                    <button style="width: auto; padding: 4px 12px; font-size: 0.75rem;" onclick="openAddFriendModal()" data-i18n="addFriendsBtn">+ Add Friends</button>
                 </div>
                 <div id="profileFriendsContainer" class="list-container" style="flex: 1; max-height: 320px;"></div>
             </div>
         </div>
 
         <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 12px; margin-top: 12px;">
-            <button class="btn-secondary" style="width: 120px;" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
-            <button style="width: 140px;" onclick="saveProfileChanges()">Save Changes</button>
+            <button class="btn-secondary" style="width: 120px;" onclick="document.getElementById('profileModal').style.display='none'" data-i18n="cancel">Cancel</button>
+            <button style="width: 140px;" onclick="saveProfileChanges()" data-i18n="saveChanges">Save Changes</button>
         </div>
     </div>
 </div>
 
-<!-- View User Profile Modal (Horizontally styled) -->
+<!-- View User Profile Modal -->
 <div id="viewUserProfileModal" class="modal-overlay">
     <div class="modal modal-wide" style="max-width: 650px;">
-        <h2 id="viewUserHeaderTitle">User Profile</h2>
+        <h2 id="viewUserHeaderTitle" data-i18n="userProfile">User Profile</h2>
         
         <div class="view-profile-horizontal">
-            <!-- Left Side: User Avatar, Display Name, Username, Actions -->
+            <!-- Left Side: Avatar, Display Name, Username, Actions -->
             <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
                 <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
                 <div id="viewUserDisplayName" style="font-weight: 700; font-size: 1.15rem; text-align: center;"></div>
                 <div id="viewUserSubHeader" style="font-size: 0.8rem; color: var(--text-dim); font-family: monospace; text-align: center;"></div>
                 
                 <div class="modal-actions" style="width: 100%; margin-top: 10px;">
-                    <button id="addFriendBtn">Add Friend</button>
-                    <button id="openDirectChatBtn" class="btn-secondary">Message</button>
-                    <button id="blockUserBtn" class="btn-danger">Block</button>
+                    <button id="addFriendBtn" data-i18n="addFriend">Add Friend</button>
+                    <button id="openDirectChatBtn" class="btn-secondary" data-i18n="message">Message</button>
+                    <button id="blockUserBtn" class="btn-danger" data-i18n="block">Block</button>
                 </div>
             </div>
 
             <!-- Right Side: Details & Friends -->
             <div style="display: flex; flex-direction: column; gap: 14px;">
                 <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                    <label style="font-weight: 700; font-size: 0.85rem; color: #fff;">About Me:</label>
+                    <label style="font-weight: 700; font-size: 0.85rem; color: #fff;" data-i18n="aboutMe">About Me:</label>
                     <div id="viewUserBio" style="font-size: 0.875rem; color: var(--text-dim); margin-top: 6px; word-break: break-word;"></div>
                 </div>
 
                 <div id="viewUserCreated" style="font-size: 0.8rem; color: var(--text-dim);"></div>
 
                 <div id="viewUserFriendsSection">
-                    <label style="font-weight: 700; font-size: 0.85rem; color: #fff;">Friends:</label>
+                    <label style="font-weight: 700; font-size: 0.85rem; color: #fff;" data-i18n="friends">Friends:</label>
                     <div id="viewUserFriendsList" class="list-container" style="max-height: 140px; margin-top: 6px;"></div>
                 </div>
             </div>
         </div>
 
         <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; margin-top: 12px;">
-            <button class="btn-secondary" style="width: 100px;" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Close</button>
+            <button class="btn-secondary" style="width: 100px;" onclick="document.getElementById('viewUserProfileModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
@@ -644,123 +783,955 @@
 <!-- Direct Chat Modal -->
 <div id="directChatModal" class="modal-overlay">
     <div class="modal" style="max-width: 500px;">
-        <h2 id="directChatTitle">Direct Chat</h2>
+        <h2 id="directChatTitle" data-i18n="directChat">Direct Chat</h2>
         <div id="directChatMessages" class="chat-messages" style="height: 260px;"></div>
         <div class="chat-input-row">
-            <input type="text" id="directChatInput" placeholder="Type a private message..." autocomplete="off">
-            <button id="sendDirectMsgBtn">Send</button>
+            <input type="text" id="directChatInput" placeholder="Type a private message..." autocomplete="off" data-i18n-placeholder="typePrivateMessage">
+            <button id="sendDirectMsgBtn" data-i18n="send">Send</button>
         </div>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'">Close</button>
+            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
 
+<!-- Login Modal -->
 <div id="loginModal" class="modal-overlay">
     <div class="modal">
-        <h2>Account Login</h2>
-        <div><label for="loginUsername">Username:</label><input type="text" id="loginUsername" maxlength="20" placeholder="Enter username..."></div>
-        <div><label for="loginPassword">Password:</label><input type="password" id="loginPassword" placeholder="Enter password..."></div>
+        <h2 data-i18n="accountLogin">Account Login</h2>
+        <div><label for="loginUsername" data-i18n="username">Username:</label><input type="text" id="loginUsername" maxlength="20" placeholder="Enter username..." data-i18n-placeholder="enterUsername"></div>
+        <div><label for="loginPassword" data-i18n="password">Password:</label><input type="password" id="loginPassword" placeholder="Enter password..." data-i18n-placeholder="enterPassword"></div>
         <div class="modal-actions">
-            <button id="doLoginBtn">Log In</button>
-            <button id="cancelLoginBtn" class="btn-secondary">Cancel</button>
+            <button id="doLoginBtn" data-i18n="logIn">Log In</button>
+            <button id="cancelLoginBtn" class="btn-secondary" data-i18n="cancel">Cancel</button>
         </div>
     </div>
 </div>
 
+<!-- Register Modal -->
 <div id="registerModal" class="modal-overlay">
     <div class="modal">
-        <h2>Create Account</h2>
-        <div><label for="regUsername">Username (unique login):</label><input type="text" id="regUsername" maxlength="20" placeholder="Choose username..."></div>
-        <div><label for="regDisplayName">Display Name:</label><input type="text" id="regDisplayName" maxlength="25" placeholder="Choose display name..."></div>
-        <div><label for="regPassword">Password:</label><input type="password" id="regPassword" placeholder="Choose password..."></div>
+        <h2 data-i18n="createAccount">Create Account</h2>
+        <div><label for="regUsername" data-i18n="usernameUnique">Username (unique login):</label><input type="text" id="regUsername" maxlength="20" placeholder="Choose username..." data-i18n-placeholder="chooseUsername"></div>
+        <div><label for="regDisplayName" data-i18n="displayName">Display Name:</label><input type="text" id="regDisplayName" maxlength="25" placeholder="Choose display name..." data-i18n-placeholder="chooseDisplayName"></div>
+        <div><label for="regPassword" data-i18n="password">Password:</label><input type="password" id="regPassword" placeholder="Choose password..." data-i18n-placeholder="choosePassword"></div>
         <div class="modal-actions">
-            <button id="doRegisterBtn">Sign Up</button>
-            <button id="cancelRegBtn" class="btn-secondary">Cancel</button>
+            <button id="doRegisterBtn" data-i18n="signUp">Sign Up</button>
+            <button id="cancelRegBtn" class="btn-secondary" data-i18n="cancel">Cancel</button>
         </div>
     </div>
 </div>
 
+<!-- Create Room Modal -->
 <div id="createModal" class="modal-overlay">
     <div class="modal">
-        <h2>Create New Room</h2>
-        <div><label for="modalRoomId">Room ID:</label><input type="text" id="modalRoomId" readonly style="font-family: monospace; font-weight: bold; color: var(--accent-light);"></div>
-        <div><label for="modalPassword">Set Room Password:</label><input type="password" id="modalPassword" placeholder="Enter password..."></div>
-        <div><label for="modalMaxUsers">User Limit (Optional):</label><input type="number" id="modalMaxUsers" placeholder="Unlimited" min="1"></div>
+        <h2 data-i18n="createNewRoom">Create New Room</h2>
+        <div><label for="modalRoomId" data-i18n="roomId">Room ID:</label><input type="text" id="modalRoomId" readonly style="font-family: monospace; font-weight: bold; color: var(--accent-light);"></div>
+        <div><label for="modalPassword" data-i18n="setRoomPassword">Set Room Password:</label><input type="password" id="modalPassword" placeholder="Enter password..." data-i18n-placeholder="enterPassword"></div>
+        <div>
+            <label for="modalMaxUsers" data-i18n="userLimitOptional">User Limit (Max 2 for Free tier):</label>
+            <input type="number" id="modalMaxUsers" placeholder="2" min="1" max="50">
+            <p id="roomLimitHint" style="font-size: 0.75rem; color: var(--warning); margin-top: 4px;">Free tier limit: Max 2 users per room. Upgrade to Pro/Ultimate for up to 50+ users.</p>
+        </div>
 
         <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
-            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;">Default User Permissions:</label>
-            <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="defPermUpload" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="defPermDownload" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="defPermDelete" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Send Chat Messages</span><label class="switch"><input type="checkbox" id="defPermChat" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View Message History</span><label class="switch"><input type="checkbox" id="defPermViewMsg" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View File History</span><label class="switch"><input type="checkbox" id="defPermViewFile" checked><span class="slider"></span></label></div>
+            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;" data-i18n="defaultUserPerms">Default User Permissions:</label>
+            <div class="switch-row"><span data-i18n="uploadFiles">Upload Files</span><label class="switch"><input type="checkbox" id="defPermUpload" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="downloadFiles">Download Files</span><label class="switch"><input type="checkbox" id="defPermDownload" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="deleteFiles">Delete Files</span><label class="switch"><input type="checkbox" id="defPermDelete" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="sendChatMsg">Send Chat Messages</span><label class="switch"><input type="checkbox" id="defPermChat" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="viewMsgHistory">View Message History</span><label class="switch"><input type="checkbox" id="defPermViewMsg" checked><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="viewFileHistory">View File History</span><label class="switch"><input type="checkbox" id="defPermViewFile" checked><span class="slider"></span></label></div>
         </div>
 
         <div class="modal-actions">
-            <button id="confirmCreateBtn">Create</button>
-            <button id="cancelCreateBtn" class="btn-secondary">Cancel</button>
+            <button id="confirmCreateBtn" data-i18n="create">Create</button>
+            <button id="cancelCreateBtn" class="btn-secondary" data-i18n="cancel">Cancel</button>
         </div>
     </div>
 </div>
 
+<!-- Join Room Modal -->
 <div id="joinModal" class="modal-overlay">
     <div class="modal">
-        <h2>Join Existing Room</h2>
-        <div><label for="joinRoomId">Room ID:</label><input type="text" id="joinRoomId" placeholder="Enter 6-digit ID..." maxlength="6"></div>
-        <div><label for="joinPassword">Room Password:</label><input type="password" id="joinPassword" placeholder="Enter password..."></div>
+        <h2 data-i18n="joinExistingRoom">Join Existing Room</h2>
+        <div><label for="joinRoomId" data-i18n="roomId">Room ID:</label><input type="text" id="joinRoomId" placeholder="Enter 6-digit ID..." maxlength="6" data-i18n-placeholder="enter6DigitId"></div>
+        <div><label for="joinPassword" data-i18n="roomPassword">Room Password:</label><input type="password" id="joinPassword" placeholder="Enter password..." data-i18n-placeholder="enterPassword"></div>
         <div class="modal-actions">
-            <button id="confirmJoinBtn">Join</button>
-            <button id="cancelJoinBtn" class="btn-secondary">Cancel</button>
+            <button id="confirmJoinBtn" data-i18n="join">Join</button>
+            <button id="cancelJoinBtn" class="btn-secondary" data-i18n="cancel">Cancel</button>
         </div>
     </div>
 </div>
 
+<!-- Room Settings Modal -->
 <div id="settingsModal" class="modal-overlay">
     <div class="modal">
-        <h2>Room Settings</h2>
+        <h2 data-i18n="roomSettings">Room Settings</h2>
         <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; margin-bottom: 10px;">
-            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;">Room Access Rules:</label>
+            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;" data-i18n="roomAccessRules">Room Access Rules:</label>
             <div class="switch-row">
-                <span>Require Account (Block Guests)</span>
+                <span data-i18n="requireAccountBlockGuests">Require Account (Block Guests)</span>
                 <label class="switch"><input type="checkbox" id="toggleRequireAccount" onchange="toggleRequireAccountSetting()"><span class="slider"></span></label>
             </div>
         </div>
         <div>
-            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;">Room Blacklist:</label>
+            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;" data-i18n="roomBlacklist">Room Blacklist:</label>
             <div id="blacklistContainer" class="list-container">
-                <div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No banned users</div>
+                <div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;" data-i18n="noBannedUsers">No banned users</div>
             </div>
         </div>
         <div class="modal-actions">
-            <button id="closeSettingsModalBtn" class="btn-secondary">Close</button>
+            <button id="closeSettingsModalBtn" class="btn-secondary" onclick="document.getElementById('settingsModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
 
+<!-- Manage User Modal -->
 <div id="manageUserModal" class="modal-overlay">
     <div class="modal">
         <h2 id="manageUserName">Manage User</h2>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 700; margin-bottom: 4px; color: #fff;">Permissions:</label>
-            <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="permUpload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="permDownload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="permDelete" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Send Chat Messages</span><label class="switch"><input type="checkbox" id="permChat" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View Message History</span><label class="switch"><input type="checkbox" id="permViewMessageHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View File History</span><label class="switch"><input type="checkbox" id="permViewFileHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <label style="font-weight: 700; margin-bottom: 4px; color: #fff;" data-i18n="permissions">Permissions:</label>
+            <div class="switch-row"><span data-i18n="uploadFiles">Upload Files</span><label class="switch"><input type="checkbox" id="permUpload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="downloadFiles">Download Files</span><label class="switch"><input type="checkbox" id="permDownload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="deleteFiles">Delete Files</span><label class="switch"><input type="checkbox" id="permDelete" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="sendChatMsg">Send Chat Messages</span><label class="switch"><input type="checkbox" id="permChat" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="viewMsgHistory">View Message History</span><label class="switch"><input type="checkbox" id="permViewMessageHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
+            <div class="switch-row"><span data-i18n="viewFileHistory">View File History</span><label class="switch"><input type="checkbox" id="permViewFileHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
         </div>
         <div class="modal-actions">
-            <button id="kickUserBtn" class="btn-danger">Kick User</button>
-            <button id="banUserBtn" class="btn-danger" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);">Ban User</button>
-            <button id="closeManageModalBtn" class="btn-secondary">Close</button>
+            <button id="kickUserBtn" class="btn-danger" data-i18n="kickUser">Kick User</button>
+            <button id="banUserBtn" class="btn-danger" style="background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);" data-i18n="banUser">Ban User</button>
+            <button id="closeManageModalBtn" class="btn-secondary" onclick="document.getElementById('manageUserModal').style.display='none'" data-i18n="close">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Footer Info Modals (About, Support, Terms, Privacy) -->
+<div id="footerInfoModal" class="modal-overlay">
+    <div class="modal">
+        <h2 id="footerModalTitle">Info</h2>
+        <div id="footerModalContent" style="font-size: 0.9rem; color: var(--text-dim); line-height: 1.5; display: flex; flex-direction: column; gap: 10px;"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('footerInfoModal').style.display='none'" data-i18n="close">Close</button>
         </div>
     </div>
 </div>
 
 <script>
-    /* Incremental Short ID Generator (Base62) */
+    /* ==========================================
+       1. LOCALIZATION & TRANSLATIONS (i18n)
+       ========================================== */
+    const translations = {
+        en: {
+            appTitle: "LocalBridge",
+            appSubtitle: "P2P Serverless Room Management",
+            createRoom: "Create Room",
+            joinRoom: "Join Room",
+            statusReady: "Status: Ready",
+            activeWorkspace: "Active P2P Workspace",
+            statusConnected: "Status: Connected!",
+            roomControls: "Room Controls",
+            roomId: "Room ID:",
+            password: "Password:",
+            inviteFriends: "Invite Friends",
+            leaveRoom: "Leave Room",
+            roomChat: "Room Chat",
+            typeMessage: "Type a message...",
+            send: "Send",
+            fileTransfer: "File Transfer",
+            dragDropFiles: "Drag & Drop files here",
+            orClickBrowse: "or click to browse",
+            transferQueue: "Transfer Queue",
+            noFilesInQueue: "No files in queue",
+            usersInRoom: "Users in Room",
+            selectSubPlan: "Select Subscription Plan",
+            subModalDesc: "Upgrade your LocalBridge account for higher transfer speeds, unlimited room limits, and exclusive advanced features.",
+            freeTrialTitle: "🎁 Free Pro Trial (7 Days)",
+            freeTrialDesc: "Try all Pro features free for 7 days with zero commitments!",
+            claimTrial: "Claim Free Trial",
+            popular: "POPULAR",
+            chooseBasic: "Choose Basic",
+            choosePro: "Choose Pro",
+            chooseUltimate: "Choose Ultimate",
+            subBasic1: "✓ High-speed P2P transfer",
+            subBasic2: "✓ Up to 10 users in room",
+            subBasic3: "✓ Priority connection routing",
+            subPro1: "✓ Unlimited transfer speed",
+            subPro2: "✓ Up to 50 users in room",
+            subPro3: "✓ Advanced room security",
+            subUlt1: "✓ Max Speed & Bandwidth",
+            subUlt2: "✓ Unlimited users in room",
+            subUlt3: "✓ E2E Encrypted Backups",
+            close: "Close",
+            addFriend: "Add Friend",
+            searchUserLabel: "Search user (Type for Display Name, @ for Username, # for ID):",
+            searchUserPlaceholder: "e.g. dog, @john, #a1b2...",
+            inviteFriendsTitle: "Invite Friends to Room",
+            inviteFriendsDesc: "Send direct message invites with room credentials to your friends.",
+            adminAccountsBase: "Registered Accounts Base & Subscriptions (Admin)",
+            settingsTitle: "Platform Settings",
+            tabGeneral: "General",
+            tabAppearance: "Appearance",
+            tabP2P: "P2P Network",
+            tabSecurity: "Security",
+            languageSelect: "Language / Язык:",
+            settingDesktopNotif: "Desktop Notifications",
+            settingSoundEffects: "Sound Effects on Chat & Files",
+            settingGlassBlur: "High Performance Glassmorphism Blur",
+            settingCompactQueue: "Compact Transfer Queue View",
+            settingAggressiveICE: "Aggressive STUN/TURN Candidate Gathering",
+            settingDirectConnect: "Force Direct P2P (Bypass Relay)",
+            proOnlyFeature: "🔒 Custom routing features require Pro or Ultimate subscription.",
+            settingAutoLock: "Auto-lock rooms after 30 minutes of inactivity",
+            settingE2E: "End-to-End Encryption (AES-256)",
+            profileSettings: "Profile Settings",
+            changeAvatar: "Change Avatar",
+            displayName: "Display Name:",
+            usernameLogin: "Username (Login):",
+            created: "Created:",
+            logOut: "Log Out",
+            shortIdImmutable: "Your Short ID (Immutable):",
+            nicknameColor: "Nickname Color:",
+            bio: "Bio:",
+            privacySettings: "Privacy Settings:",
+            showIdPublic: "Show ID to public",
+            showCreationDate: "Show Creation Date",
+            showBio: "Show Bio",
+            showFriendsList: "Show Friends List",
+            blacklist: "Blacklist:",
+            friendsList: "Friends List:",
+            addFriendsBtn: "+ Add Friends",
+            cancel: "Cancel",
+            saveChanges: "Save Changes",
+            userProfile: "User Profile",
+            message: "Message",
+            block: "Block",
+            aboutMe: "About Me:",
+            friends: "Friends:",
+            directChat: "Direct Chat",
+            typePrivateMessage: "Type a private message...",
+            accountLogin: "Account Login",
+            username: "Username:",
+            enterUsername: "Enter username...",
+            enterPassword: "Enter password...",
+            logIn: "Log In",
+            createAccount: "Create Account",
+            usernameUnique: "Username (unique login):",
+            chooseUsername: "Choose username...",
+            chooseDisplayName: "Choose display name...",
+            signUp: "Sign Up",
+            createNewRoom: "Create New Room",
+            setRoomPassword: "Set Room Password:",
+            userLimitOptional: "User Limit (Max 2 for Free tier):",
+            defaultUserPerms: "Default User Permissions:",
+            uploadFiles: "Upload Files",
+            downloadFiles: "Download Files",
+            deleteFiles: "Delete Files",
+            sendChatMsg: "Send Chat Messages",
+            viewMsgHistory: "View Message History",
+            viewFileHistory: "View File History",
+            create: "Create",
+            joinExistingRoom: "Join Existing Room",
+            enter6DigitId: "Enter 6-digit ID...",
+            roomPassword: "Room Password:",
+            join: "Join",
+            roomSettings: "Room Settings",
+            roomAccessRules: "Room Access Rules:",
+            requireAccountBlockGuests: "Require Account (Block Guests)",
+            roomBlacklist: "Room Blacklist:",
+            noBannedUsers: "No banned users",
+            permissions: "Permissions:",
+            kickUser: "Kick User",
+            banUser: "Ban User"
+        },
+        ru: {
+            appTitle: "LocalBridge",
+            appSubtitle: "P2P Управление комнатами без серверов",
+            createRoom: "Создать комнату",
+            joinRoom: "Войти в комнату",
+            statusReady: "Статус: Готов",
+            activeWorkspace: "Активное P2P рабочее пространство",
+            statusConnected: "Статус: Подключено!",
+            roomControls: "Управление комнатой",
+            roomId: "ID комнаты:",
+            password: "Пароль:",
+            inviteFriends: "Пригласить друзей",
+            leaveRoom: "Выйти из комнаты",
+            roomChat: "Чат комнаты",
+            typeMessage: "Введите сообщение...",
+            send: "Отправить",
+            fileTransfer: "Передача файлов",
+            dragDropFiles: "Перетащите файлы сюда",
+            orClickBrowse: "или нажмите для выбора",
+            transferQueue: "Очередь передачи",
+            noFilesInQueue: "Нет файлов в очереди",
+            usersInRoom: "Участники",
+            selectSubPlan: "Выберите тарифный план",
+            subModalDesc: "Обновите аккаунт LocalBridge для максимальной скорости передачи, безлимитных комнат и эксклюзивных функций.",
+            freeTrialTitle: "🎁 Бесплатный Pro trial (7 дней)",
+            freeTrialDesc: "Попробуйте все функции Pro бесплатно в течение 7 дней без обязательств!",
+            claimTrial: "Активировать Trial",
+            popular: "ПОПУЛЯРНЫЙ",
+            chooseBasic: "Выбрать Basic",
+            choosePro: "Выбрать Pro",
+            chooseUltimate: "Выбрать Ultimate",
+            subBasic1: "✓ Высокоскоростной P2P перевод",
+            subBasic2: "✓ До 10 участников в комнате",
+            subBasic3: "✓ Приоритетная маршрутизация",
+            subPro1: "✓ Неограниченная скорость",
+            subPro2: "✓ До 50 участников в комнате",
+            subPro3: "✓ Продвинутая защита комнаты",
+            subUlt1: "✓ Максимальная скорость и канал",
+            subUlt2: "✓ Безлимит участников в комнате",
+            subUlt3: "✓ E2E зашифрованные бэкапы",
+            close: "Закрыть",
+            addFriend: "Добавить друга",
+            searchUserLabel: "Поиск (Имя, @Логин, #ID):",
+            searchUserPlaceholder: "например: dog, @john, #a1b2...",
+            inviteFriendsTitle: "Пригласить друзей в комнату",
+            inviteFriendsDesc: "Отправьте личное приглашение с данными комнаты своим друзьям.",
+            adminAccountsBase: "База аккаунтов и подписок (Админ)",
+            settingsTitle: "Настройки платформы",
+            tabGeneral: "Общие",
+            tabAppearance: "Вид",
+            tabP2P: "P2P Сеть",
+            tabSecurity: "Безопасность",
+            languageSelect: "Язык / Language:",
+            settingDesktopNotif: "Уведомления на рабочем столе",
+            settingSoundEffects: "Звуковые эффекты чата и файлов",
+            settingGlassBlur: "Эффект размытия Glassmorphism",
+            settingCompactQueue: "Компактный вид очереди файлов",
+            settingAggressiveICE: "Агрессивный сбор STUN/TURN кандидатов",
+            settingDirectConnect: "Принудительный прямой P2P (Обход ретранслятора)",
+            proOnlyFeature: "🔒 Пользовательская маршрутизация требует Pro или Ultimate.",
+            settingAutoLock: "Авто-блокировка комнат через 30 минут бездействия",
+            settingE2E: "Шифрование End-to-End (AES-256)",
+            profileSettings: "Настройки профиля",
+            changeAvatar: "Сменить аватар",
+            displayName: "Имя профиля:",
+            usernameLogin: "Логин (Имя пользователя):",
+            created: "Создан:",
+            logOut: "Выйти",
+            shortIdImmutable: "Ваш короткий ID (Неизменяемый):",
+            nicknameColor: "Цвет никнейма:",
+            bio: "О себе:",
+            privacySettings: "Настройки приватности:",
+            showIdPublic: "Показывать ID публично",
+            showCreationDate: "Показывать дату создания",
+            showBio: "Показывать описание",
+            showFriendsList: "Показывать список друзей",
+            blacklist: "Черный список:",
+            friendsList: "Список друзей:",
+            addFriendsBtn: "+ Добавить",
+            cancel: "Отмена",
+            saveChanges: "Сохранить",
+            userProfile: "Профиль пользователя",
+            message: "Сообщение",
+            block: "В блок",
+            aboutMe: "О себе:",
+            friends: "Друзья:",
+            directChat: "Личный чат",
+            typePrivateMessage: "Введите личное сообщение...",
+            accountLogin: "Вход в аккаунт",
+            username: "Логин:",
+            enterUsername: "Введите логин...",
+            enterPassword: "Введите пароль...",
+            logIn: "Войти",
+            createAccount: "Регистрация аккаунта",
+            usernameUnique: "Логин (уникальный):",
+            chooseUsername: "Выберите логин...",
+            chooseDisplayName: "Выберите имя профиля...",
+            signUp: "Создать аккаунт",
+            createNewRoom: "Создать новую комнату",
+            setRoomPassword: "Установите пароль комнаты:",
+            userLimitOptional: "Лимит участников (Макс 2 для Free):",
+            defaultUserPerms: "Права пользователей по умолчанию:",
+            uploadFiles: "Загрузка файлов",
+            downloadFiles: "Скачивание файлов",
+            deleteFiles: "Удаление файлов",
+            sendChatMsg: "Отправка сообщений",
+            viewMsgHistory: "Просмотр истории чата",
+            viewFileHistory: "Просмотр истории файлов",
+            create: "Создать",
+            joinExistingRoom: "Войти в комнату",
+            enter6DigitId: "Введите 6-значный ID...",
+            roomPassword: "Пароль комнаты:",
+            join: "Войти",
+            roomSettings: "Настройки комнаты",
+            roomAccessRules: "Правила доступа в комнату:",
+            requireAccountBlockGuests: "Требовать аккаунт (Блок гостей)",
+            roomBlacklist: "Черный список комнаты:",
+            noBannedUsers: "Нет забаненных",
+            permissions: "Права доступа:",
+            kickUser: "Выгнать",
+            banUser: "Забанить"
+        },
+        es: {
+            appTitle: "LocalBridge",
+            appSubtitle: "Gestión de salas P2P sin servidor",
+            createRoom: "Crear Sala",
+            joinRoom: "Unirse a Sala",
+            statusReady: "Estado: Listo",
+            activeWorkspace: "Espacio de trabajo P2P activo",
+            statusConnected: "¡Estado: Conectado!",
+            roomControls: "Controles de Sala",
+            roomId: "ID de Sala:",
+            password: "Contraseña:",
+            inviteFriends: "Invitar Amigos",
+            leaveRoom: "Salir de Sala",
+            roomChat: "Chat de Sala",
+            typeMessage: "Escribe un mensaje...",
+            send: "Enviar",
+            fileTransfer: "Transferencia de Archivos",
+            dragDropFiles: "Arrastra y suelta archivos aquí",
+            orClickBrowse: "o haz clic para buscar",
+            transferQueue: "Cola de Transferencia",
+            noFilesInQueue: "No hay archivos en cola",
+            usersInRoom: "Usuarios en Sala",
+            selectSubPlan: "Seleccionar Plan de Suscripción",
+            subModalDesc: "Actualiza tu cuenta de LocalBridge para mayor velocidad y salas ilimitadas.",
+            freeTrialTitle: "🎁 Prueba Pro Gratuita (7 Días)",
+            freeTrialDesc: "¡Prueba todas las funciones Pro gratis durante 7 días!",
+            claimTrial: "Reclamar Prueba",
+            popular: "POPULAR",
+            chooseBasic: "Elegir Basic",
+            choosePro: "Elegir Pro",
+            chooseUltimate: "Elegir Ultimate",
+            close: "Cerrar",
+            addFriend: "Añadir Amigo",
+            searchUserLabel: "Buscar usuario:",
+            searchUserPlaceholder: "ej. dog, @john, #a1b2...",
+            inviteFriendsTitle: "Invitar Amigos a la Sala",
+            inviteFriendsDesc: "Envía invitaciones con credenciales de sala.",
+            adminAccountsBase: "Base de Cuentas y Suscripciones (Admin)",
+            settingsTitle: "Configuración",
+            tabGeneral: "General",
+            tabAppearance: "Apariencia",
+            tabP2P: "Red P2P",
+            tabSecurity: "Seguridad",
+            languageSelect: "Idioma / Language:",
+            profileSettings: "Configuración de Perfil",
+            changeAvatar: "Cambiar Avatar",
+            displayName: "Nombre Visible:",
+            usernameLogin: "Usuario (Login):",
+            created: "Creado:",
+            logOut: "Cerrar Sesión",
+            shortIdImmutable: "Tu ID Corto:",
+            nicknameColor: "Color de Apodo:",
+            bio: "Biografía:",
+            privacySettings: "Privacidad:",
+            showIdPublic: "Mostrar ID público",
+            showCreationDate: "Mostrar fecha de creación",
+            showBio: "Mostrar biografía",
+            showFriendsList: "Mostrar amigos",
+            blacklist: "Lista Negra:",
+            friendsList: "Lista de Amigos:",
+            addFriendsBtn: "+ Añadir",
+            cancel: "Cancelar",
+            saveChanges: "Guardar Cambios",
+            userProfile: "Perfil de Usuario",
+            message: "Mensaje",
+            block: "Bloquear",
+            aboutMe: "Sobre mí:",
+            friends: "Amigos:",
+            directChat: "Chat Directo",
+            typePrivateMessage: "Escribe un mensaje privado...",
+            accountLogin: "Iniciar Sesión",
+            username: "Usuario:",
+            enterUsername: "Introduce usuario...",
+            enterPassword: "Introduce contraseña...",
+            logIn: "Entrar",
+            createAccount: "Crear Cuenta",
+            usernameUnique: "Usuario único:",
+            chooseUsername: "Elige usuario...",
+            chooseDisplayName: "Elige nombre visible...",
+            signUp: "Registrarse",
+            createNewRoom: "Crear Nueva Sala",
+            setRoomPassword: "Contraseña de Sala:",
+            userLimitOptional: "Límite de Usuarios (Máx 2 para Free):",
+            defaultUserPerms: "Permisos por Defecto:",
+            uploadFiles: "Subir Archivos",
+            downloadFiles: "Descargar Archivos",
+            deleteFiles: "Borrar Archivos",
+            sendChatMsg: "Enviar Mensajes",
+            viewMsgHistory: "Ver Historial de Chat",
+            viewFileHistory: "Ver Historial de Archivos",
+            create: "Crear",
+            joinExistingRoom: "Unirse a Sala Existente",
+            enter6DigitId: "Introduce ID de 6 dígitos...",
+            roomPassword: "Contraseña de Sala:",
+            join: "Unirse",
+            roomSettings: "Configuración de Sala",
+            roomAccessRules: "Reglas de Acceso:",
+            requireAccountBlockGuests: "Requerir Cuenta (Bloquear Invitados)",
+            roomBlacklist: "Lista Negra de Sala:",
+            noBannedUsers: "No hay usuarios baneados",
+            permissions: "Permisos:",
+            kickUser: "Expulsar",
+            banUser: "Banear"
+        },
+        fr: {
+            appTitle: "LocalBridge",
+            appSubtitle: "Gestion de salles P2P sans serveur",
+            createRoom: "Créer une salle",
+            joinRoom: "Rejoindre",
+            statusReady: "Statut : Prêt",
+            activeWorkspace: "Espace de travail P2P actif",
+            statusConnected: "Statut : Connecté !",
+            roomControls: "Contrôles de la salle",
+            roomId: "ID de salle :",
+            password: "Mot de passe :",
+            inviteFriends: "Inviter des amis",
+            leaveRoom: "Quitter la salle",
+            roomChat: "Chat de la salle",
+            typeMessage: "Écrire un message...",
+            send: "Envoyer",
+            fileTransfer: "Transfert de fichiers",
+            dragDropFiles: "Glissez-déposez des fichiers ici",
+            orClickBrowse: "ou cliquez pour parcourir",
+            transferQueue: "File de transfert",
+            noFilesInQueue: "Aucun fichier en file d'attente",
+            usersInRoom: "Utilisateurs dans la salle",
+            selectSubPlan: "Choisir un plan d'abonnement",
+            subModalDesc: "Mettez à niveau votre compte LocalBridge pour des vitesses accrues et des salles illimitées.",
+            freeTrialTitle: "🎁 Essai Pro Gratuit (7 Jours)",
+            freeTrialDesc: "Essayez toutes les fonctionnalités Pro gratuitement pendant 7 jours !",
+            claimTrial: "Activer l'essai",
+            popular: "POPULAIRE",
+            chooseBasic: "Choisir Basic",
+            choosePro: "Choisir Pro",
+            chooseUltimate: "Choisir Ultimate",
+            close: "Fermer",
+            addFriend: "Ajouter un ami",
+            searchUserLabel: "Rechercher un utilisateur :",
+            searchUserPlaceholder: "ex: dog, @john, #a1b2...",
+            inviteFriendsTitle: "Inviter des amis dans la salle",
+            inviteFriendsDesc: "Envoyez des invitations avec les identifiants de la salle.",
+            adminAccountsBase: "Base des comptes et abonnements (Admin)",
+            settingsTitle: "Paramètres",
+            tabGeneral: "Général",
+            tabAppearance: "Apparence",
+            tabP2P: "Réseau P2P",
+            tabSecurity: "Sécurité",
+            languageSelect: "Langue / Language:",
+            profileSettings: "Paramètres du profil",
+            changeAvatar: "Changer d'avatar",
+            displayName: "Nom d'affichage :",
+            usernameLogin: "Nom d'utilisateur :",
+            created: "Créé le :",
+            logOut: "Se déconnecter",
+            shortIdImmutable: "Votre ID court :",
+            nicknameColor: "Couleur du pseudo :",
+            bio: "Bio :",
+            privacySettings: "Confidentialité :",
+            showIdPublic: "Afficher l'ID au public",
+            showCreationDate: "Afficher la date de création",
+            showBio: "Afficher la bio",
+            showFriendsList: "Afficher la liste d'amis",
+            blacklist: "Liste noire :",
+            friendsList: "Liste d'amis :",
+            addFriendsBtn: "+ Ajouter",
+            cancel: "Annuler",
+            saveChanges: "Enregistrer",
+            userProfile: "Profil utilisateur",
+            message: "Message",
+            block: "Bloquer",
+            aboutMe: "À propos de moi :",
+            friends: "Amis :",
+            directChat: "Chat direct",
+            typePrivateMessage: "Écrire un message privé...",
+            accountLogin: "Connexion",
+            username: "Nom d'utilisateur :",
+            enterUsername: "Entrer le nom d'utilisateur...",
+            enterPassword: "Entrer le mot de passe...",
+            logIn: "Se connecter",
+            createAccount: "Créer un compte",
+            usernameUnique: "Nom d'utilisateur unique :",
+            chooseUsername: "Choisir un nom d'utilisateur...",
+            chooseDisplayName: "Choisir un nom d'affichage...",
+            signUp: "S'inscrire",
+            createNewRoom: "Créer une nouvelle salle",
+            setRoomPassword: "Mot de passe de la salle :",
+            userLimitOptional: "Limite d'utilisateurs (Max 2 pour Free) :",
+            defaultUserPerms: "Autorisations par défaut :",
+            uploadFiles: "Envoyer des fichiers",
+            downloadFiles: "Télécharger des fichiers",
+            deleteFiles: "Supprimer des fichiers",
+            sendChatMsg: "Envoyer des messages",
+            viewMsgHistory: "Voir l'historique des messages",
+            viewFileHistory: "Voir l'historique des fichiers",
+            create: "Créer",
+            joinExistingRoom: "Rejoindre une salle",
+            enter6DigitId: "Entrer l'ID à 6 chiffres...",
+            roomPassword: "Mot de passe de la salle :",
+            join: "Rejoindre",
+            roomSettings: "Paramètres de la salle",
+            roomAccessRules: "Règles d'accès :",
+            requireAccountBlockGuests: "Exiger un compte (Bloquer les invités)",
+            roomBlacklist: "Liste noire de la salle :",
+            noBannedUsers: "Aucun utilisateur banni",
+            permissions: "Autorisations :",
+            kickUser: "Expulser",
+            banUser: "Bannir"
+        },
+        pt: {
+            appTitle: "LocalBridge",
+            appSubtitle: "Gerenciamento de salas P2P sem servidor",
+            createRoom: "Criar Sala",
+            joinRoom: "Entrar na Sala",
+            statusReady: "Status: Pronto",
+            activeWorkspace: "Espaço de trabalho P2P ativo",
+            statusConnected: "Status: Conectado!",
+            roomControls: "Controles da Sala",
+            roomId: "ID da Sala:",
+            password: "Senha:",
+            inviteFriends: "Convidar Amigos",
+            leaveRoom: "Sair da Sala",
+            roomChat: "Chat da Sala",
+            typeMessage: "Digite uma mensagem...",
+            send: "Enviar",
+            fileTransfer: "Transferência de Arquivos",
+            dragDropFiles: "Arraste e solte arquivos aqui",
+            orClickBrowse: "ou clique para navegar",
+            transferQueue: "Fila de Transferência",
+            noFilesInQueue: "Nenhum arquivo na fila",
+            usersInRoom: "Usuários na Sala",
+            selectSubPlan: "Selecionar Plano de Assinatura",
+            subModalDesc: "Atualize sua conta LocalBridge para maior velocidade e salas ilimitadas.",
+            freeTrialTitle: "🎁 Teste Pro Gratuito (7 Dias)",
+            freeTrialDesc: "Experimente todos os recursos Pro gratuitamente por 7 dias!",
+            claimTrial: "Resgatar Teste",
+            popular: "POPULAR",
+            chooseBasic: "Escolher Basic",
+            choosePro: "Escolher Pro",
+            chooseUltimate: "Escolher Ultimate",
+            close: "Fechar",
+            addFriend: "Adicionar Amigo",
+            searchUserLabel: "Pesquisar usuário:",
+            searchUserPlaceholder: "ex: dog, @john, #a1b2...",
+            inviteFriendsTitle: "Convidar Amigos para a Sala",
+            inviteFriendsDesc: "Envie convites com credenciais da sala.",
+            adminAccountsBase: "Base de Contas e Assinaturas (Admin)",
+            settingsTitle: "Configurações",
+            tabGeneral: "Geral",
+            tabAppearance: "Aparência",
+            tabP2P: "Rede P2P",
+            tabSecurity: "Segurança",
+            languageSelect: "Idioma / Language:",
+            profileSettings: "Configurações de Perfil",
+            changeAvatar: "Mudar Avatar",
+            displayName: "Nome de Exibição:",
+            usernameLogin: "Nome de Usuário:",
+            created: "Criado em:",
+            logOut: "Sair",
+            shortIdImmutable: "Seu ID Curto:",
+            nicknameColor: "Cor do Apelido:",
+            bio: "Biografia:",
+            privacySettings: "Privacidade:",
+            showIdPublic: "Mostrar ID publicamente",
+            showCreationDate: "Mostrar data de criação",
+            showBio: "Mostrar biografia",
+            showFriendsList: "Mostrar lista de amigos",
+            blacklist: "Lista Negra:",
+            friendsList: "Lista de Amigos:",
+            addFriendsBtn: "+ Adicionar",
+            cancel: "Cancelar",
+            saveChanges: "Salvar Alterações",
+            userProfile: "Perfil do Usuário",
+            message: "Mensagem",
+            block: "Bloquear",
+            aboutMe: "Sobre mim:",
+            friends: "Amigos:",
+            directChat: "Chat Direto",
+            typePrivateMessage: "Digite uma mensagem privada...",
+            accountLogin: "Entrar na Conta",
+            username: "Usuário:",
+            enterUsername: "Digite o usuário...",
+            enterPassword: "Digite a senha...",
+            logIn: "Entrar",
+            createAccount: "Criar Conta",
+            usernameUnique: "Usuário único:",
+            chooseUsername: "Escolha o usuário...",
+            chooseDisplayName: "Escolha o nome de exibição...",
+            signUp: "Cadastrar",
+            createNewRoom: "Criar Nova Sala",
+            setRoomPassword: "Senha da Sala:",
+            userLimitOptional: "Limite de Usuários (Máx 2 para Free):",
+            defaultUserPerms: "Permissões Padrão:",
+            uploadFiles: "Enviar Arquivos",
+            downloadFiles: "Baixar Arquivos",
+            deleteFiles: "Excluir Arquivos",
+            sendChatMsg: "Enviar Mensagens",
+            viewMsgHistory: "Ver Histórico de Chat",
+            viewFileHistory: "Ver Histórico de Arquivos",
+            create: "Criar",
+            joinExistingRoom: "Entrar em Sala Existente",
+            enter6DigitId: "Digite o ID de 6 dígitos...",
+            roomPassword: "Senha da Sala:",
+            join: "Entrar",
+            roomSettings: "Configurações da Sala",
+            roomAccessRules: "Regras de Acesso:",
+            requireAccountBlockGuests: "Exigir Conta (Bloquear Convidados)",
+            roomBlacklist: "Lista Negra da Sala:",
+            noBannedUsers: "Nenhum usuário banido",
+            permissions: "Permissões:",
+            kickUser: "Expulsar",
+            banUser: "Banir"
+        },
+        de: {
+            appTitle: "LocalBridge",
+            appSubtitle: "Serverlose P2P-Raumverwaltung",
+            createRoom: "Raum erstellen",
+            joinRoom: "Raum beitreten",
+            statusReady: "Status: Bereit",
+            activeWorkspace: "Aktiver P2P-Arbeitsbereich",
+            statusConnected: "Status: Verbunden!",
+            roomControls: "Raumsteuerung",
+            roomId: "Raum-ID:",
+            password: "Passwort:",
+            inviteFriends: "Freunde einladen",
+            leaveRoom: "Raum verlassen",
+            roomChat: "Raum-Chat",
+            typeMessage: "Nachricht schreiben...",
+            send: "Senden",
+            fileTransfer: "Dateiübertragung",
+            dragDropFiles: "Dateien hierher ziehen",
+            orClickBrowse: "oder zum Durchsuchen klicken",
+            transferQueue: "Übertragungswarteschlange",
+            noFilesInQueue: "Keine Dateien in der Warteschlange",
+            usersInRoom: "Benutzer im Raum",
+            selectSubPlan: "Abonnementplan auswählen",
+            subModalDesc: "Aktualisieren Sie Ihr LocalBridge-Konto für höhere Geschwindigkeiten und unbegrenzte Räume.",
+            freeTrialTitle: "🎁 Kostenlose Pro-Testversion (7 Tage)",
+            freeTrialDesc: "Testen Sie alle Pro-Funktionen 7 Tage lang kostenlos!",
+            claimTrial: "Testversion starten",
+            popular: "BELIEBT",
+            chooseBasic: "Basic wählen",
+            choosePro: "Pro wählen",
+            chooseUltimate: "Ultimate wählen",
+            close: "Schließen",
+            addFriend: "Freund hinzufügen",
+            searchUserLabel: "Benutzer suchen:",
+            searchUserPlaceholder: "z.B. dog, @john, #a1b2...",
+            inviteFriendsTitle: "Freunde in den Raum einladen",
+            inviteFriendsDesc: "Senden Sie direkte Einladungen mit Raumdaten.",
+            adminAccountsBase: "Konten- und Abonnementbasis (Admin)",
+            settingsTitle: "Plattform-Einstellungen",
+            tabGeneral: "Allgemein",
+            tabAppearance: "Aussehen",
+            tabP2P: "P2P-Netzwerk",
+            tabSecurity: "Sicherheit",
+            languageSelect: "Sprache / Language:",
+            profileSettings: "Profil-Einstellungen",
+            changeAvatar: "Avatar ändern",
+            displayName: "Anzeigename:",
+            usernameLogin: "Benutzername (Login):",
+            created: "Erstellt am:",
+            logOut: "Abmelden",
+            shortIdImmutable: "Ihre kurze ID:",
+            nicknameColor: "Spitznamen-Farbe:",
+            bio: "Über mich:",
+            privacySettings: "Datenschutz:",
+            showIdPublic: "ID öffentlich anzeigen",
+            showCreationDate: "Erstellungsdatum anzeigen",
+            showBio: "Bio anzeigen",
+            showFriendsList: "Freundesliste anzeigen",
+            blacklist: "Sperrliste:",
+            friendsList: "Freundesliste:",
+            addFriendsBtn: "+ Hinzufügen",
+            cancel: "Abbrechen",
+            saveChanges: "Änderungen speichern",
+            userProfile: "Benutzerprofil",
+            message: "Nachricht",
+            block: "Blockieren",
+            aboutMe: "Über mich:",
+            friends: "Freunde:",
+            directChat: "Direktchat",
+            typePrivateMessage: "Private Nachricht schreiben...",
+            accountLogin: "Anmelden",
+            username: "Benutzername:",
+            enterUsername: "Benutzername eingeben...",
+            enterPassword: "Passwort eingeben...",
+            logIn: "Anmelden",
+            createAccount: "Konto erstellen",
+            usernameUnique: "Eindeutiger Benutzername:",
+            chooseUsername: "Benutzername wählen...",
+            chooseDisplayName: "Anzeigenamen wählen...",
+            signUp: "Registrieren",
+            createNewRoom: "Neuen Raum erstellen",
+            setRoomPassword: "Raum-Passwort festlegen:",
+            userLimitOptional: "Benutzerlimit (Max 2 für Free):",
+            defaultUserPerms: "Standard-Berechtigungen:",
+            uploadFiles: "Dateien hochladen",
+            downloadFiles: "Dateien herunterladen",
+            deleteFiles: "Dateien löschen",
+            sendChatMsg: "Nachrichten senden",
+            viewMsgHistory: "Chathistorie anzeigen",
+            viewFileHistory: "Dateihistorie anzeigen",
+            create: "Erstellen",
+            joinExistingRoom: "Bestehendem Raum beitreten",
+            enter6DigitId: "6-stellige ID eingeben...",
+            roomPassword: "Raum-Passwort:",
+            join: "Beitreten",
+            roomSettings: "Raum-Einstellungen",
+            roomAccessRules: "Zugriffsregeln:",
+            requireAccountBlockGuests: "Konto erforderlich (Gäste blockieren)",
+            roomBlacklist: "Raum-Sperrliste:",
+            noBannedUsers: "Keine gesperrten Benutzer",
+            permissions: "Berechtigungen:",
+            kickUser: "Rauswerfen",
+            banUser: "Sperren"
+        }
+    };
+
+    let currentLanguage = localStorage.getItem('lb_lang') || 'en';
+
+    function setLanguage(lang) {
+        if (!translations[lang]) return;
+        currentLanguage = lang;
+        localStorage.setItem('lb_lang', lang);
+        document.getElementById('languageSelect').value = lang;
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[lang][key]) {
+                el.textContent = translations[lang][key];
+            }
+        });
+
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (translations[lang][key]) {
+                el.setAttribute('placeholder', translations[lang][key]);
+            }
+        });
+    }
+
+    function changeLanguage(lang) {
+        setLanguage(lang);
+        showToast("Language updated successfully!", "success");
+    }
+
+    /* ==========================================
+       2. CUSTOM TOAST NOTIFICATION SYSTEM
+       ========================================== */
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let iconSvg = 'ℹ️';
+        if (type === 'success') iconSvg = '✅';
+        if (type === 'error') iconSvg = '❌';
+
+        toast.innerHTML = `<span>${iconSvg}</span> <span>${escapeHtml(message)}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(50px)';
+            toast.style.transition = 'all 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    /* ==========================================
+       3. FOOTER MODAL CONTENT & LOGIC
+       ========================================== */
+    const footerContent = {
+        about: {
+            title: "About LocalBridge",
+            text: "LocalBridge is an ultra-fast, serverless P2P workspace designed for secure file transfer, encrypted room management, and real-time collaboration directly between peers without storing data on central servers."
+        },
+        support: {
+            title: "Support & Help",
+            text: "Need assistance? Reach out to our community support channels or contact admin Zeldy directly via profile messaging. We provide 24/7 P2P relay node assistance and troubleshooting guides."
+        },
+        terms: {
+            title: "Terms of Service",
+            text: "By using LocalBridge, you agree to P2P data transfer protocols. You are solely responsible for files and messages transmitted through your active rooms. No illegal material permitted."
+        },
+        privacy: {
+            title: "Privacy Policy",
+            text: "LocalBridge operates completely serverless via WebRTC P2P connections. Your messages and files flow directly between peers and are never logged or saved on external servers."
+        }
+    };
+
+    function openFooterModal(type) {
+        const item = footerContent[type];
+        if (!item) return;
+        document.getElementById('footerModalTitle').textContent = item.title;
+        document.getElementById('footerModalContent').innerHTML = `<p>${item.text}</p>`;
+        document.getElementById('footerInfoModal').style.display = 'flex';
+    }
+
+    /* ==========================================
+       4. SUBSCRIPTION & ZELDY ADMIN SYSTEM
+       ========================================== */
+    function getSubscriptions() {
+        return JSON.parse(localStorage.getItem('lb_subscriptions') || '{}');
+    }
+
+    function saveSubscriptions(subs) {
+        localStorage.setItem('lb_subscriptions', JSON.stringify(subs));
+    }
+
+    function getUserSubscription(username) {
+        if (!username) return { tier: 'free', expires: 0 };
+        if (username === 'zeldy') return { tier: 'ultimate', expires: 9999999999999 };
+        const subs = getSubscriptions();
+        const sub = subs[username];
+        if (!sub) return { tier: 'free', expires: 0 };
+        if (sub.expires && Date.now() > sub.expires) {
+            return { tier: 'free', expires: 0 };
+        }
+        return sub;
+    }
+
+    function openSubscriptionsModal() {
+        if (currentUser) {
+            const sub = getUserSubscription(currentUser.username);
+            const banner = document.getElementById('freeTrialBanner');
+            if (sub.tier !== 'free' || sub.trialUsed) {
+                banner.style.display = 'none';
+            } else {
+                banner.style.display = 'flex';
+            }
+        }
+        document.getElementById('subscriptionsModal').style.display = 'flex';
+    }
+
+    window.claimFreeTrial = function() {
+        if (!currentUser) return showToast("Please log in to claim a Free Trial", "error");
+        const subs = getSubscriptions();
+        if (subs[currentUser.username] && subs[currentUser.username].trialUsed) {
+            return showToast("Free trial already claimed on this account", "error");
+        }
+
+        const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+        subs[currentUser.username] = { tier: 'pro', expires: expiresAt, trialUsed: true };
+        saveSubscriptions(subs);
+        showToast("🎉 Free 7-day Pro Trial activated successfully!", "success");
+        document.getElementById('subscriptionsModal').style.display = 'none';
+        updateAuthBarUI();
+    };
+
+    window.purchaseSubscription = function(tierName) {
+        if (!currentUser) return showToast("Please log in to purchase a subscription", "error");
+        const subs = getSubscriptions();
+        const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+        subs[currentUser.username] = { tier: tierName, expires: expiresAt, trialUsed: true };
+        saveSubscriptions(subs);
+        showToast(`Successfully subscribed to ${tierName.toUpperCase()} plan!`, "success");
+        document.getElementById('subscriptionsModal').style.display = 'none';
+        updateAuthBarUI();
+    };
+
+    /* ==========================================
+       5. ACCOUNTS & SESSION MANAGEMENT
+       ========================================== */
     const ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     function generateIncrementalId(index) {
         let id = '';
@@ -801,11 +1772,20 @@
             const avatar = acc.avatar || defaultAvatar;
             const color = acc.color || '#818cf8';
             const dispName = acc.displayName || currentUser.username;
+            const sub = getUserSubscription(currentUser.username);
+
+            let badgeHtml = '';
+            if (currentUser.username === 'zeldy') {
+                badgeHtml = `<span class="zeldy-badge">ZELDY</span>`;
+            } else if (sub.tier !== 'free') {
+                badgeHtml = `<span class="sub-badge">${sub.tier.toUpperCase()}</span>`;
+            }
 
             authBar.innerHTML = `
                 <div class="user-profile-badge" onclick="openProfileModal()">
                     <img class="avatar" src="${avatar}" alt="Avatar">
                     <span style="color: ${color}">${escapeHtml(dispName)}</span>
+                    ${badgeHtml}
                 </div>
             `;
             myName = dispName;
@@ -826,14 +1806,16 @@
             currentUser = null;
             document.getElementById('profileModal').style.display = 'none';
             updateAuthBarUI();
+            showToast("Logged out successfully", "info");
         }
     };
 
-    /* Accounts Base Modal - Admin Zeldy Only */
+    /* Zeldy Admin Accounts & Subscription Manager */
     window.openAccountsListModal = function() {
-        if (!isZeldy()) return alert("Access denied");
+        if (!isZeldy()) return showToast("Access denied", "error");
 
         const accounts = getAccounts();
+        const subs = getSubscriptions();
         const container = document.getElementById('allAccountsContainer');
         container.innerHTML = '';
 
@@ -843,6 +1825,7 @@
         } else {
             keys.forEach(username => {
                 const acc = accounts[username];
+                const sub = subs[username] || { tier: 'free' };
                 const div = document.createElement('div');
                 div.className = 'list-item';
                 div.innerHTML = `
@@ -850,10 +1833,17 @@
                         <img class="avatar" src="${acc.avatar || defaultAvatar}">
                         <div>
                             <span style="color: ${acc.color || '#818cf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
-                            <span style="font-size: 0.75rem; color: var(--text-dim);"> (@${escapeHtml(username)}) | ID: ${acc.uuid}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-dim);"> (@${escapeHtml(username)}) | Sub: <b style="color: var(--accent-light);">${sub.tier.toUpperCase()}</b></span>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 6px;">
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <select id="adminSubSelect_${username}" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 0; width: auto;">
+                            <option value="free" ${sub.tier === 'free' ? 'selected' : ''}>Free</option>
+                            <option value="basic" ${sub.tier === 'basic' ? 'selected' : ''}>Basic</option>
+                            <option value="pro" ${sub.tier === 'pro' ? 'selected' : ''}>Pro</option>
+                            <option value="ultimate" ${sub.tier === 'ultimate' ? 'selected' : ''}>Ultimate</option>
+                        </select>
+                        <button class="manage-user-btn" onclick="adminSetUserSub('${username}')">Set Sub</button>
                         <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
                         ${username !== 'zeldy' ? `<button class="manage-user-btn" style="background: var(--danger); border-color: var(--danger);" onclick="deleteAccountByAdmin('${username}')">Delete</button>` : ''}
                     </div>
@@ -864,6 +1854,18 @@
         document.getElementById('accountsListModal').style.display = 'flex';
     };
 
+    window.adminSetUserSub = function(username) {
+        if (!isZeldy()) return;
+        const select = document.getElementById(`adminSubSelect_${username}`);
+        const tier = select.value;
+        const subs = getSubscriptions();
+        const expiresAt = tier === 'free' ? 0 : Date.now() + 30 * 24 * 60 * 60 * 1000;
+        subs[username] = { tier: tier, expires: expiresAt, trialUsed: true };
+        saveSubscriptions(subs);
+        showToast(`Updated subscription for @${username} to ${tier.toUpperCase()}`, "success");
+        openAccountsListModal();
+    };
+
     window.deleteAccountByAdmin = function(username) {
         if (!isZeldy()) return;
         if (confirm(`Are you sure you want to permanently delete user @${username}?`)) {
@@ -871,6 +1873,31 @@
             delete accounts[username];
             saveAccounts(accounts);
             openAccountsListModal();
+            showToast(`Deleted user @${username}`, "success");
+        }
+    };
+
+    /* Settings Modal Tabs */
+    window.openGlobalSettingsModal = function() {
+        document.getElementById('globalSettingsModal').style.display = 'flex';
+    };
+
+    window.switchSettingsTab = function(tabName) {
+        document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+
+        if (tabName === 'general') {
+            document.querySelectorAll('.settings-tab-btn')[0].classList.add('active');
+            document.getElementById('panel-general').classList.add('active');
+        } else if (tabName === 'appearance') {
+            document.querySelectorAll('.settings-tab-btn')[1].classList.add('active');
+            document.getElementById('panel-appearance').classList.add('active');
+        } else if (tabName === 'p2p') {
+            document.querySelectorAll('.settings-tab-btn')[2].classList.add('active');
+            document.getElementById('panel-p2p').classList.add('active');
+        } else if (tabName === 'security') {
+            document.querySelectorAll('.settings-tab-btn')[3].classList.add('active');
+            document.getElementById('panel-security').classList.add('active');
         }
     };
 
@@ -921,7 +1948,6 @@
         const accounts = getAccounts();
         const acc = accounts[currentUser.username] || {};
         
-        // Friends
         const friendsCont = document.getElementById('profileFriendsContainer');
         friendsCont.innerHTML = '';
         const friends = acc.friends || [];
@@ -943,7 +1969,6 @@
             });
         }
 
-        // Blacklist
         const blockCont = document.getElementById('profileBlacklistContainer');
         blockCont.innerHTML = '';
         const blocked = acc.blocked || [];
@@ -968,7 +1993,7 @@
         if (!accounts[currentUser.username]) accounts[currentUser.username] = {};
 
         const newDisp = document.getElementById('profileDisplayNameInput').value.trim();
-        if (!newDisp) return alert('Display name cannot be empty');
+        if (!newDisp) return showToast('Display name cannot be empty', 'error');
 
         accounts[currentUser.username].displayName = newDisp;
         accounts[currentUser.username].avatar = tempAvatarBase64;
@@ -985,9 +2010,10 @@
         saveAccounts(accounts);
         updateAuthBarUI();
         document.getElementById('profileModal').style.display = 'none';
+        showToast("Profile updated successfully", "success");
     };
 
-    /* Add Friend Search - Smart Substring & Prefixes (@ Username, # ID, default Display Name) */
+    /* Add Friend Search */
     window.openAddFriendModal = function() {
         document.getElementById('addFriendSearchInput').value = '';
         document.getElementById('addFriendSearchResult').innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 10px;">Type to search users...</div>';
@@ -1004,7 +2030,7 @@
             return;
         }
 
-        let searchMode = 'displayName'; // Default search mode
+        let searchMode = 'displayName';
         if (query.startsWith('@')) {
             searchMode = 'username';
             query = query.substring(1);
@@ -1020,7 +2046,7 @@
 
         Object.keys(accounts).forEach(u => {
             const acc = accounts[u];
-            if (currentUser && u === currentUser.username) return; // Skip self
+            if (currentUser && u === currentUser.username) return;
 
             let matched = false;
             if (searchMode === 'username') {
@@ -1028,7 +2054,6 @@
             } else if (searchMode === 'uuid') {
                 if (acc.uuid && acc.uuid.toLowerCase().includes(query)) matched = true;
             } else {
-                // Default display name substring match
                 const disp = (acc.displayName || u).toLowerCase();
                 if (disp.includes(query)) matched = true;
             }
@@ -1059,8 +2084,8 @@
     };
 
     window.addFriendDirect = function(targetUsername) {
-        if (!currentUser) return alert('Log in first');
-        if (targetUsername === currentUser.username) return alert("You cannot add yourself");
+        if (!currentUser) return showToast('Log in first', 'error');
+        if (targetUsername === currentUser.username) return showToast("You cannot add yourself", "error");
 
         const accounts = getAccounts();
         const myAcc = accounts[currentUser.username] || {};
@@ -1069,10 +2094,10 @@
         if (!myAcc.friends.includes(targetUsername)) {
             myAcc.friends.push(targetUsername);
             saveAccounts(accounts);
-            alert('Friend added!');
+            showToast('Friend added successfully!', 'success');
             renderProfileLists();
         } else {
-            alert('Already in friends list');
+            showToast('Already in friends list', 'info');
         }
     };
 
@@ -1125,14 +2150,14 @@
     document.getElementById('addFriendBtn').onclick = () => addFriendDirect(selectedProfileUser);
 
     document.getElementById('blockUserBtn').onclick = () => {
-        if (!currentUser) return alert('Please log in first');
+        if (!currentUser) return showToast('Please log in first', 'error');
         const accounts = getAccounts();
         const myAcc = accounts[currentUser.username] || {};
         myAcc.blocked = myAcc.blocked || [];
         if (!myAcc.blocked.includes(selectedProfileUser)) {
             myAcc.blocked.push(selectedProfileUser);
             saveAccounts(accounts);
-            alert('User blocked');
+            showToast('User blocked', 'success');
             document.getElementById('viewUserProfileModal').style.display = 'none';
         }
     };
@@ -1144,11 +2169,12 @@
         myAcc.blocked = (myAcc.blocked || []).filter(b => b !== username);
         saveAccounts(accounts);
         renderProfileLists();
+        showToast(`Unblocked @${username}`, 'success');
     };
 
     /* Room Invites Feature */
     window.openInviteFriendsModal = function() {
-        if (!currentUser) return alert('Log in to invite friends');
+        if (!currentUser) return showToast('Log in to invite friends', 'error');
         const accounts = getAccounts();
         const myAcc = accounts[currentUser.username] || {};
         const friends = myAcc.friends || [];
@@ -1198,7 +2224,7 @@
         }
 
         saveAccounts(accounts);
-        alert(`Invite sent to ${friendUsername}!`);
+        showToast(`Invite sent to ${friendUsername}!`, 'success');
     };
 
     /* Private Chat */
@@ -1215,7 +2241,7 @@
     };
 
     document.getElementById('openDirectChatBtn').onclick = () => {
-        if (!currentUser) return alert('Please log in first');
+        if (!currentUser) return showToast('Please log in first', 'error');
         openDirectChat(selectedProfileUser);
     };
 
@@ -1266,14 +2292,17 @@
         const disp = document.getElementById('regDisplayName').value.trim() || u;
         const p = document.getElementById('regPassword').value.trim();
 
-        if (!u || !p) return alert('Fill in username and password');
-        if (u.length > 20) return alert('Username must be 20 characters max');
+        if (!u || !p) return showToast('Fill in username and password', 'error');
+        if (u.length > 20) return showToast('Username must be 20 characters max', 'error');
 
         const accounts = getAccounts();
-        if (accounts[u]) return alert('Username already taken');
+        if (accounts[u]) return showToast('Username already taken', 'error');
 
-        const totalAccounts = Object.keys(accounts).length;
-        const newShortId = generateIncrementalId(totalAccounts);
+        // Only Zeldy has custom ID tag; everyone else gets an immutable short ID
+        let newShortId = generateIncrementalId(Object.keys(accounts).length);
+        if (u === 'zeldy') {
+            newShortId = 'zeldy-admin-tag';
+        }
 
         accounts[u] = { 
             password: p, 
@@ -1295,7 +2324,7 @@
 
         document.getElementById('registerModal').style.display = 'none';
         updateAuthBarUI();
-        alert(`Account created! Your ID is: ${newShortId}`);
+        showToast(`Account created successfully! ID: ${newShortId}`, 'success');
     };
 
     document.getElementById('doLoginBtn').onclick = () => {
@@ -1304,7 +2333,7 @@
 
         const accounts = getAccounts();
         if (!accounts[u] || accounts[u].password !== p) {
-            return alert('Invalid username or password');
+            return showToast('Invalid username or password', 'error');
         }
 
         currentUser = { username: u };
@@ -1312,9 +2341,12 @@
 
         document.getElementById('loginModal').style.display = 'none';
         updateAuthBarUI();
+        showToast(`Welcome back, ${u}!`, 'success');
     };
 
-    /* PeerJS Core */
+    /* ==========================================
+       6. PEERJS CORE & ROBUST ROOM EXIT LOGIC
+       ========================================== */
     let myPeer = null;
     let isHost = false;
     let roomHostConn = null;
@@ -1322,7 +2354,7 @@
     let hostState = {
         roomId: '',
         password: '',
-        maxUsers: null,
+        maxUsers: 2,
         requireAccount: false,
         defaultPermissions: {},
         users: {},
@@ -1347,6 +2379,7 @@
     const openSettingsBtn = document.getElementById('openSettingsBtn');
 
     updateAuthBarUI();
+    setLanguage(currentLanguage);
 
     document.getElementById('cancelLoginBtn').onclick = () => document.getElementById('loginModal').style.display = 'none';
     document.getElementById('cancelRegBtn').onclick = () => document.getElementById('registerModal').style.display = 'none';
@@ -1354,7 +2387,24 @@
     document.getElementById('openCreateModalBtn').onclick = () => {
         document.getElementById('modalRoomId').value = Math.floor(100000 + Math.random() * 900000).toString();
         document.getElementById('modalPassword').value = '';
-        document.getElementById('modalMaxUsers').value = '';
+        
+        // Enforce max 2 people for free tier
+        const sub = getUserSubscription(currentUser ? currentUser.username : null);
+        const maxUsersInput = document.getElementById('modalMaxUsers');
+        const hint = document.getElementById('roomLimitHint');
+
+        if (sub.tier === 'free') {
+            maxUsersInput.value = '2';
+            maxUsersInput.max = '2';
+            maxUsersInput.disabled = true;
+            hint.textContent = "Free tier limit: Max 2 users per room. Upgrade to Pro/Ultimate for up to 50+ users.";
+        } else {
+            maxUsersInput.value = sub.tier === 'basic' ? '10' : (sub.tier === 'pro' ? '50' : '100');
+            maxUsersInput.max = '200';
+            maxUsersInput.disabled = false;
+            hint.textContent = `Active ${sub.tier.toUpperCase()} subscription: Extended user capacity enabled.`;
+        }
+
         document.getElementById('createModal').style.display = 'flex';
     };
     document.getElementById('cancelCreateBtn').onclick = () => document.getElementById('createModal').style.display = 'none';
@@ -1372,6 +2422,42 @@
         document.getElementById('eyeIcon').innerHTML = isPasswordVisible ? svgEyeClosed : svgEyeOpen;
     };
 
+    /* Robust Leave Room Fix */
+    window.leaveRoom = function() {
+        if (roomHostConn) {
+            try { roomHostConn.close(); } catch(e){}
+            roomHostConn = null;
+        }
+        if (myPeer) {
+            try { myPeer.destroy(); } catch(e){}
+            myPeer = null;
+        }
+
+        isHost = false;
+        currentRoomId = '';
+        hostState = {
+            roomId: '',
+            password: '',
+            maxUsers: 2,
+            requireAccount: false,
+            defaultPermissions: {},
+            users: {},
+            blacklist: [],
+            chatHistory: [],
+            fileHistory: []
+        };
+
+        appLayout.style.display = 'none';
+        mainWrapper.style.display = 'flex';
+        document.getElementById('topLeftBar').style.display = 'flex';
+        document.getElementById('authBar').style.display = 'flex';
+        document.getElementById('footerBar').style.display = 'flex';
+
+        statusText.className = 'status disconnected';
+        statusText.textContent = 'Status: Ready';
+        showToast("Successfully left the room", "success");
+    };
+
     /* App Switching & State Setup */
     function initAppView(roomId) {
         currentRoomId = roomId;
@@ -1379,6 +2465,7 @@
         appLayout.style.display = 'flex';
         document.getElementById('topLeftBar').style.display = 'none';
         document.getElementById('authBar').style.display = 'none';
+        document.getElementById('footerBar').style.display = 'none';
 
         document.getElementById('labelRoomId').textContent = roomId;
         document.getElementById('labelRoomPass').textContent = '••••••';
@@ -1400,9 +2487,12 @@
     document.getElementById('confirmCreateBtn').onclick = () => {
         const rId = document.getElementById('modalRoomId').value;
         const pass = document.getElementById('modalPassword').value.trim();
-        const maxU = parseInt(document.getElementById('modalMaxUsers').value) || null;
+        
+        const sub = getUserSubscription(currentUser ? currentUser.username : null);
+        let maxU = parseInt(document.getElementById('modalMaxUsers').value) || 2;
+        if (sub.tier === 'free') maxU = 2; // Strict free limit enforcement
 
-        if (!pass) return alert('Please set a password');
+        if (!pass) return showToast('Please set a password', 'error');
 
         hostState.roomId = rId;
         hostState.password = pass;
@@ -1439,6 +2529,7 @@
             };
             renderUserListHost();
             appendSystemMessage("Room created. You are Host!");
+            showToast("Room created successfully!", "success");
         });
 
         myPeer.on('connection', (conn) => {
@@ -1448,8 +2539,8 @@
         });
 
         myPeer.on('error', (err) => {
-            alert('Error creating room: ' + err.type);
-            location.reload();
+            showToast('Error creating room: ' + err.type, 'error');
+            leaveRoom();
         });
     };
 
@@ -1458,7 +2549,7 @@
         const rId = document.getElementById('joinRoomId').value.trim();
         const pass = document.getElementById('joinPassword').value.trim();
 
-        if (!rId || !pass) return alert('Fill in Room ID and Password');
+        if (!rId || !pass) return showToast('Fill in Room ID and Password', 'error');
 
         isHost = false;
         document.getElementById('joinModal').style.display = 'none';
@@ -1481,19 +2572,19 @@
             roomHostConn.on('data', (data) => handleClientIncomingData(data));
 
             roomHostConn.on('close', () => {
-                alert('Disconnected from host.');
-                location.reload();
+                showToast('Disconnected from host.', 'error');
+                leaveRoom();
             });
 
             roomHostConn.on('error', (err) => {
-                alert('Connection error: ' + err);
-                location.reload();
+                showToast('Connection error: ' + err, 'error');
+                leaveRoom();
             });
         });
 
         myPeer.on('error', (err) => {
-            alert('Peer error: ' + err.type);
-            location.reload();
+            showToast('Peer error: ' + err.type, 'error');
+            leaveRoom();
         });
     };
 
@@ -1517,7 +2608,7 @@
 
             const activeUserCount = Object.keys(hostState.users).length;
             if (hostState.maxUsers && activeUserCount >= hostState.maxUsers) {
-                conn.send({ type: 'JOIN_REJECTED', reason: 'Room is full.' });
+                conn.send({ type: 'JOIN_REJECTED', reason: 'Room is full (Free tier limit reached).' });
                 return;
             }
 
@@ -1571,8 +2662,8 @@
 
     function handleClientIncomingData(data) {
         if (data.type === 'JOIN_REJECTED') {
-            alert('Join Failed: ' + data.reason);
-            location.reload();
+            showToast('Join Failed: ' + data.reason, 'error');
+            leaveRoom();
         }
         else if (data.type === 'JOIN_ACCEPTED') {
             myPermissions = data.permissions;
@@ -1589,6 +2680,7 @@
             }
 
             appendSystemMessage("Connected to room!");
+            showToast("Successfully connected to room!", "success");
         }
         else if (data.type === 'ROOM_STATE') {
             renderUserListClient(data.users);
@@ -1596,10 +2688,11 @@
         else if (data.type === 'PERMISSIONS_UPDATED') {
             myPermissions = data.permissions;
             updateUIByPermissions();
+            showToast("Your room permissions were updated by host", "info");
         }
         else if (data.type === 'KICKED') {
-            alert(data.reason || 'You were kicked from the room.');
-            location.reload();
+            showToast(data.reason || 'You were kicked from the room.', 'error');
+            leaveRoom();
         }
         else if (data.type === 'CHAT_BROADCAST') {
             if (myPermissions.canViewMessageHistory) appendChatMessage(data.message);
@@ -1715,8 +2808,6 @@
         document.getElementById('manageUserModal').style.display = 'flex';
     };
 
-    document.getElementById('closeManageModalBtn').onclick = () => document.getElementById('manageUserModal').style.display = 'none';
-
     window.autoSavePermissions = function() {
         if (!selectedUserId || !hostState.users[selectedUserId]) return;
         const u = hostState.users[selectedUserId];
@@ -1747,6 +2838,7 @@
         document.getElementById('manageUserModal').style.display = 'none';
         broadcastRoomState();
         appendSystemMessage(`${u.name} was kicked.`);
+        showToast(`${u.name} was kicked`, 'info');
     };
 
     document.getElementById('banUserBtn').onclick = () => {
@@ -1761,17 +2853,17 @@
         broadcastRoomState();
         renderBlacklist();
         appendSystemMessage(`${u.name} was banned.`);
+        showToast(`${u.name} was banned`, 'error');
     };
 
-    /* Settings Modal Logic */
-    openSettingsBtn.onclick = () => {
+    /* Room Settings Modal Logic */
+    window.openRoomSettingsModal = function() {
         if (!isHost) return;
         document.getElementById('hostSettingsSection').style.display = 'block';
         document.getElementById('toggleRequireAccount').checked = hostState.requireAccount;
         renderBlacklist();
         document.getElementById('settingsModal').style.display = 'flex';
     };
-    document.getElementById('closeSettingsModalBtn').onclick = () => document.getElementById('settingsModal').style.display = 'none';
 
     window.toggleRequireAccountSetting = function() {
         hostState.requireAccount = document.getElementById('toggleRequireAccount').checked;
@@ -1798,6 +2890,7 @@
     window.unbanUser = function(peerId) {
         hostState.blacklist = hostState.blacklist.filter(id => id !== peerId);
         renderBlacklist();
+        showToast("User unbanned", "success");
     };
 
     /* UI Permission Synchronizer */
@@ -1899,12 +2992,12 @@
         fileInput.value = '';
     };
 
-    const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB per file, sent as base64 over the data channel
+    const MAX_FILE_SIZE = 12 * 1024 * 1024; // 12MB limit
 
     function handleFilesSelected(fileList) {
         Array.from(fileList).forEach(file => {
             if (file.size > MAX_FILE_SIZE) {
-                alert(`"${file.name}" is too large to send (max 8MB).`);
+                showToast(`"${file.name}" is too large to send (max 12MB).`, 'error');
                 return;
             }
             const reader = new FileReader();
@@ -1917,6 +3010,7 @@
                     uploader: myName
                 };
                 sendFileToQueue(fileObj);
+                showToast(`File "${file.name}" added to queue`, 'success');
             };
             reader.readAsDataURL(file);
         });
@@ -1941,6 +3035,7 @@
         } else if (roomHostConn) {
             roomHostConn.send({ type: 'FILE_DELETE', fileId: fileId });
         }
+        showToast("File deleted from queue", "info");
     };
 
     window.downloadQueuedFile = function(fileId) {
@@ -1952,6 +3047,7 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
+        showToast(`Downloading "${file.name}"...`, 'success');
     };
 
     function formatFileSize(bytes) {
