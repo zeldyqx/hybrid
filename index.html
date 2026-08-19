@@ -51,7 +51,7 @@
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-        .top-left-bar { position: absolute; top: 20px; left: 24px; z-index: 100; display: flex; gap: 12px; }
+        .top-left-bar { position: absolute; bottom: 20px; left: 24px; z-index: 100; display: flex; gap: 12px; }
         .top-left-bar button { width: auto; padding: 8px 18px; font-size: 0.85rem; }
 
         .auth-bar { position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 100; align-items: center; }
@@ -1887,998 +1887,110 @@
     dropZone.ondrop = (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        if (myPermissions.canUpload && e.dataTransfer.filesВот обновлённый HTML-код с полностью переработанным дизайном по стандартам UI/UX 2026 года[cite: 1].
-
-### Key Design Changes
-* **Палитра и атмосферность (Dark Glassmorphism)**: Глубокая тёмно-фиолетовая база (`#090d16`), неоновые акценты (Indigo, Cyan, Violet), стеклянные текстуры (`backdrop-filter: blur`) и динамическое свечение (Glow Effect).
-* **Сетка и геометрия**: Современный двуколоночный интерфейс комнат с фиксированным скроллом, плавающими плашками и аккуратным сайдбаром пользователей.
-* **Иконки Lucide/SVG**: Реализована бесшовная система микроиконок для всех важных действий (копирование, профили, статус, закрытие, роли).
-* **Типографика**: Чистые шрифтовые пары, моноширинные теги для ID, контрастные статусы и плавный микровзаимодействие (Hover-эффекты и анимация появления модальных окон).
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalBridge — Serverless P2P Workspace</title>
-    <script src="[https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js](https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js)"></script>
-    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-    <link href="[https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap](https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap)" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #07090e;
-            --bg-secondary: #0f131d;
-            --card-bg: rgba(19, 24, 38, 0.65);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-border-hover: rgba(129, 140, 248, 0.3);
-            
-            --accent: #818cf8;
-            --accent-glow: rgba(129, 140, 248, 0.25);
-            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            --accent-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
-            
-            --cyan: #38bdf8;
-            --emerald: #34d399;
-            --danger: #f43f5e;
-            --danger-hover: #e11d48;
-            
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --text-dim: #64748b;
-            
-            --radius-lg: 20px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            
-            --shadow-glow: 0 0 50px -10px rgba(99, 102, 241, 0.15);
-            --glass-backdrop: blur(16px) saturate(180%);
+        if (myPermissions.canUpload && e.dataTransfer.files.length > 0) {
+            handleFilesSelected(e.dataTransfer.files);
         }
+    };
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
-        
-        body { 
-            background-color: var(--bg); 
-            color: var(--text); 
-            min-height: 100vh; 
-            width: 100vw; 
-            overflow-x: hidden; 
-            position: relative;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+    fileInput.onchange = (e) => {
+        if (myPermissions.canUpload && e.target.files.length > 0) {
+            handleFilesSelected(e.target.files);
         }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
-
-        .top-left-bar { position: fixed; top: 20px; left: 24px; z-index: 100; display: flex; gap: 12px; }
-        .auth-bar { position: fixed; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 100; align-items: center; }
-        
-        .user-profile-badge { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-size: 0.875rem; 
-            font-weight: 600; 
-            background: rgba(255, 255, 255, 0.03); 
-            padding: 6px 14px 6px 6px; 
-            border-radius: 30px; 
-            border: 1px solid var(--card-border); 
-            cursor: pointer;
-            backdrop-filter: var(--glass-backdrop);
-            transition: all 0.2s ease;
-        }
-        .user-profile-badge:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--accent-glow);
-            transform: translateY(-1px);
-        }
-
-        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); border: 1px solid var(--card-border); }
-        .avatar-lg { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: var(--bg-secondary); border: 2px solid var(--accent); }
-
-        .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; position: relative; }
-        
-        .container { 
-            width: 100%; 
-            max-width: 460px; 
-            background: var(--card-bg); 
-            border: 1px solid var(--card-border); 
-            border-radius: var(--radius-lg); 
-            padding: 36px 32px; 
-            box-shadow: var(--shadow-glow), 0 20px 40px rgba(0,0,0,0.6);
-            backdrop-filter: var(--glass-backdrop);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 2px;
-            background: var(--accent-gradient);
-        }
-
-        .logo-title {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-            letter-spacing: -0.02em;
-            margin-bottom: 6px;
-        }
-
-        p.subtitle { font-size: 0.875rem; color: var(--text-muted); text-align: center; margin-bottom: 28px; font-weight: 500; }
-
-        .section { display: flex; flex-direction: column; gap: 12px; }
-
-        input[type="text"], input[type="password"], input[type="number"], textarea, select { 
-            width: 100%; 
-            background: rgba(7, 9, 14, 0.6); 
-            border: 1px solid var(--card-border); 
-            color: var(--text); 
-            padding: 12px 16px; 
-            border-radius: var(--radius-md); 
-            font-size: 0.9rem; 
-            margin-top: 6px;
-            transition: all 0.2s;
-        }
-        textarea { resize: vertical; min-height: 80px; }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-
-        button { 
-            background: var(--accent-gradient); 
-            color: #fff; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: var(--radius-md); 
-            font-weight: 600; 
-            font-size: 0.9rem;
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            width: 100%; 
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
-        }
-        button:hover { background: var(--accent-gradient-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35); }
-        button:active { transform: translateY(0); }
-
-        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text); border: 1px solid var(--card-border); box-shadow: none; }
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); box-shadow: none; }
-
-        .btn-danger { background: rgba(244, 63, 94, 0.15); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.3); box-shadow: none; }
-        .btn-danger:hover { background: var(--danger); color: #fff; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3); }
-
-        .btn-icon { 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid var(--card-border); 
-            color: var(--text-muted); 
-            width: 42px; height: 42px; 
-            padding: 0; 
-            border-radius: var(--radius-md); 
-            cursor: pointer; 
-            backdrop-filter: var(--glass-backdrop);
-        }
-        .btn-icon:hover { color: var(--text); background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); }
-        .btn-icon svg { width: 20px; height: 20px; fill: currentColor; }
-
-        .status { font-size: 0.8rem; margin-top: 10px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .status.connected { color: var(--emerald); }
-        .status.connected::before { background: var(--emerald); box-shadow: 0 0 10px var(--emerald); }
-        .status.disconnected { color: var(--text-dim); }
-        .status.disconnected::before { background: var(--text-dim); }
-
-        .app-layout { display: none; width: 100vw; height: 100vh; overflow: hidden; z-index: 10; position: relative; }
-        .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 28px 36px; overflow-y: auto; gap: 24px; }
-        .workspace-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); }
-        .header-actions { display: flex; align-items: center; gap: 12px; }
-
-        .workspace-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
-        @media (max-width: 1024px) { .workspace-grid { grid-template-columns: 1fr; } }
-
-        .left-column, .right-column { display: flex; flex-direction: column; gap: 24px; }
-        
-        .room-card-active, .file-card, .chat-card { 
-            background: var(--card-bg); 
-            border: 1px solid var(--card-border); 
-            border-radius: var(--radius-lg); 
-            padding: 24px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: var(--glass-backdrop);
-        }
-
-        .drop-zone { 
-            border: 2px dashed rgba(255, 255, 255, 0.15); 
-            border-radius: var(--radius-md); 
-            padding: 32px 20px; 
-            text-align: center; 
-            background: rgba(0, 0, 0, 0.2); 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-            transition: all 0.2s;
-        }
-        .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); background: rgba(129, 140, 248, 0.05); }
-        .drop-zone.disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--card-border); }
-        .drop-zone svg { width: 40px; height: 40px; fill: var(--accent); opacity: 0.8; }
-
-        .file-queue { display: flex; flex-direction: column; gap: 10px; max-height: 260px; overflow-y: auto; margin-top: 12px; }
-        .file-item { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-        .file-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-        .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
-        .file-size { color: var(--text-muted); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }
-
-        .progress-bar-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; margin-top: 2px; }
-        .progress-bar-fill { height: 100%; background: var(--accent-gradient); width: 0%; transition: width 0.1s linear; }
-
-        .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 12px; }
-        .info-value { font-weight: 600; color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 1rem; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 6px; }
-        .pass-wrapper { display: flex; align-items: center; gap: 8px; }
-        .eye-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; width: auto; box-shadow: none; }
-        .eye-btn:hover { color: var(--text); background: none; }
-        .eye-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
-        .chat-card { display: flex; flex-direction: column; gap: 14px; }
-        .chat-messages { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); height: 220px; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .chat-msg { font-size: 0.875rem; word-break: break-word; display: flex; align-items: center; gap: 8px; }
-        .chat-msg .author { font-weight: 700; }
-        .chat-msg.system { color: var(--text-muted); font-style: italic; font-size: 0.8rem; justify-content: center; background: rgba(255,255,255,0.02); padding: 4px; border-radius: 6px; }
-        .chat-input-row { display: flex; gap: 10px; }
-        .chat-input-row input { margin-top: 0; }
-        .chat-input-row button { width: auto; padding: 0 20px; white-space: nowrap; }
-
-        .sidebar-right { width: 320px; height: 100vh; background: var(--bg-secondary); border-left: 1px solid var(--card-border); display: flex; flex-direction: column; padding: 28px 20px; }
-        .sidebar-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .user-count-badge { background: rgba(129, 140, 248, 0.15); color: var(--accent); padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(129, 140, 248, 0.3); }
-        .user-list { list-style: none; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
-        
-        .user-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: var(--radius-md); font-size: 0.875rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
-        .user-item:hover { border-color: rgba(255,255,255,0.15); background: rgba(255, 255, 255, 0.04); }
-        .user-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        
-        .manage-user-btn { background: rgba(255, 255, 255, 0.08); border: none; color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; width: auto; box-shadow: none; }
-        .manage-user-btn:hover { background: var(--accent); color: #fff; }
-
-        .crown-icon { width: 16px; height: 16px; fill: #fbbf24; display: inline-block; vertical-align: middle; filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5)); }
-        .you-tag { color: var(--text-dim); font-size: 0.75rem; font-weight: 500; }
-
-        .switch-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 0.85rem; }
-        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.15); transition: .3s; border-radius: 22px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: #fff; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background: var(--accent); }
-        input:checked + .slider:before { transform: translateX(18px); }
-
-        .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; max-height: 180px; overflow-y: auto; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; }
-
-        /* Modals Glassmorphism Fix */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(4, 6, 10, 0.75); backdrop-filter: blur(12px); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        
-        #subscriptionsModal { z-index: 1100; }
-        #accountsListModal { z-index: 1200; }
-        #profileModal { z-index: 2000; }
-        #addFriendModal { z-index: 3000; }
-        #viewUserProfileModal { z-index: 3500; }
-        #inviteFriendsModal { z-index: 3600; }
-        
-        .modal { 
-            background: #0f1420; 
-            border: 1px solid var(--card-border); 
-            border-radius: var(--radius-lg); 
-            padding: 28px; 
-            width: 90%; 
-            max-width: 480px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), var(--shadow-glow);
-        }
-        
-        .modal-wide { max-width: 900px; width: 95%; }
-        .profile-grid-horizontal { display: grid; grid-template-columns: 260px 1fr 280px; gap: 20px; align-items: start; }
-        @media (max-width: 850px) { .profile-grid-horizontal { grid-template-columns: 1fr; } }
-
-        .view-profile-horizontal { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
-        @media (max-width: 650px) { .view-profile-horizontal { grid-template-columns: 1fr; } }
-
-        .modal h2 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
-        .modal label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-        .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-        
-        .color-picker-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-        .color-picker-row input[type="color"] { width: 42px; height: 38px; border: none; cursor: pointer; background: none; border-radius: 6px; }
-
-        .sub-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px; }
-        @media (max-width: 600px) { .sub-cards-grid { grid-template-columns: 1fr; } }
-        
-        .sub-card { 
-            background: rgba(255, 255, 255, 0.02); 
-            border: 1px solid var(--card-border); 
-            border-radius: var(--radius-md); 
-            padding: 20px; 
-            text-align: center; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-            gap: 16px; 
-            transition: all 0.2s;
-        }
-        .sub-card.popular { border-color: var(--accent); background: rgba(129, 140, 248, 0.05); box-shadow: 0 0 25px var(--accent-glow); }
-        .sub-price { font-size: 1.75rem; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; }
-    </style>
-</head>
-<body>
-
-<!-- Top Left Bar -->
-<div class="top-left-bar" id="topLeftBar">
-    <button class="btn-secondary" id="accountsBaseBtn" style="display: none;" onclick="openAccountsListModal()">Accounts Base</button>
-    <button class="btn-secondary" id="subscriptionsBtn" style="border-color: rgba(168, 85, 247, 0.4); color: #c084fc;" onclick="document.getElementById('subscriptionsModal').style.display='flex'">Subscriptions</button>
-</div>
-
-<div class="auth-bar" id="authBar"></div>
-
-<div id="mainWrapper" class="main-wrapper">
-    <div class="container">
-        <h1 class="logo-title">LocalBridge</h1>
-        <p class="subtitle">Next-Gen Serverless P2P Workspace</p>
-        <div class="section">
-            <button id="openCreateModalBtn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Create Room
-            </button>
-            <button id="openJoinModalBtn" class="btn-secondary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                Join Room
-            </button>
-            <div id="statusText" class="status disconnected">Ready to connect</div>
-        </div>
-    </div>
-</div>
-
-<div id="appLayout" class="app-layout">
-    <main class="main-workspace">
-        <header class="workspace-header">
-            <div>
-                <h1 class="logo-title" style="text-align: left; font-size: 1.5rem;">LocalBridge</h1>
-                <p class="subtitle" style="text-align: left; margin-bottom: 0;">Active Workspace</p>
-            </div>
-            <div class="header-actions">
-                <div id="workspaceStatusText" class="status connected">Connected</div>
-                <button id="openSettingsBtn" class="btn-icon" title="Settings" style="display: none;">
-                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6 3.6z"/></svg>
-                </button>
-            </div>
-        </header>
-
-        <div class="workspace-grid">
-            <div class="left-column">
-                <div class="room-card-active">
-                    <h2 style="font-size: 1.1rem; margin-bottom: 16px; color: var(--text);">Room Controls</h2>
-                    <div style="background: rgba(0, 0, 0, 0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border); margin-bottom: 16px;">
-                        <div class="info-row">
-                            <span style="color: var(--text-muted); font-size: 0.85rem;">Room ID:</span>
-                            <span id="labelRoomId" class="info-value">------</span>
-                        </div>
-                        <div class="info-row" style="margin-bottom: 0;">
-                            <span style="color: var(--text-muted); font-size: 0.85rem;">Password:</span>
-                            <div class="pass-wrapper">
-                                <span id="labelRoomPass" class="info-value">••••••</span>
-                                <button id="togglePassBtn" class="eye-btn">
-                                    <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button id="inviteFriendsBtn" class="btn-secondary" onclick="openInviteFriendsModal()">Invite Friends</button>
-                        <button id="leaveRoomBtn" class="btn-danger">Leave Room</button>
-                    </div>
-                </div>
-
-                <div class="chat-card">
-                    <h2 style="font-size: 1.1rem; color: var(--text);">Room Chat</h2>
-                    <div id="chatMessages" class="chat-messages"></div>
-                    <div class="chat-input-row">
-                        <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
-                        <button id="sendMsgBtn">Send</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="right-column">
-                <div class="file-card">
-                    <h2 style="font-size: 1.1rem; color: var(--text); margin-bottom: 12px;">File Transfer</h2>
-                    <div id="dropZone" class="drop-zone">
-                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-                        <div>
-                            <span id="dropZoneText" style="font-weight: 600; font-size: 0.9rem; display: block;">Drag & Drop files here</span>
-                            <p id="dropZoneSubtext" style="font-size: 0.8rem; color: var(--text-dim);">or click to browse</p>
-                        </div>
-                        <input type="file" id="fileInput" multiple style="display: none;">
-                    </div>
-
-                    <div style="margin-top: 18px;">
-                        <h3 style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">Transfer Queue</h3>
-                        <div id="fileQueue" class="file-queue">
-                            <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">
-                                No files in queue
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <aside class="sidebar-right">
-        <div class="sidebar-title">
-            <span>Users in Room</span>
-            <span id="userCount" class="user-count-badge">0</span>
-        </div>
-        <ul id="userList" class="user-list"></ul>
-    </aside>
-</div>
-
-<!-- Modals -->
-
-<!-- Subscriptions Modal -->
-<div id="subscriptionsModal" class="modal-overlay">
-    <div class="modal modal-wide" style="max-width: 750px;">
-        <h2>Select Subscription Plan</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted);">Upgrade your LocalBridge account for higher transfer speeds and unlimited room limits.</p>
-
-        <div class="sub-cards-grid">
-            <div class="sub-card">
-                <div>
-                    <h3 style="font-size: 1.1rem; color: var(--text);">Basic</h3>
-                    <div class="sub-price">$4.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
-                </div>
-                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                    <li>✓ High-speed P2P transfer</li>
-                    <li>✓ Up to 10 users in room</li>
-                    <li>✓ Custom ID tag</li>
-                </ul>
-                <button class="btn-secondary" onclick="alert('Subscription feature integrated!')">Choose Basic</button>
-            </div>
-
-            <div class="sub-card popular">
-                <div>
-                    <span style="font-size: 0.65rem; background: var(--accent); color: #fff; font-weight: bold; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">POPULAR</span>
-                    <h3 style="font-size: 1.1rem; color: var(--text); margin-top: 6px;">Pro</h3>
-                    <div class="sub-price">$9.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
-                </div>
-                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                    <li>✓ Unlimited transfer speed</li>
-                    <li>✓ Up to 50 users in room</li>
-                    <li>✓ Priority P2P Routing</li>
-                </ul>
-                <button onclick="alert('Subscription feature integrated!')">Choose Pro</button>
-            </div>
-
-            <div class="sub-card">
-                <div>
-                    <h3 style="font-size: 1.1rem; color: var(--text);">Ultimate</h3>
-                    <div class="sub-price">$17.99 <span style="font-size: 0.8rem; color: var(--text-dim);">/mo</span></div>
-                </div>
-                <ul style="list-style: none; font-size: 0.8rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                    <li>✓ Max Speed & Bandwidth</li>
-                    <li>✓ Unlimited users in room</li>
-                    <li>✓ E2E Encrypted Backups</li>
-                </ul>
-                <button class="btn-secondary" onclick="alert('Subscription feature integrated!')">Choose Ultimate</button>
-            </div>
-        </div>
-
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('subscriptionsModal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Add Friend Modal -->
-<div id="addFriendModal" class="modal-overlay">
-    <div class="modal">
-        <h2>Add Friend</h2>
-        <div>
-            <label>Search user (Type for Display Name, @ for Username, # for ID):</label>
-            <input type="text" id="addFriendSearchInput" placeholder="e.g. dog, @john, #a1b2..." oninput="executeAddFriendSearch()">
-        </div>
-        <div id="addFriendSearchResult" class="list-container" style="margin-top: 10px; max-height: 200px;"></div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('addFriendModal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Invite Friends Modal -->
-<div id="inviteFriendsModal" class="modal-overlay">
-    <div class="modal" style="max-width: 500px;">
-        <h2>Invite Friends to Room</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted);">Send direct message invites with room credentials to your friends.</p>
-        <div id="inviteFriendsContainer" class="list-container" style="max-height: 280px; margin-top: 10px;"></div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('inviteFriendsModal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Accounts Database Modal (Zeldy only) -->
-<div id="accountsListModal" class="modal-overlay">
-    <div class="modal" style="max-width: 600px;">
-        <h2>Registered Accounts Base (Admin)</h2>
-        <div id="allAccountsContainer" class="list-container" style="max-height: 350px;"></div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Profile Settings Modal -->
-<div id="profileModal" class="modal-overlay">
-    <div class="modal modal-wide">
-        <h2>Profile Settings</h2>
-        
-        <div class="profile-grid-horizontal">
-            <!-- Left Col: Avatar & Display Name -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
-                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
-                <button class="btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Change Avatar</button>
-                
-                <div style="width: 100%;">
-                    <label>Display Name:</label>
-                    <input type="text" id="profileDisplayNameInput" placeholder="Display name...">
-                </div>
-
-                <div style="width: 100%;">
-                    <label>Username (Login):</label>
-                    <input type="text" id="profileUsernameReadonly" readonly style="opacity: 0.6; cursor: not-allowed; font-family: 'JetBrains Mono', monospace;">
-                </div>
-
-                <div style="width: 100%; font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
-                    Created: <span id="profileCreatedAtText" style="color: var(--text);"></span>
-                </div>
-
-                <button class="btn-danger" style="margin-top: 10px;" onclick="logout()">Log Out</button>
-            </div>
-
-            <!-- Middle Col: Short ID (Immutable), Color, Bio, Privacy, Blacklist -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div>
-                    <label>Your Short ID (Immutable):</label>
-                    <input type="text" id="profileUuidInput" readonly style="font-family: 'JetBrains Mono', monospace; opacity: 0.7; cursor: not-allowed;">
-                </div>
-
-                <div>
-                    <label>Nickname Color:</label>
-                    <div class="color-picker-row">
-                        <input type="color" id="profileColorInput" value="#818cf8">
-                        <span id="colorHexText" style="font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);">#818cf8</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="profileBioInput">Bio:</label>
-                    <textarea id="profileBioInput" placeholder="Tell something about yourself..."></textarea>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                    <label style="font-weight: bold; display: block; margin-bottom: 8px;">Privacy Settings:</label>
-                    <div class="switch-row"><span>Show ID to public</span><label class="switch"><input type="checkbox" id="privShowUuid"><span class="slider"></span></label></div>
-                    <div class="switch-row"><span>Show Creation Date</span><label class="switch"><input type="checkbox" id="privShowCreated"><span class="slider"></span></label></div>
-                    <div class="switch-row"><span>Show Bio</span><label class="switch"><input type="checkbox" id="privShowBio"><span class="slider"></span></label></div>
-                    <div class="switch-row"><span>Show Friends List</span><label class="switch"><input type="checkbox" id="privShowFriends"><span class="slider"></span></label></div>
-                </div>
-
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 6px;">Blacklist:</label>
-                    <div id="profileBlacklistContainer" class="list-container"></div>
-                </div>
-            </div>
-
-            <!-- Right Col: Friends List -->
-            <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--card-border); height: 100%;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-weight: bold;">Friends List:</label>
-                    <button style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="openAddFriendModal()">+ Add Friends</button>
-                </div>
-                <div id="profileFriendsContainer" class="list-container" style="flex: 1; max-height: 320px;"></div>
-            </div>
-        </div>
-
-        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 12px; margin-top: 10px;">
-            <button class="btn-secondary" style="width: 120px;" onclick="document.getElementById('profileModal').style.display='none'">Cancel</button>
-            <button style="width: 140px;" onclick="saveProfileChanges()">Save Changes</button>
-        </div>
-    </div>
-</div>
-
-<!-- View User Profile Modal (Horizontally styled) -->
-<div id="viewUserProfileModal" class="modal-overlay">
-    <div class="modal modal-wide" style="max-width: 650px;">
-        <h2 id="viewUserHeaderTitle">User Profile</h2>
-        
-        <div class="view-profile-horizontal">
-            <!-- Left Side: User Avatar, Display Name, Username, Actions -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(0,0,0,0.25); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
-                <div id="viewUserDisplayName" style="font-weight: bold; font-size: 1.1rem; text-align: center;"></div>
-                <div id="viewUserSubHeader" style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; text-align: center;"></div>
-                
-                <div class="modal-actions" style="width: 100%; margin-top: 10px;">
-                    <button id="addFriendBtn">Add Friend</button>
-                    <button id="openDirectChatBtn" class="btn-secondary">Message</button>
-                    <button id="blockUserBtn" class="btn-danger">Block</button>
-                </div>
-            </div>
-
-            <!-- Right Side: Details & Friends -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="background: rgba(0,0,0,0.15); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                    <label style="font-weight: bold; font-size: 0.8rem;">About Me:</label>
-                    <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; word-break: break-word;"></div>
-                </div>
-
-                <div id="viewUserCreated" style="font-size: 0.75rem; color: var(--text-muted);"></div>
-
-                <div id="viewUserFriendsSection">
-                    <label style="font-weight: bold; font-size: 0.85rem;">Friends:</label>
-                    <div id="viewUserFriendsList" class="list-container" style="max-height: 140px; margin-top: 6px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; margin-top: 12px;">
-            <button class="btn-secondary" style="width: 100px;" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Direct Chat Modal -->
-<div id="directChatModal" class="modal-overlay">
-    <div class="modal" style="max-width: 500px;">
-        <h2 id="directChatTitle">Direct Chat</h2>
-        <div id="directChatMessages" class="chat-messages" style="height: 260px;"></div>
-        <div class="chat-input-row">
-            <input type="text" id="directChatInput" placeholder="Type a private message..." autocomplete="off">
-            <button id="sendDirectMsgBtn">Send</button>
-        </div>
-        <div class="modal-actions">
-            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'">Close</button>
-        </div>
-    </div>
-</div>
-
-<div id="loginModal" class="modal-overlay">
-    <div class="modal">
-        <h2>Account Login</h2>
-        <div><label for="loginUsername">Username:</label><input type="text" id="loginUsername" maxlength="20" placeholder="Enter username..."></div>
-        <div><label for="loginPassword">Password:</label><input type="password" id="loginPassword" placeholder="Enter password..."></div>
-        <div class="modal-actions">
-            <button id="doLoginBtn">Log In</button>
-            <button id="cancelLoginBtn" class="btn-secondary">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<div id="registerModal" class="modal-overlay">
-    <div class="modal">
-        <h2>Create Account</h2>
-        <div><label for="regUsername">Username (unique login):</label><input type="text" id="regUsername" maxlength="20" placeholder="Choose username..."></div>
-        <div><label for="regDisplayName">Display Name:</label><input type="text" id="regDisplayName" maxlength="25" placeholder="Choose display name..."></div>
-        <div><label for="regPassword">Password:</label><input type="password" id="regPassword" placeholder="Choose password..."></div>
-        <div class="modal-actions">
-            <button id="doRegisterBtn">Sign Up</button>
-            <button id="cancelRegBtn" class="btn-secondary">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<div id="createModal" class="modal-overlay">
-    <div class="modal">
-        <h2>Create New Room</h2>
-        <div><label for="modalRoomId">Room ID:</label><input type="text" id="modalRoomId" readonly style="font-family: 'JetBrains Mono', monospace; font-weight: bold; color: var(--cyan);"></div>
-        <div><label for="modalPassword">Set Room Password:</label><input type="password" id="modalPassword" placeholder="Enter password..."></div>
-        <div><label for="modalMaxUsers">User Limit (Optional):</label><input type="number" id="modalMaxUsers" placeholder="Unlimited" min="1"></div>
-
-        <div style="border-top: 1px solid var(--card-border); padding-top: 12px; margin-top: 4px;">
-            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Default User Permissions:</label>
-            <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="defPermUpload" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="defPermDownload" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="defPermDelete" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Send Chat Messages</span><label class="switch"><input type="checkbox" id="defPermChat" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View Message History</span><label class="switch"><input type="checkbox" id="defPermViewMsg" checked><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View File History</span><label class="switch"><input type="checkbox" id="defPermViewFile" checked><span class="slider"></span></label></div>
-        </div>
-
-        <div class="modal-actions">
-            <button id="confirmCreateBtn">Create Room</button>
-            <button id="cancelCreateBtn" class="btn-secondary">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<div id="joinModal" class="modal-overlay">
-    <div class="modal">
-        <h2>Join Existing Room</h2>
-        <div><label for="joinRoomId">Room ID:</label><input type="text" id="joinRoomId" placeholder="Enter 6-digit ID..." maxlength="6"></div>
-        <div><label for="joinPassword">Room Password:</label><input type="password" id="joinPassword" placeholder="Enter password..."></div>
-        <div class="modal-actions">
-            <button id="confirmJoinBtn">Join Room</button>
-            <button id="cancelJoinBtn" class="btn-secondary">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<div id="settingsModal" class="modal-overlay">
-    <div class="modal">
-        <h2>Room Settings</h2>
-        <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 8px;">
-            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Access Rules:</label>
-            <div class="switch-row">
-                <span>Require Account (Block Guests)</span>
-                <label class="switch"><input type="checkbox" id="toggleRequireAccount" onchange="toggleRequireAccountSetting()"><span class="slider"></span></label>
-            </div>
-        </div>
-        <div>
-            <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Blacklist:</label>
-            <div id="blacklistContainer" class="list-container">
-                <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">No banned users</div>
-            </div>
-        </div>
-        <div class="modal-actions">
-            <button id="closeSettingsModalBtn" class="btn-secondary">Close</button>
-        </div>
-    </div>
-</div>
-
-<div id="manageUserModal" class="modal-overlay">
-    <div class="modal">
-        <h2 id="manageUserName">Manage User</h2>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: bold; margin-bottom: 4px;">Permissions:</label>
-            <div class="switch-row"><span>Upload Files</span><label class="switch"><input type="checkbox" id="permUpload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Download Files</span><label class="switch"><input type="checkbox" id="permDownload" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Delete Files</span><label class="switch"><input type="checkbox" id="permDelete" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>Send Chat Messages</span><label class="switch"><input type="checkbox" id="permChat" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View Message History</span><label class="switch"><input type="checkbox" id="permViewMessageHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-            <div class="switch-row"><span>View File History</span><label class="switch"><input type="checkbox" id="permViewFileHistory" onchange="autoSavePermissions()"><span class="slider"></span></label></div>
-        </div>
-        <div class="modal-actions">
-            <button id="kickUserBtn" class="btn-danger">Kick User</button>
-            <button id="banUserBtn" class="btn-danger" style="background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.4);">Ban User</button>
-            <button id="closeManageModalBtn" class="btn-secondary">Close</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    /* Incremental Short ID Generator (Base62) */
-    const ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    function generateIncrementalId(index) {
-        let id = '';
-        let base = ALPHABET.length;
-        let num = index;
-        while (num >= 0) {
-            id = ALPHABET[num % base] + id;
-            num = Math.floor(num / base) - 1;
-        }
-        return id;
-    }
-
-    const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
-
-    let currentUser = JSON.parse(localStorage.getItem('lb_session')) || null;
-
-    function getAccounts() {
-        return JSON.parse(localStorage.getItem('lb_accounts') || '{}');
-    }
-
-    function saveAccounts(accounts) {
-        localStorage.setItem('lb_accounts', JSON.stringify(accounts));
-    }
-
-    function isZeldy() {
-        return currentUser && currentUser.username === 'zeldy';
-    }
-
-    function updateAuthBarUI() {
-        const authBar = document.getElementById('authBar');
-        const accBaseBtn = document.getElementById('accountsBaseBtn');
-
-        accBaseBtn.style.display = isZeldy() ? 'inline-block' : 'none';
-
-        if (currentUser) {
-            const accounts = getAccounts();
-            const acc = accounts[currentUser.username] || {};
-            const avatar = acc.avatar || defaultAvatar;
-            const color = acc.color || '#818cf8';
-            const dispName = acc.displayName || currentUser.username;
-
-            authBar.innerHTML = `
-                <div class="user-profile-badge" onclick="openProfileModal()">
-                    <img class="avatar" src="${avatar}" alt="Avatar">
-                    <span style="color: ${color}">${escapeHtml(dispName)}</span>
-                </div>
-            `;
-            myName = dispName;
-        } else {
-            authBar.innerHTML = `
-                <button id="openLoginBtn" class="btn-secondary" onclick="document.getElementById('loginModal').style.display='flex'">Log In</button>
-                <button id="openRegisterBtn" onclick="document.getElementById('registerModal').style.display='flex'">Sign Up</button>
-            `;
-            if (!myName || myName.startsWith('User_')) {
-                myName = 'User_' + Math.floor(Math.random() * 1000);
+        fileInput.value = '';
+    };
+
+    const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB per file, sent as base64 over the data channel
+
+    function handleFilesSelected(fileList) {
+        Array.from(fileList).forEach(file => {
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`"${file.name}" is too large to send (max 8MB).`);
+                return;
             }
-        }
-    }
-
-    window.logout = function() {
-        if (confirm("Are you sure you want to log out?")) {
-            localStorage.removeItem('lb_session');
-            currentUser = null;
-            document.getElementById('profileModal').style.display = 'none';
-            updateAuthBarUI();
-        }
-    };
-
-    /* Accounts Base Modal - Admin Zeldy Only */
-    window.openAccountsListModal = function() {
-        if (!isZeldy()) return alert("Access denied");
-
-        const accounts = getAccounts();
-        const container = document.getElementById('allAccountsContainer');
-        container.innerHTML = '';
-
-        const keys = Object.keys(accounts);
-        if (keys.length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">No accounts found</div>';
-        } else {
-            keys.forEach(username => {
-                const acc = accounts[username];
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <img class="avatar" src="${acc.avatar || defaultAvatar}">
-                        <div>
-                            <span style="color: ${acc.color || '#818cf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
-                            <span style="font-size: 0.7rem; color: var(--text-muted);"> (@${escapeHtml(username)}) | ID: ${acc.uuid}</span>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
-                        ${username !== 'zeldy' ? `<button class="manage-user-btn" style="background: var(--danger);" onclick="deleteAccountByAdmin('${username}')">Delete</button>` : ''}
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-        document.getElementById('accountsListModal').style.display = 'flex';
-    };
-
-    window.deleteAccountByAdmin = function(username) {
-        if (!isZeldy()) return;
-        if (confirm(`Are you sure you want to permanently delete user @${username}?`)) {
-            const accounts = getAccounts();
-            delete accounts[username];
-            saveAccounts(accounts);
-            openAccountsListModal();
-        }
-    };
-
-    /* Profile Modal Settings */
-    let tempAvatarBase64 = null;
-    window.openProfileModal = function() {
-        if (!currentUser) return;
-        const accounts = getAccounts();
-        const acc = accounts[currentUser.username] || {};
-
-        tempAvatarBase64 = acc.avatar || defaultAvatar;
-        document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
-        document.getElementById('profileDisplayNameInput').value = acc.displayName || currentUser.username;
-        document.getElementById('profileUsernameReadonly').value = currentUser.username;
-        document.getElementById('profileUuidInput').value = acc.uuid;
-        document.getElementById('profileColorInput').value = acc.color || '#818cf8';
-        document.getElementById('colorHexText').textContent = acc.color || '#818cf8';
-        document.getElementById('profileBioInput').value = acc.bio || '';
-        document.getElementById('profileCreatedAtText').textContent = acc.createdAt ? new Date(acc.createdAt).toLocaleDateString() : 'N/A';
-
-        const priv = acc.privacySettings || { showUuid: true, showCreated: true, showBio: true, showFriends: true };
-        document.getElementById('privShowUuid').checked = priv.showUuid;
-        document.getElementById('privShowCreated').checked = priv.showCreated;
-        document.getElementById('privShowBio').checked = priv.showBio;
-        document.getElementById('privShowFriends').checked = priv.showFriends;
-
-        renderProfileLists();
-        document.getElementById('profileModal').style.display = 'flex';
-    };
-
-    document.getElementById('profileColorInput').oninput = (e) => {
-        document.getElementById('colorHexText').textContent = e.target.value;
-    };
-
-    document.getElementById('avatarFileInput').onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                tempAvatarBase64 = reader.result;
-                document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
+                const fileObj = {
+                    id: 'f_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+                    name: file.name,
+                    size: file.size,
+                    data: reader.result,
+                    uploader: myName
+                };
+                sendFileToQueue(fileObj);
             };
             reader.readAsDataURL(file);
+        });
+    }
+
+    function sendFileToQueue(fileObj) {
+        if (isHost) {
+            hostState.fileHistory.push(fileObj);
+            renderQueue();
+            broadcastToAllClients({ type: 'FILE_BROADCAST', file: fileObj }, null, 'canViewFileHistory');
+        } else if (roomHostConn) {
+            roomHostConn.send({ type: 'FILE_ADD', file: fileObj });
+        }
+    }
+
+    window.deleteQueuedFile = function(fileId) {
+        if (!myPermissions.canDeleteFiles) return;
+        if (isHost) {
+            hostState.fileHistory = hostState.fileHistory.filter(f => f.id !== fileId);
+            renderQueue();
+            broadcastToAllClients({ type: 'FILE_DELETE_BROADCAST', fileId: fileId }, null, 'canViewFileHistory');
+        } else if (roomHostConn) {
+            roomHostConn.send({ type: 'FILE_DELETE', fileId: fileId });
         }
     };
 
-    function renderProfileLists() {
-        const accounts = getAccounts();
-        const acc = accounts[currentUser.username] || {};
-        
-        // Friends
-        const friendsCont = document.getElementById('profileFriendsContainer');
-        friendsCont.innerHTML = '';
-        const friends = acc.friends || [];
-        if (friends.length === 0) {
-            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 10px;">No friends added</div>';
-        } else {
-            friends.forEach(fUsername => {
-                const fAcc = accounts[fUsername] || {};
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <img class="avatar" src="${fAcc.avatar || defaultAvatar}" style="width: 22px; height: 22px;">
-                        <span style="font-weight: bold; color: ${fAcc.color || '#818cf8'}">${escapeHtml(fAcc.displayName || fUsername)}</span>
-                    </div>
-                    <button class="manage-user-btn" onclick="openDirectChat('${fUsername}')">Chat</button>
-                `;
-                friendsCont.appendChild(div);
-            });
+    window.downloadQueuedFile = function(fileId) {
+        const file = (hostState.fileHistory || []).find(f => f.id === fileId);
+        if (!file) return;
+        const a = document.createElement('a');
+        a.href = file.data;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    };
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderQueue() {
+        const container = document.getElementById('fileQueue');
+        if (!container) return;
+        const files = hostState.fileHistory || [];
+
+        if (files.length === 0) {
+            container.innerHTML = `<div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">No files in queue</div>`;
+            return;
         }
 
-        // Blacklist
-        const blockCont = document.getElementById('profileBlacklistContainer');
-        blockCont.innerHTML = '';
-        const blocked = acc.blocked || [];
-        if (blocked.length === 0) {
-            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">Blacklist is empty</div>';
-        } else {
-            blocked.forEach(bUsername => {
-                const bAcc = accounts[bUsername] || {};
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <span>@${escapeHtml(bUsername)}</span>
-                    <button class="manage-user-btn" onclick="unblockUser('${bUsername}')">Unblock</button>
-                `;
-                blockCont.appendChild(div);
-            });
-        }
+        container.innerHTML = '';
+        files.forEach(file => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `
+                <div style="display: flex; flex-direction: column; overflow: hidden;">
+                    <span style="font-weight: 600; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(file.name)}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-dim);">${formatFileSize(file.size)} · ${escapeHtml(file.uploader || '')}</span>
+                </div>
+                <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                    ${myPermissions.canDownload ? `<button class="manage-user-btn" onclick="downloadQueuedFile('${file.id}')">Get</button>` : ''}
+                    ${myPermissions.canDeleteFiles ? `<button class="manage-user-btn" style="background: var(--danger);" onclick="deleteQueuedFile('${file.id}')">Del</button>` : ''}
+                </div>
+            `;
+            container.appendChild(div);
+        });
     }
 
     function escapeHtml(str) {
         return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
-
-    // Dynamic Auth Load
-    updateAuthBarUI();
 </script>
 </body>
 </html>
