@@ -23,9 +23,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg); color: var(--text); min-height: 100vh; width: 100vw; overflow-x: hidden; position: relative; }
 
+        /* Левая верхняя кнопка просмотра всех аккаунтов */
+        .top-left-bar { position: absolute; top: 16px; left: 24px; z-index: 100; }
+        .top-left-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
+
         .auth-bar { position: absolute; top: 16px; right: 24px; display: flex; gap: 8px; z-index: 100; align-items: center; }
         .auth-bar button { width: auto; padding: 6px 14px; font-size: 0.85rem; }
-        .user-profile-badge { font-size: 0.85rem; color: var(--accent); font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); }
+        
+        /* Профиль и аватарки */
+        .user-profile-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; }
+        .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--border); }
+        .avatar-lg { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--border); }
 
         .main-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .container { width: 100%; max-width: 520px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
@@ -33,8 +41,9 @@
         p.subtitle { font-size: 0.875rem; color: var(--text-dim); text-align: center; margin-bottom: 20px; }
 
         .section { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-        input[type="text"], input[type="password"], input[type="number"] { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; }
-        input:focus { outline: none; border-color: var(--accent); }
+        input[type="text"], input[type="password"], input[type="number"], textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; }
+        textarea { resize: vertical; min-height: 60px; }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
         button { background: var(--accent); color: #000; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
         button:hover { background: var(--accent-hover); color: #fff; }
@@ -72,9 +81,6 @@
         .file-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
         .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
         .file-size { color: var(--text-dim); font-size: 0.75rem; }
-        
-        .delete-file-btn { background: none; border: none; color: var(--danger); cursor: pointer; padding: 2px 6px; font-size: 0.75rem; border-radius: 4px; width: auto; font-weight: bold; }
-        .delete-file-btn:hover { background: rgba(239, 68, 68, 0.15); }
 
         .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; margin-bottom: 12px; }
         .info-value { font-weight: bold; color: var(--accent); font-family: monospace; font-size: 1.05rem; }
@@ -84,8 +90,8 @@
 
         .chat-card { display: flex; flex-direction: column; gap: 12px; }
         .chat-messages { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; height: 180px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .chat-msg { font-size: 0.85rem; word-break: break-word; }
-        .chat-msg .author { font-weight: bold; color: var(--accent); margin-right: 6px; }
+        .chat-msg { font-size: 0.85rem; word-break: break-word; display: flex; align-items: center; gap: 6px; }
+        .chat-msg .author { font-weight: bold; }
         .chat-msg.system { color: var(--text-dim); font-style: italic; }
         .chat-input-row { display: flex; gap: 8px; }
         .chat-input-row input { margin-top: 0; }
@@ -96,9 +102,8 @@
         .user-count-badge { background: var(--border); color: var(--accent); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
         .user-list { list-style: none; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
         
-        .user-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 10px 12px; border-radius: 6px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; position: relative; }
-        .user-info { display: flex; align-items: center; gap: 6px; }
-        .user-info::before { content: "•"; color: #4ade80; font-weight: bold; font-size: 1.2rem; }
+        .user-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        .user-info { display: flex; align-items: center; gap: 8px; }
         
         .manage-user-btn { background: rgba(255, 255, 255, 0.1); border: none; color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: auto; }
         .manage-user-btn:hover { background: var(--accent); color: #000; }
@@ -114,19 +119,25 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
 
-        .blacklist-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto; }
-        .blacklist-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
-        .unban-btn { background: var(--danger); color: #fff; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: auto; }
-        .unban-btn:hover { background: var(--danger-hover); }
+        .list-container { display: flex; flex-direction: column; gap: 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; max-height: 180px; overflow-y: auto; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal { background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
+        .modal { background: var(--modal-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: 90%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
         .modal h2 { font-size: 1.15rem; color: var(--accent); }
         .modal label { font-size: 0.85rem; color: var(--text-dim); }
         .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+        
+        .color-picker-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+        .color-picker-row input[type="color"] { width: 40px; height: 35px; border: none; cursor: pointer; background: none; }
     </style>
 </head>
 <body>
+
+<!-- Меню слева: Просмотр существующих аккаунтов -->
+<div class="top-left-bar">
+    <button class="btn-secondary" onclick="openAccountsListModal()">База аккаунтов</button>
+</div>
 
 <div class="auth-bar" id="authBar"></div>
 
@@ -223,7 +234,89 @@
     </aside>
 </div>
 
-<!-- Modal Overlays -->
+<!-- Модальные окна -->
+
+<!-- Список всех зарегистрированных аккаунтов -->
+<div id="accountsListModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Зарегистрированные аккаунты</h2>
+        <div id="allAccountsContainer" class="list-container"></div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Профиль пользователя -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal">
+        <h2>Настройки Профиля</h2>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <img id="profileAvatarPreview" class="avatar-lg" src="" alt="Avatar">
+            <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+            <button class="btn-secondary" style="width: auto; padding: 4px 12px; font-size: 0.8rem;" onclick="document.getElementById('avatarFileInput').click()">Изменить аватар</button>
+        </div>
+        <div>
+            <label>Цвет ника:</label>
+            <div class="color-picker-row">
+                <input type="color" id="profileColorInput" value="#38bdf8">
+                <span id="colorHexText" style="font-size: 0.85rem; font-family: monospace;">#38bdf8</span>
+            </div>
+        </div>
+        <div>
+            <label for="profileBioInput">Описание (Bio):</label>
+            <textarea id="profileBioInput" placeholder="Расскажите о себе..."></textarea>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Друзья:</label>
+            <div id="profileFriendsContainer" class="list-container"></div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 10px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Черный список:</label>
+            <div id="profileBlacklistContainer" class="list-container"></div>
+        </div>
+
+        <div class="modal-actions">
+            <button onclick="saveProfileChanges()">Сохранить</button>
+            <button class="btn-secondary" onclick="document.getElementById('profileModal').style.display='none'">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Просмотр чужого профиля -->
+<div id="viewUserProfileModal" class="modal-overlay">
+    <div class="modal">
+        <h2 id="viewUserName">Профиль</h2>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <img id="viewUserAvatar" class="avatar-lg" src="" alt="Avatar">
+            <div id="viewUserBio" style="font-size: 0.85rem; color: var(--text-dim); text-align: center;"></div>
+        </div>
+        <div class="modal-actions">
+            <button id="addFriendBtn">Добавить в друзья</button>
+            <button id="openDirectChatBtn" class="btn-secondary">Написать сообщение</button>
+            <button id="blockUserBtn" class="btn-danger">Заблокировать</button>
+            <button class="btn-secondary" onclick="document.getElementById('viewUserProfileModal').style.display='none'">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Личный чат с другом -->
+<div id="directChatModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <h2 id="directChatTitle">Личный чат</h2>
+        <div id="directChatMessages" class="chat-messages" style="height: 250px;"></div>
+        <div class="chat-input-row">
+            <input type="text" id="directChatInput" placeholder="Личное сообщение..." autocomplete="off">
+            <button id="sendDirectMsgBtn">Отправить</button>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="document.getElementById('directChatModal').style.display='none'">Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <div id="loginModal" class="modal-overlay">
     <div class="modal">
         <h2>Account Login</h2>
@@ -296,7 +389,7 @@
         </div>
         <div>
             <label style="font-weight: bold; margin-bottom: 8px; display: block;">Room Blacklist:</label>
-            <div id="blacklistContainer" class="blacklist-container">
+            <div id="blacklistContainer" class="list-container">
                 <div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">No banned users</div>
             </div>
         </div>
@@ -327,6 +420,8 @@
 </div>
 
 <script>
+    const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+
     let currentUser = JSON.parse(localStorage.getItem('lb_session')) || null;
 
     function getAccounts() {
@@ -340,8 +435,16 @@
     function updateAuthBarUI() {
         const authBar = document.getElementById('authBar');
         if (currentUser) {
+            const accounts = getAccounts();
+            const acc = accounts[currentUser.username] || {};
+            const avatar = acc.avatar || defaultAvatar;
+            const color = acc.color || '#38bdf8';
+
             authBar.innerHTML = `
-                <div class="user-profile-badge">👤 ${escapeHtml(currentUser.username)}</div>
+                <div class="user-profile-badge" onclick="openProfileModal()">
+                    <img class="avatar" src="${avatar}" alt="Avatar">
+                    <span style="color: ${color}">${escapeHtml(currentUser.username)}</span>
+                </div>
                 <button onclick="logout()" class="btn-secondary">Log Out</button>
             `;
             myName = currentUser.username;
@@ -356,12 +459,246 @@
         }
     }
 
+    /* Предупреждение при выходе из аккаунта */
     window.logout = function() {
-        localStorage.removeItem('lb_session');
-        currentUser = null;
-        updateAuthBarUI();
+        if (confirm("Вы уверены, что хотите выйти из аккаунта?")) {
+            localStorage.removeItem('lb_session');
+            currentUser = null;
+            updateAuthBarUI();
+        }
     };
 
+    /* Модальное окно просмотра всех зарегистрированных аккаунтов */
+    window.openAccountsListModal = function() {
+        const accounts = getAccounts();
+        const container = document.getElementById('allAccountsContainer');
+        container.innerHTML = '';
+
+        const keys = Object.keys(accounts);
+        if (keys.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Аккаунтов нет</div>';
+        } else {
+            keys.forEach(username => {
+                const acc = accounts[username];
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <img class="avatar" src="${acc.avatar || defaultAvatar}">
+                        <span style="color: ${acc.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(username)}</span>
+                    </div>
+                    <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Профиль</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        document.getElementById('accountsListModal').style.display = 'flex';
+    };
+
+    /* Настройки собственного профиля */
+    let tempAvatarBase64 = null;
+    window.openProfileModal = function() {
+        if (!currentUser) return;
+        const accounts = getAccounts();
+        const acc = accounts[currentUser.username] || {};
+
+        tempAvatarBase64 = acc.avatar || defaultAvatar;
+        document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
+        document.getElementById('profileColorInput').value = acc.color || '#38bdf8';
+        document.getElementById('colorHexText').textContent = acc.color || '#38bdf8';
+        document.getElementById('profileBioInput').value = acc.bio || '';
+
+        renderProfileLists();
+        document.getElementById('profileModal').style.display = 'flex';
+    };
+
+    document.getElementById('profileColorInput').oninput = (e) => {
+        document.getElementById('colorHexText').textContent = e.target.value;
+    };
+
+    document.getElementById('avatarFileInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                tempAvatarBase64 = reader.result;
+                document.getElementById('profileAvatarPreview').src = tempAvatarBase64;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    function renderProfileLists() {
+        const accounts = getAccounts();
+        const acc = accounts[currentUser.username] || {};
+        
+        // Список друзей
+        const friendsCont = document.getElementById('profileFriendsContainer');
+        friendsCont.innerHTML = '';
+        const friends = acc.friends || [];
+        if (friends.length === 0) {
+            friendsCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Нет друзей</div>';
+        } else {
+            friends.forEach(fName => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <span>${escapeHtml(fName)}</span>
+                    <button class="manage-user-btn" onclick="openDirectChat('${fName}')">Чат</button>
+                `;
+                friendsCont.appendChild(div);
+            });
+        }
+
+        // Чёрный список
+        const blockCont = document.getElementById('profileBlacklistContainer');
+        blockCont.innerHTML = '';
+        const blocked = acc.blocked || [];
+        if (blocked.length === 0) {
+            blockCont.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">Черный список пуст</div>';
+        } else {
+            blocked.forEach(bName => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <span>${escapeHtml(bName)}</span>
+                    <button class="manage-user-btn" onclick="unblockUser('${bName}')">Разблокировать</button>
+                `;
+                blockCont.appendChild(div);
+            });
+        }
+    }
+
+    window.saveProfileChanges = function() {
+        if (!currentUser) return;
+        const accounts = getAccounts();
+        if (!accounts[currentUser.username]) accounts[currentUser.username] = {};
+
+        accounts[currentUser.username].avatar = tempAvatarBase64;
+        accounts[currentUser.username].color = document.getElementById('profileColorInput').value;
+        accounts[currentUser.username].bio = document.getElementById('profileBioInput').value.trim();
+
+        saveAccounts(accounts);
+        updateAuthBarUI();
+        document.getElementById('profileModal').style.display = 'none';
+    };
+
+    /* Просмотр чужого профиля */
+    let selectedProfileUser = null;
+    window.openViewUserProfile = function(username) {
+        if (currentUser && username === currentUser.username) {
+            document.getElementById('accountsListModal').style.display = 'none';
+            openProfileModal();
+            return;
+        }
+        selectedProfileUser = username;
+        const accounts = getAccounts();
+        const acc = accounts[username] || {};
+
+        document.getElementById('viewUserName').textContent = username;
+        document.getElementById('viewUserName').style.color = acc.color || '#38bdf8';
+        document.getElementById('viewUserAvatar').src = acc.avatar || defaultAvatar;
+        document.getElementById('viewUserBio').textContent = acc.bio || 'Описание отсутствует.';
+
+        document.getElementById('accountsListModal').style.display = 'none';
+        document.getElementById('viewUserProfileModal').style.display = 'flex';
+    };
+
+    document.getElementById('addFriendBtn').onclick = () => {
+        if (!currentUser) return alert('Войдите в аккаунт');
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        myAcc.friends = myAcc.friends || [];
+        if (!myAcc.friends.includes(selectedProfileUser)) {
+            myAcc.friends.push(selectedProfileUser);
+            saveAccounts(accounts);
+            alert('Пользователь добавлен в друзья!');
+        } else {
+            alert('Уже в друзьях');
+        }
+    };
+
+    document.getElementById('blockUserBtn').onclick = () => {
+        if (!currentUser) return alert('Войдите в аккаунт');
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        myAcc.blocked = myAcc.blocked || [];
+        if (!myAcc.blocked.includes(selectedProfileUser)) {
+            myAcc.blocked.push(selectedProfileUser);
+            saveAccounts(accounts);
+            alert('Пользователь заблокирован');
+            document.getElementById('viewUserProfileModal').style.display = 'none';
+        }
+    };
+
+    window.unblockUser = function(username) {
+        if (!currentUser) return;
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        myAcc.blocked = (myAcc.blocked || []).filter(b => b !== username);
+        saveAccounts(accounts);
+        renderProfileLists();
+    };
+
+    /* Личные чаты */
+    let activeDirectFriend = null;
+    window.openDirectChat = function(friendName) {
+        activeDirectFriend = friendName;
+        document.getElementById('directChatTitle').textContent = `Чат с ${friendName}`;
+        document.getElementById('profileModal').style.display = 'none';
+        document.getElementById('viewUserProfileModal').style.display = 'none';
+        renderDirectMessages();
+        document.getElementById('directChatModal').style.display = 'flex';
+    };
+
+    document.getElementById('openDirectChatBtn').onclick = () => {
+        if (!currentUser) return alert('Войдите в аккаунт');
+        openDirectChat(selectedProfileUser);
+    };
+
+    function renderDirectMessages() {
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        const chats = myAcc.directChats || {};
+        const msgs = chats[activeDirectFriend] || [];
+
+        const cont = document.getElementById('directChatMessages');
+        cont.innerHTML = '';
+        msgs.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'chat-msg';
+            div.innerHTML = `<span class="author" style="color: ${m.color}">${escapeHtml(m.sender)}:</span> ${escapeHtml(m.text)}`;
+            cont.appendChild(div);
+        });
+        cont.scrollTop = cont.scrollHeight;
+    }
+
+    document.getElementById('sendDirectMsgBtn').onclick = () => {
+        const input = document.getElementById('directChatInput');
+        const text = input.value.trim();
+        if (!text || !activeDirectFriend || !currentUser) return;
+
+        const accounts = getAccounts();
+        const myAcc = accounts[currentUser.username] || {};
+        myAcc.directChats = myAcc.directChats || {};
+        myAcc.directChats[activeDirectFriend] = myAcc.directChats[activeDirectFriend] || [];
+
+        const msgObj = { sender: currentUser.username, text: text, color: myAcc.color || '#38bdf8' };
+        myAcc.directChats[activeDirectFriend].push(msgObj);
+
+        // Дублируем сообщение в аккаунт получателя
+        if (accounts[activeDirectFriend]) {
+            accounts[activeDirectFriend].directChats = accounts[activeDirectFriend].directChats || {};
+            accounts[activeDirectFriend].directChats[currentUser.username] = accounts[activeDirectFriend].directChats[currentUser.username] || [];
+            accounts[activeDirectFriend].directChats[currentUser.username].push(msgObj);
+        }
+
+        saveAccounts(accounts);
+        input.value = '';
+        renderDirectMessages();
+    };
+
+    /* Авторизация и регистрация */
     document.getElementById('doRegisterBtn').onclick = () => {
         const u = document.getElementById('regUsername').value.trim();
         const p = document.getElementById('regPassword').value.trim();
@@ -372,7 +709,7 @@
         const accounts = getAccounts();
         if (accounts[u]) return alert('Username already taken');
 
-        accounts[u] = { password: p };
+        accounts[u] = { password: p, avatar: defaultAvatar, color: '#38bdf8', bio: '', friends: [], blocked: [], directChats: {} };
         saveAccounts(accounts);
 
         currentUser = { username: u };
@@ -465,7 +802,16 @@
 
         myPeer.on('open', (id) => {
             document.getElementById('createModal').style.display = 'none';
-            hostState.users[id] = { name: myName + ' (Host)', permissions: { ...hostState.defaultPermissions }, conn: null };
+            const accounts = getAccounts();
+            const myAcc = currentUser ? accounts[currentUser.username] : {};
+
+            hostState.users[id] = { 
+                name: myName + ' (Host)', 
+                color: myAcc.color || '#38bdf8',
+                avatar: myAcc.avatar || defaultAvatar,
+                permissions: { ...hostState.defaultPermissions }, 
+                conn: null 
+            };
             enterWorkspace({ roomId, password, isHost: true });
             broadcastUserList();
         });
@@ -506,6 +852,8 @@
             conn.peerName = data.name.substring(0, 20);
             hostState.users[conn.peer] = {
                 name: conn.peerName,
+                color: data.color || '#38bdf8',
+                avatar: data.avatar || defaultAvatar,
                 permissions: { ...hostState.defaultPermissions },
                 conn: conn
             };
@@ -528,7 +876,7 @@
         else if (data.type === 'send-chat') {
             const user = hostState.users[conn.peer];
             if (user && user.permissions.canChat) {
-                const msg = { author: user.name, text: data.text };
+                const msg = { author: user.name, color: user.color, avatar: user.avatar, text: data.text };
                 hostState.chatHistory.push(msg);
                 broadcast({ type: 'chat-message', ...msg });
             }
@@ -565,10 +913,15 @@
             roomHostConn = myPeer.connect('localbridge-room-' + roomId);
 
             roomHostConn.on('open', () => {
+                const accounts = getAccounts();
+                const myAcc = currentUser ? accounts[currentUser.username] : {};
+
                 roomHostConn.send({
                     type: 'join-request',
                     password: password,
                     name: myName,
+                    color: myAcc.color || '#38bdf8',
+                    avatar: myAcc.avatar || defaultAvatar,
                     isLoggedIn: currentUser !== null
                 });
             });
@@ -592,7 +945,7 @@
                 document.getElementById('joinModal').style.display = 'none';
                 enterWorkspace({ roomId: data.roomId, password: data.password, isHost: false, permissions: data.permissions });
                 
-                if (data.chatHistory) data.chatHistory.forEach(msg => appendChatMessage(msg.author, msg.text));
+                if (data.chatHistory) data.chatHistory.forEach(msg => appendChatMessage(msg.author, msg.text, msg.color, msg.avatar));
                 if (data.fileHistory) data.fileHistory.forEach(file => appendFileMessage(file));
             } else {
                 alert(data.message);
@@ -603,7 +956,7 @@
         }
         else if (data.type === 'chat-message') {
             if (myPermissions.canViewMessageHistory !== false) {
-                appendChatMessage(data.author, data.text);
+                appendChatMessage(data.author, data.text, data.color, data.avatar);
             }
         }
         else if (data.type === 'sys-message') {
@@ -632,7 +985,7 @@
     }
 
     function broadcast(data) {
-        if (data.type === 'chat-message') appendChatMessage(data.author, data.text);
+        if (data.type === 'chat-message') appendChatMessage(data.author, data.text, data.color, data.avatar);
         if (data.type === 'sys-message') appendSysMessage(data.text);
         if (data.type === 'receive-file') appendFileMessage(data.fileData);
         if (data.type === 'file-deleted') removeFileItem(data.fileId);
@@ -650,6 +1003,8 @@
         const usersArray = Object.keys(hostState.users).map(id => ({
             id: id,
             name: hostState.users[id].name,
+            color: hostState.users[id].color,
+            avatar: hostState.users[id].avatar,
             permissions: hostState.users[id].permissions
         }));
 
@@ -706,8 +1061,16 @@
         const val = chatInput.value.trim();
         if (!val) return;
 
+        const accounts = getAccounts();
+        const myAcc = currentUser ? accounts[currentUser.username] : {};
+
         if (isHost) {
-            const msg = { author: hostState.users[myPeer.id].name, text: val };
+            const msg = { 
+                author: hostState.users[myPeer.id].name, 
+                color: myAcc.color || '#38bdf8',
+                avatar: myAcc.avatar || defaultAvatar,
+                text: val 
+            };
             hostState.chatHistory.push(msg);
             broadcast({ type: 'chat-message', ...msg });
         } else {
@@ -716,10 +1079,14 @@
         chatInput.value = '';
     }
 
-    function appendChatMessage(author, text) {
+    function appendChatMessage(author, text, color = '#38bdf8', avatar = defaultAvatar) {
         const div = document.createElement('div');
         div.className = 'chat-msg';
-        div.innerHTML = `<span class="author">${escapeHtml(author)}:</span>${escapeHtml(text)}`;
+        div.innerHTML = `
+            <img class="avatar" src="${avatar}">
+            <span class="author" style="color: ${color}">${escapeHtml(author)}:</span>
+            <span>${escapeHtml(text)}</span>
+        `;
         chatMessages.appendChild(div);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -751,7 +1118,12 @@
 
             const infoDiv = document.createElement('div');
             infoDiv.className = 'user-info';
-            infoDiv.innerHTML = `${escapeHtml(u.name)}${isUserHost ? ' ' + svgCrown : ''}${isMe ? ' <span class="you-tag">(you)</span>' : ''}`;
+            infoDiv.innerHTML = `
+                <img class="avatar" src="${u.avatar || defaultAvatar}">
+                <span style="color: ${u.color || '#38bdf8'}; font-weight: bold;">${escapeHtml(u.name)}</span>
+                ${isUserHost ? ' ' + svgCrown : ''}
+                ${isMe ? ' <span class="you-tag">(you)</span>' : ''}
+            `;
 
             li.appendChild(infoDiv);
 
@@ -853,10 +1225,10 @@
         } else {
             hostState.blacklist.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'blacklist-item';
+                div.className = 'list-item';
                 div.innerHTML = `
                     <span>ID: ${escapeHtml(item.id)} (${escapeHtml(item.name)})</span>
-                    <button class="unban-btn" onclick="unbanUser('${item.id}')">Unban</button>
+                    <button class="btn-danger" style="width: auto; padding: 2px 8px; font-size: 0.75rem;" onclick="unbanUser('${item.id}')">Unban</button>
                 `;
                 container.appendChild(div);
             });
@@ -957,7 +1329,7 @@
                 <span class="file-name">${escapeHtml(name)}</span>
                 <span class="file-size">${size}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align- items: center; font-size: 0.75rem; color: var(--text-dim);">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim);">
                 <span>${status}</span>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     ${downloadUrl ? `<a href="${downloadUrl}" download="${escapeHtml(name)}" class="file-download-link" style="color: var(--accent); font-weight: bold; display: ${myPermissions.canDownload ? 'inline' : 'none'};">Download</a>` : ''}
