@@ -66,7 +66,7 @@
         .auth-bar button { width: auto; padding: 8px 18px; font-size: 0.85rem; }
         
         /* Footer Bottom Bar */
-        .footer-bar { position: fixed; bottom: 20px; right: 24px; z-index: 100; display: flex; gap: 12px; font-size: 0.8rem; color: var(--text-dim); }
+        .footer-bar { position: fixed; bottom: 20px; right: 24px; left: 24px; z-index: 100; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 14px; font-size: 0.8rem; color: var(--text-dim); }
         .footer-bar button { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px 8px; width: auto; box-shadow: none; font-size: 0.8rem; }
         .footer-bar button:hover { color: var(--text); text-decoration: underline; background: none; box-shadow: none; }
 
@@ -228,6 +228,13 @@
         .drop-zone svg { width: 38px; height: 38px; fill: var(--accent-light); }
 
         .file-queue { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; margin-top: 12px; }
+        .file-queue.file-queue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .file-queue-grid .list-item { flex-direction: column; align-items: stretch; text-align: center; gap: 6px; }
+        .file-thumb { width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; background: rgba(255,255,255,0.05); }
+        .file-queue-grid .file-thumb { width: 100%; height: 80px; }
+        .file-thumb-icon, .file-thumb-placeholder { display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .file-thumb-placeholder { cursor: pointer; }
+        .file-thumb-placeholder:hover { background: rgba(255,255,255,0.08); }
         .file-item { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
         .file-info { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
         .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; color: var(--text); }
@@ -321,7 +328,10 @@
         .color-picker-row input[type="color"] { width: 44px; height: 38px; border: none; cursor: pointer; background: none; border-radius: 6px; }
 
         .sub-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 12px; }
-        @media (max-width: 650px) { .sub-cards-grid { grid-template-columns: 1fr; } }
+        .sub-cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 900px) { .sub-cards-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 650px) { .sub-cards-grid, .sub-cards-grid-4 { grid-template-columns: 1fr; } }
+        .sub-card.current-plan { border-color: var(--success); box-shadow: 0 0 0 1px var(--success); }
         
         .sub-card { 
             background: rgba(255,255,255,0.03); 
@@ -341,18 +351,110 @@
 
         /* Settings Tabs */
         .settings-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 14px; overflow-x: auto; }
-        .settings-tab-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-dim); padding: 6px 14px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; width: auto; box-shadow: none; white-space: nowrap; }
-        .settings-tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .settings-panel { display: none; flex-direction: column; gap: 14px; }
         .settings-panel.active { display: flex; }
 
         /* Custom Toast Notification System */
-        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: var(--modal-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 14px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.875rem; color: #fff; display: flex; align-items: center; gap: 12px; pointer-events: auto; animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-width: 280px; }
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; max-width: calc(100vw - 48px); }
+        .toast { position: relative; overflow: hidden; background: var(--modal-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 14px 20px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.875rem; color: #fff; display: flex; align-items: center; gap: 12px; pointer-events: auto; animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-width: 280px; }
         .toast.success { border-left: 4px solid var(--success); }
         .toast.error { border-left: 4px solid var(--danger); }
+        .toast.warning { border-left: 4px solid var(--warning); }
         .toast.info { border-left: 4px solid var(--accent); }
+        .toast-icon { flex-shrink: 0; }
+        .toast-msg { flex: 1; line-height: 1.4; }
+        .toast-close { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 2px 4px; flex-shrink: 0; border-radius: 4px; transition: var(--transition); }
+        .toast-close:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .toast-progress-track { position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.06); }
+        .toast-progress-bar { display: block; height: 100%; width: 100%; background: currentColor; opacity: 0.5; transform-origin: left; transition: transform linear; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* ===== App Settings — real, applied effects ===== */
+
+        /* Light theme */
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(15, 23, 42, 0.08);
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --success: #059669;
+            --warning: #d97706;
+            --text: #0f172a;
+            --text-dim: #475569;
+            --border: rgba(15, 23, 42, 0.1);
+            --modal-bg: rgba(255, 255, 255, 0.96);
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+        }
+        [data-theme="light"] body { background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.06) 0px, transparent 50%); }
+        [data-theme="light"] .toast { color: var(--text); }
+        [data-theme="light"] input, [data-theme="light"] select { color: var(--text); }
+
+        /* Reduced motion */
+        .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+        }
+
+        /* Disable blur (perf) */
+        .no-blur * { backdrop-filter: none !important; }
+
+        /* Compact density */
+        .density-compact .list-item { padding: 8px 10px !important; }
+        .density-compact .switch-row { padding: 6px 0 !important; }
+        .density-compact .modal { padding: 20px !important; }
+        .density-compact .settings-layout .settings-content { padding: 18px 24px !important; }
+
+        /* High contrast */
+        .high-contrast { --card-border: rgba(255,255,255,0.35); --border: rgba(255,255,255,0.35); }
+        .high-contrast.no-theme-light, .high-contrast:not([data-theme="light"]) { --text-dim: #cbd5e1; }
+        .high-contrast .btn-secondary, .high-contrast input, .high-contrast select { border-width: 2px !important; }
+
+        /* Larger text */
+        .larger-text { font-size: 112.5%; }
+
+        /* Compact member list */
+        .compact-members .user-item { padding: 5px 10px !important; font-size: 0.78rem !important; }
+
+        /* Keyboard focus visibility (always on — good practice, not a toggle) */
+        button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+            outline: 2px solid var(--accent-light); outline-offset: 2px;
+        }
+
+        /* Language buttons */
+        .lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .lang-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: var(--transition); text-align: left; }
+        .lang-btn:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+        .lang-btn.active { border-color: var(--accent); background: rgba(99, 102, 241, 0.18); box-shadow: 0 0 0 1px var(--accent); }
+        .lang-flag { font-size: 1.3rem; }
+
+        /* Settings control-center layout (sidebar + content, with search) */
+        .settings-layout { display: flex; gap: 0; min-height: 420px; max-height: 62vh; }
+        .settings-sidebar { width: 200px; flex-shrink: 0; border-right: 1px solid var(--card-border); overflow-y: auto; padding-right: 4px; }
+        .settings-sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-dim); font-size: 0.85rem; font-weight: 600; transition: var(--transition); margin-bottom: 2px; }
+        .settings-sidebar-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .settings-sidebar-item.active { color: #fff; background: rgba(99, 102, 241, 0.18); }
+        .settings-content { flex: 1; overflow-y: auto; padding: 4px 24px; }
+        .settings-search { margin-bottom: 14px; }
+        .settings-group-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); font-weight: 700; margin: 18px 0 8px; }
+        .settings-group-title:first-child { margin-top: 0; }
+        .settings-row-desc { font-size: 0.75rem; color: var(--text-dim); margin-top: -2px; }
+        .settings-locked { opacity: 0.5; pointer-events: none; position: relative; }
+        .settings-lock-badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: rgba(139, 92, 246, 0.2); color: var(--accent-light); font-weight: 700; margin-left: 8px; letter-spacing: 0.02em; }
+        .settings-row-hidden { display: none !important; }
+        .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+        .swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: var(--transition); }
+        .swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+
+        @media (max-width: 720px) {
+            .settings-layout { flex-direction: column; max-height: 72vh; }
+            .settings-sidebar { width: 100%; display: flex; overflow-x: auto; overflow-y: hidden; border-right: none; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; gap: 4px; }
+            .settings-sidebar-item { flex-shrink: 0; margin-bottom: 0; white-space: nowrap; }
+            .settings-content { padding: 14px 4px; }
+            .lang-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -376,8 +478,10 @@
 <div class="footer-bar" id="footerBar">
     <button onclick="openFooterModal('about')">About</button>
     <button onclick="openFooterModal('support')">Support</button>
-    <button onclick="openFooterModal('terms')">Terms</button>
     <button onclick="openFooterModal('privacy')">Privacy</button>
+    <button onclick="openFooterModal('terms')">Terms</button>
+    <button onclick="openFooterModal('status')">Status</button>
+    <button onclick="openFooterModal('changelog')">Changelog</button>
 </div>
 
 <!-- Main Workspace Screen -->
@@ -399,7 +503,7 @@
         <header class="workspace-header">
             <div>
                 <h1 style="text-align: left;" data-i18n="appTitle">LocalBridge</h1>
-                <p class="subtitle" style="text-align: left; margin-bottom: 0;" data-i18n="activeWorkspace">Active P2P Workspace</p>
+                <p class="subtitle" id="roomHeaderSubtitle" style="text-align: left; margin-bottom: 0;">Active P2P Workspace</p>
             </div>
             <div class="header-actions">
                 <div id="workspaceStatusText" class="status connected" data-i18n="statusConnected">Status: Connected!</div>
@@ -458,6 +562,7 @@
 
                     <div style="margin-top: 18px;">
                         <h3 style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 700;" data-i18n="transferQueue">Transfer Queue</h3>
+                        <div id="uploadProgressBanner"></div>
                         <div id="fileQueue" class="file-queue">
                             <div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);" data-i18n="noFilesInQueue">
                                 No files in queue
@@ -482,7 +587,7 @@
 
 <!-- Subscriptions Modal -->
 <div id="subscriptionsModal" class="modal-overlay">
-    <div class="modal modal-wide" style="max-width: 800px;">
+    <div class="modal modal-wide" style="max-width: 880px;">
         <h2 data-i18n="selectSubPlan">Select Subscription Plan</h2>
         <p style="font-size: 0.875rem; color: var(--text-dim);" data-i18n="subModalDesc">Upgrade your LocalBridge account for higher transfer speeds, unlimited room limits, and exclusive advanced features.</p>
 
@@ -495,21 +600,34 @@
             <button id="claimTrialBtn" style="width: auto; padding: 8px 16px; font-size: 0.8rem;" onclick="claimFreeTrial()" data-i18n="claimTrial">Claim Free Trial</button>
         </div>
 
-        <div class="sub-cards-grid">
-            <div class="sub-card">
+        <div class="sub-cards-grid sub-cards-grid-4">
+            <div class="sub-card" id="subCard_free">
+                <div>
+                    <h3 style="font-size: 1.1rem; color: #fff;" data-i18n="freePlanName">Free</h3>
+                    <div class="sub-price">$0</div>
+                </div>
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                    <li id="subFreeMembers"></li>
+                    <li data-i18n="subFree1">✓ Basic file sharing</li>
+                    <li data-i18n="subFree2">✓ Basic profile</li>
+                </ul>
+                <button disabled style="opacity: 0.6; cursor: default;" id="subBtn_free" data-i18n="includedPlan">Included</button>
+            </div>
+
+            <div class="sub-card" id="subCard_basic">
                 <div>
                     <h3 style="font-size: 1.1rem; color: #fff;">Basic</h3>
                     <div class="sub-price">$4.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
                     <li data-i18n="subBasic1">✓ High-speed P2P transfer</li>
-                    <li data-i18n="subBasic2">✓ Up to 10 users in room</li>
+                    <li id="subBasicMembers"></li>
                     <li data-i18n="subBasic3">✓ Priority connection routing</li>
                 </ul>
-                <button onclick="purchaseSubscription('basic')" data-i18n="chooseBasic">Choose Basic</button>
+                <button onclick="purchaseSubscription('basic')" id="subBtn_basic" data-i18n="chooseBasic">Choose Basic</button>
             </div>
 
-            <div class="sub-card popular">
+            <div class="sub-card popular" id="subCard_pro">
                 <div>
                     <span style="font-size: 0.65rem; background: var(--accent); color: #fff; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="popular">POPULAR</span>
                     <h3 style="font-size: 1.1rem; color: #fff; margin-top: 6px;">Pro</h3>
@@ -517,23 +635,23 @@
                 </div>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
                     <li data-i18n="subPro1">✓ Unlimited transfer speed</li>
-                    <li data-i18n="subPro2">✓ Up to 50 users in room</li>
+                    <li id="subProMembers"></li>
                     <li data-i18n="subPro3">✓ Advanced room security</li>
                 </ul>
-                <button onclick="purchaseSubscription('pro')" data-i18n="choosePro">Choose Pro</button>
+                <button onclick="purchaseSubscription('pro')" id="subBtn_pro" data-i18n="choosePro">Choose Pro</button>
             </div>
 
-            <div class="sub-card">
+            <div class="sub-card" id="subCard_ultimate">
                 <div>
                     <h3 style="font-size: 1.1rem; color: #fff;">Ultimate</h3>
                     <div class="sub-price">$17.99 <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: normal;">/mo</span></div>
                 </div>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-dim); text-align: left; display: flex; flex-direction: column; gap: 8px;">
                     <li data-i18n="subUlt1">✓ Max Speed & Bandwidth</li>
-                    <li data-i18n="subUlt2">✓ Unlimited users in room</li>
+                    <li id="subUltMembers"></li>
                     <li data-i18n="subUlt3">✓ E2E Encrypted Backups</li>
                 </ul>
-                <button onclick="purchaseSubscription('ultimate')" data-i18n="chooseUltimate">Choose Ultimate</button>
+                <button onclick="purchaseSubscription('ultimate')" id="subBtn_ultimate" data-i18n="chooseUltimate">Choose Ultimate</button>
             </div>
         </div>
 
@@ -574,6 +692,7 @@
 <div id="accountsListModal" class="modal-overlay">
     <div class="modal modal-wide" style="max-width: 750px;">
         <h2 data-i18n="adminAccountsBase">Registered Accounts Base & Subscriptions (Admin)</h2>
+        <input type="text" id="adminAccountSearch" placeholder="Search by username or display name..." oninput="openAccountsListModal(this.value)" style="margin-bottom: 10px;">
         <div id="allAccountsContainer" class="list-container" style="max-height: 380px;"></div>
         <div class="modal-actions">
             <button class="btn-secondary" onclick="document.getElementById('accountsListModal').style.display='none'" data-i18n="close">Close</button>
@@ -583,73 +702,160 @@
 
 <!-- Global Settings Modal (Discord / Telegram Style) -->
 <div id="globalSettingsModal" class="modal-overlay">
-    <div class="modal modal-wide" style="max-width: 650px;">
+    <div class="modal modal-wide" style="max-width: 880px;">
         <h2 data-i18n="settingsTitle">Platform Settings</h2>
-        
-        <div class="settings-tabs">
-            <button class="settings-tab-btn active" onclick="switchSettingsTab('general')" data-i18n="tabGeneral">General</button>
-            <button class="settings-tab-btn" onclick="switchSettingsTab('appearance')" data-i18n="tabAppearance">Appearance</button>
-            <button class="settings-tab-btn" onclick="switchSettingsTab('p2p')" data-i18n="tabP2P">P2P Network</button>
-            <button class="settings-tab-btn" onclick="switchSettingsTab('security')" data-i18n="tabSecurity">Security</button>
-        </div>
+        <input type="text" id="settingsSearchInput" class="settings-search" data-i18n-placeholder="searchSettingsPlaceholder" placeholder="Search settings... (e.g. 'animation', 'room')" oninput="filterSettings(this.value)">
 
-        <!-- General Tab -->
-        <div id="panel-general" class="settings-panel active">
-            <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                <label style="font-weight: 700; display: block; margin-bottom: 8px; color: #fff;" data-i18n="languageSelect">Language / Язык:</label>
-                <select id="languageSelect" onchange="changeLanguage(this.value)">
-                    <option value="en">English (Default)</option>
-                    <option value="ru">Русский</option>
-                    <option value="es">Español</option>
-                    <option value="fr">Français</option>
-                    <option value="pt">Português</option>
-                    <option value="de">Deutsch</option>
-                </select>
+        <div class="settings-layout">
+            <div class="settings-sidebar" id="settingsSidebar">
+                <div class="settings-sidebar-item active" data-tab="appearance" onclick="switchSettingsTab('appearance')">🎨 <span data-i18n="tabAppearance">Appearance</span></div>
+                <div class="settings-sidebar-item" data-tab="notifications" onclick="switchSettingsTab('notifications')">🔔 <span data-i18n="tabNotifications">Notifications</span></div>
+                <div class="settings-sidebar-item" data-tab="accessibility" onclick="switchSettingsTab('accessibility')">♿ <span data-i18n="tabAccessibility">Accessibility</span></div>
+                <div class="settings-sidebar-item" data-tab="rooms" onclick="switchSettingsTab('rooms')">🚪 <span data-i18n="tabRooms">Rooms</span></div>
+                <div class="settings-sidebar-item" data-tab="files" onclick="switchSettingsTab('files')">📁 <span data-i18n="tabFiles">Files</span></div>
+                <div class="settings-sidebar-item" data-tab="languages" onclick="switchSettingsTab('languages')">🌐 <span data-i18n="languagesNav">Languages</span></div>
+                <div class="settings-sidebar-item" data-tab="account" onclick="switchSettingsTab('account')">🔒 <span data-i18n="tabAccountSecurity">Account &amp; Security</span></div>
+                <div class="settings-sidebar-item" data-tab="advanced" onclick="switchSettingsTab('advanced')">⚙️ <span data-i18n="tabAdvanced">Advanced</span></div>
             </div>
-            <div class="switch-row">
-                <span data-i18n="settingDesktopNotif">Desktop Notifications</span>
-                <label class="switch"><input type="checkbox" id="setDesktopNotif" checked><span class="slider"></span></label>
-            </div>
-            <div class="switch-row">
-                <span data-i18n="settingSoundEffects">Sound Effects on Chat & Files</span>
-                <label class="switch"><input type="checkbox" id="setSoundEffects" checked><span class="slider"></span></label>
-            </div>
-        </div>
 
-        <!-- Appearance Tab -->
-        <div id="panel-appearance" class="settings-panel">
-            <div class="switch-row">
-                <span data-i18n="settingGlassBlur">High Performance Glassmorphism Blur</span>
-                <label class="switch"><input type="checkbox" id="setGlassBlur" checked><span class="slider"></span></label>
-            </div>
-            <div class="switch-row">
-                <span data-i18n="settingCompactQueue">Compact Transfer Queue View</span>
-                <label class="switch"><input type="checkbox" id="setCompactQueue"><span class="slider"></span></label>
-            </div>
-        </div>
+            <div class="settings-content" id="settingsContent">
+                <!-- Appearance -->
+                <div id="panel-appearance" class="settings-panel active">
+                    <div class="settings-group-title" data-i18n="settingsGroupTheme">Theme</div>
+                    <div class="settings-row" data-keywords="theme dark light color scheme">
+                        <div class="lang-grid" style="grid-template-columns: 1fr 1fr;">
+                            <button type="button" class="lang-btn" id="themeBtnDark" onclick="updateAppSetting('theme','dark'); syncSettingsUI();">🌙 <span data-i18n="themeDark">Dark</span></button>
+                            <button type="button" class="lang-btn" id="themeBtnLight" onclick="updateAppSetting('theme','light'); syncSettingsUI();">☀️ <span data-i18n="themeLight">Light</span></button>
+                        </div>
+                    </div>
+                    <div class="settings-row" id="accentColorRow" data-keywords="accent color custom theme">
+                        <span data-i18n="settingAccentColor">Accent Color</span><span class="settings-lock-badge" id="accentLockBadge">PRO</span>
+                        <div class="swatch-row" id="accentSwatches"></div>
+                    </div>
+                    <div class="settings-group-title" data-i18n="settingsGroupDisplay">Display</div>
+                    <div class="switch-row settings-row" data-keywords="density compact comfortable spacing padding">
+                        <span data-i18n="settingCompactDensity">Compact density</span>
+                        <label class="switch"><input type="checkbox" id="setDensityCompact" onchange="updateAppSetting('density', this.checked ? 'compact' : 'comfortable')"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="animation animations motion reduced performance">
+                        <span data-i18n="settingReducedMotion">Reduce animations (Reduced Motion)</span>
+                        <label class="switch"><input type="checkbox" id="setReducedMotion" onchange="updateAppSetting('reducedMotion', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="blur glass performance low power">
+                        <span data-i18n="settingDisableBlur">Disable background blur (better performance)</span>
+                        <label class="switch"><input type="checkbox" id="setDisableBlur" onchange="updateAppSetting('disableBlur', this.checked)"><span class="slider"></span></label>
+                    </div>
+                </div>
 
-        <!-- P2P Network Tab -->
-        <div id="panel-p2p" class="settings-panel">
-            <div class="switch-row">
-                <span data-i18n="settingAggressiveICE">Aggressive STUN/TURN Candidate Gathering</span>
-                <label class="switch"><input type="checkbox" id="setAggressiveICE" checked><span class="slider"></span></label>
-            </div>
-            <div class="switch-row">
-                <span data-i18n="settingDirectConnect">Force Direct P2P (Bypass Relay)</span>
-                <label class="switch"><input type="checkbox" id="setDirectConnect" checked><span class="slider"></span></label>
-            </div>
-            <p style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="proOnlyFeature">🔒 Custom routing features require Pro or Ultimate subscription.</p>
-        </div>
+                <!-- Notifications -->
+                <div id="panel-notifications" class="settings-panel">
+                    <div class="settings-group-title" data-i18n="settingsGroupAlerts">Alerts</div>
+                    <div class="switch-row settings-row" data-keywords="desktop notifications browser">
+                        <span data-i18n="settingDesktopNotif">Desktop notifications</span>
+                        <label class="switch"><input type="checkbox" id="setDesktopNotif" onchange="updateAppSetting('desktopNotifications', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="sound effects audio chime">
+                        <span data-i18n="settingSoundEffects">Sound effects on chat &amp; files</span>
+                        <label class="switch"><input type="checkbox" id="setSoundEffects" onchange="updateAppSetting('soundEffects', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="do not disturb quiet mode mute">
+                        <span data-i18n="settingDND">Do Not Disturb</span>
+                        <label class="switch"><input type="checkbox" id="setDND" onchange="updateAppSetting('doNotDisturb', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="settings-group-title" data-i18n="settingsGroupRoomAlerts">Room activity</div>
+                    <div class="switch-row settings-row" data-keywords="member joined left notification">
+                        <span data-i18n="settingNotifyJoinLeave">Member joined / left</span>
+                        <label class="switch"><input type="checkbox" id="setNotifyJoinLeave" onchange="updateAppSetting('notifyMemberJoinLeave', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="file uploaded downloaded notification">
+                        <span data-i18n="settingNotifyFiles">File uploaded / downloaded</span>
+                        <label class="switch"><input type="checkbox" id="setNotifyFiles" onchange="updateAppSetting('notifyFileEvents', this.checked)"><span class="slider"></span></label>
+                    </div>
+                </div>
 
-        <!-- Security Tab -->
-        <div id="panel-security" class="settings-panel">
-            <div class="switch-row">
-                <span data-i18n="settingAutoLock">Auto-lock rooms after 30 minutes of inactivity</span>
-                <label class="switch"><input type="checkbox" id="setAutoLock"><span class="slider"></span></label>
-            </div>
-            <div class="switch-row">
-                <span data-i18n="settingE2E">End-to-End Encryption (AES-256)</span>
-                <label class="switch"><input type="checkbox" id="setE2E" checked><span class="slider"></span></label>
+                <!-- Accessibility -->
+                <div id="panel-accessibility" class="settings-panel">
+                    <div class="switch-row settings-row" data-keywords="contrast visibility">
+                        <span data-i18n="settingHighContrast">High contrast borders &amp; text</span>
+                        <label class="switch"><input type="checkbox" id="setHighContrast" onchange="updateAppSetting('highContrast', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="text size font large">
+                        <span data-i18n="settingLargerText">Larger text</span>
+                        <label class="switch"><input type="checkbox" id="setLargerText" onchange="updateAppSetting('largerText', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="animation motion reduced">
+                        <span data-i18n="settingReducedMotion2">Reduced motion</span>
+                        <label class="switch"><input type="checkbox" id="setReducedMotion2" onchange="updateAppSetting('reducedMotion', this.checked); syncSettingsUI();"><span class="slider"></span></label>
+                    </div>
+                    <p class="settings-row-desc" data-i18n="a11yFocusNote">Keyboard focus indicators are always on throughout LocalBridge.</p>
+                </div>
+
+                <!-- Rooms -->
+                <div id="panel-rooms" class="settings-panel">
+                    <div class="switch-row settings-row" data-keywords="leave room confirmation dialog">
+                        <span data-i18n="settingLeaveConfirm">Confirm before leaving a room</span>
+                        <label class="switch"><input type="checkbox" id="setLeaveConfirm" onchange="updateAppSetting('leaveConfirmation', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="compact member list users density">
+                        <span data-i18n="settingCompactMembers">Compact member list</span>
+                        <label class="switch"><input type="checkbox" id="setCompactMembers" onchange="updateAppSetting('compactMemberList', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <p class="settings-row-desc" data-i18n="roomSettingsHint">Per-room settings (name, access, members, files) are managed from Room Settings once you're inside a room.</p>
+                </div>
+
+                <!-- Files -->
+                <div id="panel-files" class="settings-panel">
+                    <div class="settings-row" data-keywords="sort order files name size date">
+                        <label style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;" data-i18n="settingFileSort">Default file sort</label>
+                        <select id="setFileSort" onchange="updateAppSetting('fileSort', this.value); renderQueue();">
+                            <option value="date" data-i18n="sortDate">Newest first</option>
+                            <option value="name" data-i18n="sortName">Name (A-Z)</option>
+                            <option value="size" data-i18n="sortSize">Size (largest first)</option>
+                        </select>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="grid list view layout">
+                        <span data-i18n="settingGridView">Grid view for files</span>
+                        <label class="switch"><input type="checkbox" id="setFileGridView" onchange="updateAppSetting('fileGridView', this.checked)"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row settings-row" data-keywords="lazy preview thumbnail data saver performance">
+                        <span data-i18n="settingLazyPreviews">Data saver (load image previews on demand)</span>
+                        <label class="switch"><input type="checkbox" id="setLazyPreviews" onchange="updateAppSetting('lazyPreviews', this.checked)"><span class="slider"></span></label>
+                    </div>
+                </div>
+
+                <!-- Languages -->
+                <div id="panel-languages" class="settings-panel">
+                    <div class="settings-group-title" data-i18n="languagesNav">Languages</div>
+                    <div class="lang-grid" id="langButtonGrid">
+                        <button type="button" class="lang-btn" data-lang="en" onclick="changeLanguage('en')"><span class="lang-flag">🇺🇸</span> English</button>
+                        <button type="button" class="lang-btn" data-lang="ru" onclick="changeLanguage('ru')"><span class="lang-flag">🇷🇺</span> Русский</button>
+                        <button type="button" class="lang-btn" data-lang="es" onclick="changeLanguage('es')"><span class="lang-flag">🇪🇸</span> Español</button>
+                        <button type="button" class="lang-btn" data-lang="fr" onclick="changeLanguage('fr')"><span class="lang-flag">🇫🇷</span> Français</button>
+                        <button type="button" class="lang-btn" data-lang="pt" onclick="changeLanguage('pt')"><span class="lang-flag">🇵🇹</span> Português</button>
+                        <button type="button" class="lang-btn" data-lang="de" onclick="changeLanguage('de')"><span class="lang-flag">🇩🇪</span> Deutsch</button>
+                    </div>
+                </div>
+
+                <!-- Account & Security -->
+                <div id="panel-account" class="settings-panel">
+                    <div class="settings-group-title" data-i18n="settingsGroupSession">Current session</div>
+                    <div class="settings-row" id="sessionInfoRow" data-keywords="session account logged in device"></div>
+                    <div class="settings-group-title" data-i18n="settingsGroupPrivacy">Privacy</div>
+                    <p class="settings-row-desc" data-i18n="privacyLivesInProfile">Profile visibility (ID, bio, join date, friends list) is managed from your Profile.</p>
+                    <div class="settings-group-title" data-i18n="settingsGroupEncryption">Connection security</div>
+                    <p class="settings-row-desc" data-i18n="encryptionNote">🔒 All room connections use WebRTC's built-in DTLS encryption end-to-end — this is always on and isn't something to toggle.</p>
+                </div>
+
+                <!-- Advanced -->
+                <div id="panel-advanced" class="settings-panel">
+                    <div class="settings-row" data-keywords="storage usage local cache size">
+                        <span data-i18n="settingStorageUsage">Local storage usage</span>
+                        <p class="settings-row-desc" id="storageUsageText">—</p>
+                    </div>
+                    <div class="settings-row" data-keywords="reset defaults restore">
+                        <button class="btn-secondary" style="width: auto; padding: 8px 16px;" onclick="resetAppSettings(); syncSettingsUI(); showToast(t('settingsReset','Settings reset to default'), 'info');" data-i18n="settingResetAll">Reset settings to default</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -864,21 +1070,107 @@
     </div>
 </div>
 
+<!-- Generic Confirmation Modal (replaces native confirm() everywhere) -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal" style="max-width: 420px;">
+        <h2 id="confirmModalTitle">Are you sure?</h2>
+        <p id="confirmModalMessage" style="font-size: 0.9rem; color: var(--text-dim); line-height: 1.5; margin-top: -8px;"></p>
+        <div class="modal-actions" style="flex-direction: row; justify-content: flex-end; gap: 10px;">
+            <button id="confirmModalCancelBtn" class="btn-secondary" style="width: auto; padding: 10px 22px;" onclick="_resolveConfirm(false)">Cancel</button>
+            <button id="confirmModalConfirmBtn" class="btn-danger" style="width: auto; padding: 10px 22px;" onclick="_resolveConfirm(true)">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <!-- Room Settings Modal -->
 <div id="settingsModal" class="modal-overlay">
-    <div class="modal">
+    <div class="modal modal-wide" style="max-width: 780px;">
         <h2 data-i18n="roomSettings">Room Settings</h2>
-        <div id="hostSettingsSection" style="display: none; border-bottom: 1px solid var(--card-border); padding-bottom: 14px; margin-bottom: 10px;">
-            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;" data-i18n="roomAccessRules">Room Access Rules:</label>
-            <div class="switch-row">
-                <span data-i18n="requireAccountBlockGuests">Require Account (Block Guests)</span>
-                <label class="switch"><input type="checkbox" id="toggleRequireAccount" onchange="toggleRequireAccountSetting()"><span class="slider"></span></label>
-            </div>
-        </div>
-        <div>
-            <label style="font-weight: 700; margin-bottom: 8px; display: block; color: #fff;" data-i18n="roomBlacklist">Room Blacklist:</label>
-            <div id="blacklistContainer" class="list-container">
-                <div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;" data-i18n="noBannedUsers">No banned users</div>
+        <div id="hostSettingsSection" style="display: none;">
+            <div class="settings-layout" style="min-height: 360px; max-height: 58vh;">
+                <div class="settings-sidebar">
+                    <div class="settings-sidebar-item active" data-rtab="general" onclick="switchRoomSettingsTab('general')">🏷️ <span data-i18n="rGeneral">General</span></div>
+                    <div class="settings-sidebar-item" data-rtab="access" onclick="switchRoomSettingsTab('access')">🚦 <span data-i18n="rAccess">Access</span></div>
+                    <div class="settings-sidebar-item" data-rtab="members" onclick="switchRoomSettingsTab('members')">👥 <span data-i18n="rMembers">Members</span></div>
+                    <div class="settings-sidebar-item" data-rtab="files" onclick="switchRoomSettingsTab('files')">📁 <span data-i18n="rFiles">Files</span></div>
+                    <div class="settings-sidebar-item" data-rtab="security" onclick="switchRoomSettingsTab('security')">🔐 <span data-i18n="rSecurity">Security</span></div>
+                </div>
+                <div class="settings-content">
+                    <!-- General -->
+                    <div id="rpanel-general" class="settings-panel active">
+                        <label style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;" data-i18n="roomNameLabel">Room name</label>
+                        <input type="text" id="roomNameInput" maxlength="40" data-i18n-placeholder="roomNamePlaceholder" placeholder="e.g. Design Team">
+                        <label style="font-weight:600; font-size:0.85rem; display:block; margin: 12px 0 6px;" data-i18n="welcomeMsgLabel">Welcome message (shown to new members)</label>
+                        <input type="text" id="welcomeMsgInput" maxlength="120" data-i18n-placeholder="welcomeMsgPlaceholder" placeholder="e.g. Welcome! Please read the pinned files.">
+                        <button class="btn-secondary" style="width:auto; padding:8px 16px; margin-top:12px;" onclick="saveRoomGeneralSettings()" data-i18n="saveChanges">Save Changes</button>
+                    </div>
+
+                    <!-- Access -->
+                    <div id="rpanel-access" class="settings-panel">
+                        <label style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;" data-i18n="maxMembersLabel">Max members</label>
+                        <input type="number" id="roomMaxUsersInput" min="1">
+                        <p class="settings-row-desc" id="maxUsersCapHint"></p>
+                        <div class="switch-row" style="margin-top: 12px;">
+                            <span data-i18n="requireAccountBlockGuests">Require Account (Block Guests)</span>
+                            <label class="switch"><input type="checkbox" id="toggleRequireAccount"><span class="slider"></span></label>
+                        </div>
+                        <button class="btn-secondary" style="width:auto; padding:8px 16px; margin-top:12px;" onclick="saveRoomAccessSettings()" data-i18n="saveChanges">Save Changes</button>
+                    </div>
+
+                    <!-- Members -->
+                    <div id="rpanel-members" class="settings-panel">
+                        <p class="settings-row-desc" style="margin-bottom:10px;" id="memberCountLine"></p>
+                        <div id="roomSettingsMemberList" class="list-container" style="max-height: 320px;"></div>
+                    </div>
+
+                    <!-- Files -->
+                    <div id="rpanel-files" class="settings-panel">
+                        <p class="settings-row-desc" id="fileSizeCapLine" style="margin-bottom: 10px;"></p>
+                        <div id="fileTypeBlockWrap">
+                            <label style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;" data-i18n="blockedTypesLabel">Blocked file extensions <span class="settings-lock-badge">BASIC+</span></label>
+                            <input type="text" id="fileTypeBlockInput" data-i18n-placeholder="blockedTypesPlaceholder" placeholder="e.g. exe, bat, zip (comma-separated)">
+                            <button class="btn-secondary" style="width:auto; padding:8px 16px; margin-top:12px;" onclick="saveFileTypeRules()" data-i18n="saveChanges">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div id="rpanel-security" class="settings-panel">
+                        <label style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;" data-i18n="changePasswordLabel">Change room password</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="roomNewPasswordInput" data-i18n-placeholder="newPasswordPlaceholder" placeholder="New password">
+                            <button class="btn-secondary" style="width:auto; padding:8px 16px;" onclick="changeRoomPassword()" data-i18n="update">Update</button>
+                        </div>
+
+                        <div class="settings-group-title" data-i18n="autoLockLabel">Auto-lock after inactivity</div>
+                        <select id="autoLockSelect" onchange="saveAutoLock()">
+                            <option value="0" data-i18n="autoLockOff">Off</option>
+                            <option value="15">15 min</option>
+                            <option value="30">30 min</option>
+                            <option value="60">60 min</option>
+                        </select>
+                        <div class="switch-row" style="margin-top:10px;" id="manualLockRow">
+                            <span data-i18n="roomLockedNow">Room is currently locked (no new joins)</span>
+                            <label class="switch"><input type="checkbox" id="toggleManualLock" onchange="toggleManualLock()"><span class="slider"></span></label>
+                        </div>
+
+                        <div class="settings-group-title" data-i18n="inviteLinksLabel">Invite links <span class="settings-lock-badge" id="inviteLockBadge">BASIC+</span></div>
+                        <div id="inviteLinksWrap">
+                            <select id="inviteExpirySelect">
+                                <option value="0" data-i18n="inviteNoExpiry">Never expires</option>
+                                <option value="30">30 minutes</option>
+                                <option value="1440">24 hours</option>
+                                <option value="singleuse" data-i18n="inviteSingleUse">Single use</option>
+                            </select>
+                            <button class="btn-secondary" style="width:auto; padding:8px 16px; margin-top:8px;" onclick="generateInviteLink()" data-i18n="generateLink">Generate Link</button>
+                            <div id="inviteLinksList" style="margin-top:10px;"></div>
+                        </div>
+
+                        <div class="settings-group-title" data-i18n="roomBlacklist">Room Blacklist</div>
+                        <div id="blacklistContainer" class="list-container">
+                            <div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;" data-i18n="noBannedUsers">No banned users</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal-actions">
@@ -937,6 +1229,21 @@
             password: "Password:",
             inviteFriends: "Invite Friends",
             leaveRoom: "Leave Room",
+            leaveRoomConfirmTitle: "Leave room?",
+            leaveRoomConfirmMsg: "You will leave this room and can join again later.",
+            cancel: "Cancel",
+            languagesNav: "Languages",
+            tabNotifications: "Notifications",
+            tabAccessibility: "Accessibility",
+            tabRooms: "Rooms",
+            tabFiles: "Files",
+            tabAccountSecurity: "Account & Security",
+            tabAdvanced: "Advanced",
+            rGeneral: "General",
+            rAccess: "Access",
+            rMembers: "Members",
+            rFiles: "Files",
+            rSecurity: "Security",
             roomChat: "Room Chat",
             typeMessage: "Type a message...",
             send: "Send",
@@ -956,13 +1263,10 @@
             choosePro: "Choose Pro",
             chooseUltimate: "Choose Ultimate",
             subBasic1: "✓ High-speed P2P transfer",
-            subBasic2: "✓ Up to 10 users in room",
             subBasic3: "✓ Priority connection routing",
             subPro1: "✓ Unlimited transfer speed",
-            subPro2: "✓ Up to 50 users in room",
             subPro3: "✓ Advanced room security",
             subUlt1: "✓ Max Speed & Bandwidth",
-            subUlt2: "✓ Unlimited users in room",
             subUlt3: "✓ E2E Encrypted Backups",
             close: "Close",
             addFriend: "Add Friend",
@@ -972,20 +1276,9 @@
             inviteFriendsDesc: "Send direct message invites with room credentials to your friends.",
             adminAccountsBase: "Registered Accounts Base & Subscriptions (Admin)",
             settingsTitle: "Platform Settings",
-            tabGeneral: "General",
             tabAppearance: "Appearance",
-            tabP2P: "P2P Network",
-            tabSecurity: "Security",
-            languageSelect: "Language / Язык:",
             settingDesktopNotif: "Desktop Notifications",
             settingSoundEffects: "Sound Effects on Chat & Files",
-            settingGlassBlur: "High Performance Glassmorphism Blur",
-            settingCompactQueue: "Compact Transfer Queue View",
-            settingAggressiveICE: "Aggressive STUN/TURN Candidate Gathering",
-            settingDirectConnect: "Force Direct P2P (Bypass Relay)",
-            proOnlyFeature: "🔒 Custom routing features require Pro or Ultimate subscription.",
-            settingAutoLock: "Auto-lock rooms after 30 minutes of inactivity",
-            settingE2E: "End-to-End Encryption (AES-256)",
             profileSettings: "Profile Settings",
             changeAvatar: "Change Avatar",
             displayName: "Display Name:",
@@ -1038,7 +1331,6 @@
             roomPassword: "Room Password:",
             join: "Join",
             roomSettings: "Room Settings",
-            roomAccessRules: "Room Access Rules:",
             requireAccountBlockGuests: "Require Account (Block Guests)",
             roomBlacklist: "Room Blacklist:",
             noBannedUsers: "No banned users",
@@ -1059,6 +1351,21 @@
             password: "Пароль:",
             inviteFriends: "Пригласить друзей",
             leaveRoom: "Выйти из комнаты",
+            leaveRoomConfirmTitle: "Покинуть комнату?",
+            leaveRoomConfirmMsg: "Вы покинете комнату и сможете зайти снова позже.",
+            cancel: "Отмена",
+            languagesNav: "Языки",
+            tabNotifications: "Уведомления",
+            tabAccessibility: "Доступность",
+            tabRooms: "Комнаты",
+            tabFiles: "Файлы",
+            tabAccountSecurity: "Аккаунт и безопасность",
+            tabAdvanced: "Дополнительно",
+            rGeneral: "Общие",
+            rAccess: "Доступ",
+            rMembers: "Участники",
+            rFiles: "Файлы",
+            rSecurity: "Безопасность",
             roomChat: "Чат комнаты",
             typeMessage: "Введите сообщение...",
             send: "Отправить",
@@ -1078,13 +1385,10 @@
             choosePro: "Выбрать Pro",
             chooseUltimate: "Выбрать Ultimate",
             subBasic1: "✓ Высокоскоростной P2P перевод",
-            subBasic2: "✓ До 10 участников в комнате",
             subBasic3: "✓ Приоритетная маршрутизация",
             subPro1: "✓ Неограниченная скорость",
-            subPro2: "✓ До 50 участников в комнате",
             subPro3: "✓ Продвинутая защита комнаты",
             subUlt1: "✓ Максимальная скорость и канал",
-            subUlt2: "✓ Безлимит участников в комнате",
             subUlt3: "✓ E2E зашифрованные бэкапы",
             close: "Закрыть",
             addFriend: "Добавить друга",
@@ -1094,20 +1398,9 @@
             inviteFriendsDesc: "Отправьте личное приглашение с данными комнаты своим друзьям.",
             adminAccountsBase: "База аккаунтов и подписок (Админ)",
             settingsTitle: "Настройки платформы",
-            tabGeneral: "Общие",
             tabAppearance: "Вид",
-            tabP2P: "P2P Сеть",
-            tabSecurity: "Безопасность",
-            languageSelect: "Язык / Language:",
             settingDesktopNotif: "Уведомления на рабочем столе",
             settingSoundEffects: "Звуковые эффекты чата и файлов",
-            settingGlassBlur: "Эффект размытия Glassmorphism",
-            settingCompactQueue: "Компактный вид очереди файлов",
-            settingAggressiveICE: "Агрессивный сбор STUN/TURN кандидатов",
-            settingDirectConnect: "Принудительный прямой P2P (Обход ретранслятора)",
-            proOnlyFeature: "🔒 Пользовательская маршрутизация требует Pro или Ultimate.",
-            settingAutoLock: "Авто-блокировка комнат через 30 минут бездействия",
-            settingE2E: "Шифрование End-to-End (AES-256)",
             profileSettings: "Настройки профиля",
             changeAvatar: "Сменить аватар",
             displayName: "Имя профиля:",
@@ -1160,7 +1453,6 @@
             roomPassword: "Пароль комнаты:",
             join: "Войти",
             roomSettings: "Настройки комнаты",
-            roomAccessRules: "Правила доступа в комнату:",
             requireAccountBlockGuests: "Требовать аккаунт (Блок гостей)",
             roomBlacklist: "Черный список комнаты:",
             noBannedUsers: "Нет забаненных",
@@ -1181,6 +1473,21 @@
             password: "Contraseña:",
             inviteFriends: "Invitar Amigos",
             leaveRoom: "Salir de Sala",
+            leaveRoomConfirmTitle: "¿Salir de la sala?",
+            leaveRoomConfirmMsg: "Saldrás de esta sala y podrás volver a unirte más tarde.",
+            cancel: "Cancelar",
+            languagesNav: "Idiomas",
+            tabNotifications: "Notificaciones",
+            tabAccessibility: "Accesibilidad",
+            tabRooms: "Salas",
+            tabFiles: "Archivos",
+            tabAccountSecurity: "Cuenta y Seguridad",
+            tabAdvanced: "Avanzado",
+            rGeneral: "General",
+            rAccess: "Acceso",
+            rMembers: "Miembros",
+            rFiles: "Archivos",
+            rSecurity: "Seguridad",
             roomChat: "Chat de Sala",
             typeMessage: "Escribe un mensaje...",
             send: "Enviar",
@@ -1207,11 +1514,7 @@
             inviteFriendsDesc: "Envía invitaciones con credenciales de sala.",
             adminAccountsBase: "Base de Cuentas y Suscripciones (Admin)",
             settingsTitle: "Configuración",
-            tabGeneral: "General",
             tabAppearance: "Apariencia",
-            tabP2P: "Red P2P",
-            tabSecurity: "Seguridad",
-            languageSelect: "Idioma / Language:",
             profileSettings: "Configuración de Perfil",
             changeAvatar: "Cambiar Avatar",
             displayName: "Nombre Visible:",
@@ -1264,7 +1567,6 @@
             roomPassword: "Contraseña de Sala:",
             join: "Unirse",
             roomSettings: "Configuración de Sala",
-            roomAccessRules: "Reglas de Acceso:",
             requireAccountBlockGuests: "Requerir Cuenta (Bloquear Invitados)",
             roomBlacklist: "Lista Negra de Sala:",
             noBannedUsers: "No hay usuarios baneados",
@@ -1285,6 +1587,21 @@
             password: "Mot de passe :",
             inviteFriends: "Inviter des amis",
             leaveRoom: "Quitter la salle",
+            leaveRoomConfirmTitle: "Quitter la salle ?",
+            leaveRoomConfirmMsg: "Vous quitterez cette salle et pourrez la rejoindre plus tard.",
+            cancel: "Annuler",
+            languagesNav: "Langues",
+            tabNotifications: "Notifications",
+            tabAccessibility: "Accessibilité",
+            tabRooms: "Salles",
+            tabFiles: "Fichiers",
+            tabAccountSecurity: "Compte et Sécurité",
+            tabAdvanced: "Avancé",
+            rGeneral: "Général",
+            rAccess: "Accès",
+            rMembers: "Membres",
+            rFiles: "Fichiers",
+            rSecurity: "Sécurité",
             roomChat: "Chat de la salle",
             typeMessage: "Écrire un message...",
             send: "Envoyer",
@@ -1311,11 +1628,7 @@
             inviteFriendsDesc: "Envoyez des invitations avec les identifiants de la salle.",
             adminAccountsBase: "Base des comptes et abonnements (Admin)",
             settingsTitle: "Paramètres",
-            tabGeneral: "Général",
             tabAppearance: "Apparence",
-            tabP2P: "Réseau P2P",
-            tabSecurity: "Sécurité",
-            languageSelect: "Langue / Language:",
             profileSettings: "Paramètres du profil",
             changeAvatar: "Changer d'avatar",
             displayName: "Nom d'affichage :",
@@ -1368,7 +1681,6 @@
             roomPassword: "Mot de passe de la salle :",
             join: "Rejoindre",
             roomSettings: "Paramètres de la salle",
-            roomAccessRules: "Règles d'accès :",
             requireAccountBlockGuests: "Exiger un compte (Bloquer les invités)",
             roomBlacklist: "Liste noire de la salle :",
             noBannedUsers: "Aucun utilisateur banni",
@@ -1389,6 +1701,21 @@
             password: "Senha:",
             inviteFriends: "Convidar Amigos",
             leaveRoom: "Sair da Sala",
+            leaveRoomConfirmTitle: "Sair da sala?",
+            leaveRoomConfirmMsg: "Você sairá desta sala e poderá entrar novamente mais tarde.",
+            cancel: "Cancelar",
+            languagesNav: "Idiomas",
+            tabNotifications: "Notificações",
+            tabAccessibility: "Acessibilidade",
+            tabRooms: "Salas",
+            tabFiles: "Arquivos",
+            tabAccountSecurity: "Conta e Segurança",
+            tabAdvanced: "Avançado",
+            rGeneral: "Geral",
+            rAccess: "Acesso",
+            rMembers: "Membros",
+            rFiles: "Arquivos",
+            rSecurity: "Segurança",
             roomChat: "Chat da Sala",
             typeMessage: "Digite uma mensagem...",
             send: "Enviar",
@@ -1415,11 +1742,7 @@
             inviteFriendsDesc: "Envie convites com credenciais da sala.",
             adminAccountsBase: "Base de Contas e Assinaturas (Admin)",
             settingsTitle: "Configurações",
-            tabGeneral: "Geral",
             tabAppearance: "Aparência",
-            tabP2P: "Rede P2P",
-            tabSecurity: "Segurança",
-            languageSelect: "Idioma / Language:",
             profileSettings: "Configurações de Perfil",
             changeAvatar: "Mudar Avatar",
             displayName: "Nome de Exibição:",
@@ -1472,7 +1795,6 @@
             roomPassword: "Senha da Sala:",
             join: "Entrar",
             roomSettings: "Configurações da Sala",
-            roomAccessRules: "Regras de Acesso:",
             requireAccountBlockGuests: "Exigir Conta (Bloquear Convidados)",
             roomBlacklist: "Lista Negra da Sala:",
             noBannedUsers: "Nenhum usuário banido",
@@ -1493,6 +1815,21 @@
             password: "Passwort:",
             inviteFriends: "Freunde einladen",
             leaveRoom: "Raum verlassen",
+            leaveRoomConfirmTitle: "Raum verlassen?",
+            leaveRoomConfirmMsg: "Du verlässt diesen Raum und kannst später wieder beitreten.",
+            cancel: "Abbrechen",
+            languagesNav: "Sprachen",
+            tabNotifications: "Benachrichtigungen",
+            tabAccessibility: "Barrierefreiheit",
+            tabRooms: "Räume",
+            tabFiles: "Dateien",
+            tabAccountSecurity: "Konto & Sicherheit",
+            tabAdvanced: "Erweitert",
+            rGeneral: "Allgemein",
+            rAccess: "Zugriff",
+            rMembers: "Mitglieder",
+            rFiles: "Dateien",
+            rSecurity: "Sicherheit",
             roomChat: "Raum-Chat",
             typeMessage: "Nachricht schreiben...",
             send: "Senden",
@@ -1519,11 +1856,7 @@
             inviteFriendsDesc: "Senden Sie direkte Einladungen mit Raumdaten.",
             adminAccountsBase: "Konten- und Abonnementbasis (Admin)",
             settingsTitle: "Plattform-Einstellungen",
-            tabGeneral: "Allgemein",
             tabAppearance: "Aussehen",
-            tabP2P: "P2P-Netzwerk",
-            tabSecurity: "Sicherheit",
-            languageSelect: "Sprache / Language:",
             profileSettings: "Profil-Einstellungen",
             changeAvatar: "Avatar ändern",
             displayName: "Anzeigename:",
@@ -1576,7 +1909,6 @@
             roomPassword: "Raum-Passwort:",
             join: "Beitreten",
             roomSettings: "Raum-Einstellungen",
-            roomAccessRules: "Zugriffsregeln:",
             requireAccountBlockGuests: "Konto erforderlich (Gäste blockieren)",
             roomBlacklist: "Raum-Sperrliste:",
             noBannedUsers: "Keine gesperrten Benutzer",
@@ -1588,11 +1920,18 @@
 
     let currentLanguage = localStorage.getItem('lb_lang') || 'en';
 
+    function t(key, fallback) {
+        return (translations[currentLanguage] && translations[currentLanguage][key])
+            || (translations.en && translations.en[key])
+            || fallback || key;
+    }
+
     function setLanguage(lang) {
         if (!translations[lang]) return;
         currentLanguage = lang;
         localStorage.setItem('lb_lang', lang);
-        document.getElementById('languageSelect').value = lang;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+        document.documentElement.setAttribute('lang', lang);
 
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
@@ -1611,30 +1950,230 @@
 
     function changeLanguage(lang) {
         setLanguage(lang);
-        showToast("Language updated successfully!", "success");
+        showToast(translations[lang].languageUpdated || "Language updated successfully!", "success");
+    }
+
+    /* ==========================================
+       1B. CENTRALIZED PLAN CAPABILITY SYSTEM
+       Single source of truth for what each subscription
+       tier can do. Nothing should check `sub.tier === 'x'`
+       directly outside of this block — everything else
+       calls getCapabilities()/hasCapability().
+       ========================================== */
+    const PLAN_LIMITS = {
+        free:     { order: 0, maxRoomMembers: 2,   maxFileSizeMB: 12,  inviteLinks: false, expiringLinks: false, advancedRoomSettings: false, customAccent: false, roomThemes: false, fileTypeRules: false },
+        basic:    { order: 1, maxRoomMembers: 5,   maxFileSizeMB: 25,  inviteLinks: true,  expiringLinks: false, advancedRoomSettings: true,  customAccent: false, roomThemes: false, fileTypeRules: true  },
+        pro:      { order: 2, maxRoomMembers: 15,  maxFileSizeMB: 60,  inviteLinks: true,  expiringLinks: true,  advancedRoomSettings: true,  customAccent: true,  roomThemes: true,  fileTypeRules: true  },
+        ultimate: { order: 3, maxRoomMembers: 100, maxFileSizeMB: 150, inviteLinks: true,  expiringLinks: true,  advancedRoomSettings: true,  customAccent: true,  roomThemes: true,  fileTypeRules: true  }
+    };
+
+    function getCapabilities(username) {
+        const sub = getUserSubscription(username);
+        const limits = PLAN_LIMITS[sub.tier] || PLAN_LIMITS.free;
+        return Object.assign({ tier: sub.tier, expires: sub.expires, trialUsed: !!sub.trialUsed }, limits);
+    }
+
+    function hasCapability(username, key) {
+        return !!getCapabilities(username)[key];
+    }
+
+    function myCapabilities() {
+        return getCapabilities(currentUser ? currentUser.username : null);
+    }
+
+    /* ==========================================
+       1C. APP SETTINGS — persisted, every toggle here
+       has a real, visible/behavioral effect. No decorative
+       switches: if it can't be wired to something real,
+       it doesn't get a setting.
+       ========================================== */
+    const DEFAULT_APP_SETTINGS = {
+        theme: 'dark',
+        accentColor: '',
+        density: 'comfortable',
+        reducedMotion: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        disableBlur: false,
+        highContrast: false,
+        largerText: false,
+        lazyPreviews: false,
+        desktopNotifications: false,
+        soundEffects: true,
+        doNotDisturb: false,
+        notifyMemberJoinLeave: true,
+        notifyFileEvents: true,
+        leaveConfirmation: true,
+        compactMemberList: false,
+        fileSort: 'date',
+        fileGridView: false
+    };
+
+    function getAppSettings() {
+        try {
+            const stored = JSON.parse(localStorage.getItem('lb_app_settings') || '{}');
+            return Object.assign({}, DEFAULT_APP_SETTINGS, stored);
+        } catch (e) {
+            return Object.assign({}, DEFAULT_APP_SETTINGS);
+        }
+    }
+
+    let appSettings = getAppSettings();
+
+    function updateAppSetting(key, value) {
+        appSettings[key] = value;
+        localStorage.setItem('lb_app_settings', JSON.stringify(appSettings));
+        applyAppSettings();
+    }
+
+    function resetAppSettings() {
+        appSettings = Object.assign({}, DEFAULT_APP_SETTINGS);
+        localStorage.setItem('lb_app_settings', JSON.stringify(appSettings));
+        applyAppSettings();
+    }
+
+    function applyAppSettings() {
+        const root = document.documentElement;
+        const cap = myCapabilities();
+
+        root.setAttribute('data-theme', appSettings.theme === 'light' ? 'light' : 'dark');
+        root.classList.toggle('reduced-motion', !!appSettings.reducedMotion);
+        root.classList.toggle('no-blur', !!appSettings.disableBlur);
+        root.classList.toggle('density-compact', appSettings.density === 'compact');
+        root.classList.toggle('high-contrast', !!appSettings.highContrast);
+        root.classList.toggle('larger-text', !!appSettings.largerText);
+        root.classList.toggle('compact-members', !!appSettings.compactMemberList);
+
+        if (appSettings.accentColor && cap.customAccent) {
+            root.style.setProperty('--accent', appSettings.accentColor);
+            root.style.setProperty('--accent-light', appSettings.accentColor);
+            root.style.setProperty('--accent-glow', hexToRgba(appSettings.accentColor, 0.35));
+        } else {
+            root.style.removeProperty('--accent');
+            root.style.removeProperty('--accent-light');
+            root.style.removeProperty('--accent-glow');
+        }
+
+        if (appSettings.desktopNotifications && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        renderQueue();
+    }
+
+    function hexToRgba(hex, alpha) {
+        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!m) return `rgba(99, 102, 241, ${alpha})`;
+        const r = parseInt(m[1], 16), g = parseInt(m[2], 16), b = parseInt(m[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    /* Lightweight synthesized notification tone — no external audio files needed */
+    let _sharedAudioCtx = null;
+    function playNotifySound(kind = 'default') {
+        if (!appSettings.soundEffects || appSettings.doNotDisturb) return;
+        try {
+            _sharedAudioCtx = _sharedAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const ctx = _sharedAudioCtx;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = kind === 'file' ? 660 : (kind === 'leave' ? 330 : 880);
+            gain.gain.setValueAtTime(0.001, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.19);
+        } catch (e) { /* audio unsupported/blocked — silently skip, never breaks the app */ }
+    }
+
+    function fireDesktopNotification(title, body) {
+        if (!appSettings.desktopNotifications || appSettings.doNotDisturb) return;
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        if (document.visibilityState === 'visible') return;
+        try { new Notification(title, { body, icon: defaultAvatarIcon() }); } catch (e) {}
+    }
+    function defaultAvatarIcon() {
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'%3E%3Ccircle cx='12' cy='12' r='12'/%3E%3C/svg%3E";
+    }
+
+    /* ==========================================
+       1D. GENERIC CONFIRMATION MODAL
+       Replaces every native confirm()/alert() in the app.
+       Usage: const ok = await showConfirm({ title, message, confirmText, danger });
+       ========================================== */
+    let _confirmResolver = null;
+    function showConfirm({ title = 'Are you sure?', message = '', confirmText = 'Confirm', cancelText = 'Cancel', danger = true } = {}) {
+        return new Promise((resolve) => {
+            _confirmResolver = resolve;
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            const okBtn = document.getElementById('confirmModalConfirmBtn');
+            okBtn.textContent = confirmText;
+            okBtn.className = danger ? 'btn-danger' : '';
+            okBtn.style.width = 'auto';
+            okBtn.style.padding = '10px 22px';
+            document.getElementById('confirmModalCancelBtn').textContent = cancelText;
+            document.getElementById('confirmModal').style.display = 'flex';
+            okBtn.focus();
+        });
+    }
+    function _resolveConfirm(result) {
+        document.getElementById('confirmModal').style.display = 'none';
+        if (_confirmResolver) { _confirmResolver(result); _confirmResolver = null; }
     }
 
     /* ==========================================
        2. CUSTOM TOAST NOTIFICATION SYSTEM
        ========================================== */
-    function showToast(message, type = 'info') {
+    function showToast(message, type = 'info', duration = 4200) {
+        if (appSettings.doNotDisturb && (type === 'success' || type === 'info')) return;
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        
+
         let iconSvg = 'ℹ️';
         if (type === 'success') iconSvg = '✅';
         if (type === 'error') iconSvg = '❌';
+        if (type === 'warning') iconSvg = '⚠️';
 
-        toast.innerHTML = `<span>${iconSvg}</span> <span>${escapeHtml(message)}</span>`;
+        toast.innerHTML = `
+            <span class="toast-icon">${iconSvg}</span>
+            <span class="toast-msg">${escapeHtml(message)}</span>
+            <button type="button" class="toast-close" aria-label="Dismiss">&times;</button>
+            <span class="toast-progress-track"><span class="toast-progress-bar"></span></span>
+        `;
         container.appendChild(toast);
 
-        setTimeout(() => {
+        let dismissTimer;
+        const removeToast = () => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(50px)';
             toast.style.transition = 'all 0.3s ease';
             setTimeout(() => toast.remove(), 300);
-        }, 3500);
+        };
+        const startTimer = () => {
+            const bar = toast.querySelector('.toast-progress-bar');
+            if (bar) {
+                bar.style.transitionDuration = (appSettings.reducedMotion ? 0 : duration) + 'ms';
+                requestAnimationFrame(() => { bar.style.transform = 'scaleX(0)'; });
+            }
+            dismissTimer = setTimeout(removeToast, duration);
+        };
+        const pauseTimer = () => {
+            clearTimeout(dismissTimer);
+            const bar = toast.querySelector('.toast-progress-bar');
+            if (bar) {
+                const computed = getComputedStyle(bar).transform;
+                bar.style.transitionDuration = '0ms';
+                bar.style.transform = computed;
+            }
+        };
+
+        toast.querySelector('.toast-close').onclick = () => { clearTimeout(dismissTimer); removeToast(); };
+        toast.addEventListener('mouseenter', pauseTimer);
+        toast.addEventListener('mouseleave', startTimer);
+        startTimer();
     }
 
     /* ==========================================
@@ -1649,21 +2188,29 @@
             title: "Support & Help",
             text: "Need assistance? Reach out to our community support channels or contact admin Zeldy directly via profile messaging. We provide 24/7 P2P relay node assistance and troubleshooting guides."
         },
+        privacy: {
+            title: "Privacy Policy",
+            text: "LocalBridge operates completely serverless via WebRTC P2P connections. Your messages and files flow directly between peers and are never logged or saved on external servers."
+        },
         terms: {
             title: "Terms of Service",
             text: "By using LocalBridge, you agree to P2P data transfer protocols. You are solely responsible for files and messages transmitted through your active rooms. No illegal material permitted."
         },
-        privacy: {
-            title: "Privacy Policy",
-            text: "LocalBridge operates completely serverless via WebRTC P2P connections. Your messages and files flow directly between peers and are never logged or saved on external servers."
+        status: {
+            title: "Status",
+            text: "LocalBridge has no central server to go down — rooms run directly between your device and the people in them. The only shared piece of infrastructure is the public signaling broker peers use to discover each other when a room is first created; once that handshake completes, all room traffic (chat and files) goes directly peer-to-peer. If a connection won't establish, it's almost always a local network/firewall issue rather than an outage — try a different network if a room won't connect."
+        },
+        changelog: {
+            title: "Changelog",
+            text: "Latest update — Room reliability & platform overhaul: rebuilt the Leave Room flow to be fully reliable (explicit leave/close signaling, heartbeat detection, safe on refresh and repeated clicks); fixed a bug where banned users could rejoin after a refresh; fixed the free-trial banner reappearing after a subscription expired; centralized all subscription limits (Free 2 / Basic 5 / Pro 15 / Ultimate 100 members per room); added real Room Settings (name, welcome message, access, file rules, invite links, auto-lock); replaced every decorative settings toggle with one that actually does something; replaced browser alert/confirm popups with custom dialogs; switched language selection to flag buttons; added file previews, type icons, and per-plan upload limits; passwords are now hashed instead of stored in plain text."
         }
     };
 
     function openFooterModal(type) {
         const item = footerContent[type];
         if (!item) return;
-        document.getElementById('footerModalTitle').textContent = item.title;
-        document.getElementById('footerModalContent').innerHTML = `<p>${item.text}</p>`;
+        document.getElementById('footerModalTitle').textContent = t('footerTitle_' + type, item.title);
+        document.getElementById('footerModalContent').innerHTML = `<p>${escapeHtml(t('footerText_' + type, item.text))}</p>`;
         document.getElementById('footerInfoModal').style.display = 'flex';
     }
 
@@ -1679,13 +2226,13 @@
     }
 
     function getUserSubscription(username) {
-        if (!username) return { tier: 'free', expires: 0 };
-        if (username === 'zeldy') return { tier: 'ultimate', expires: 9999999999999 };
+        if (!username) return { tier: 'free', expires: 0, trialUsed: false };
+        if (username === 'zeldy') return { tier: 'ultimate', expires: 0, trialUsed: true };
         const subs = getSubscriptions();
         const sub = subs[username];
-        if (!sub) return { tier: 'free', expires: 0 };
+        if (!sub) return { tier: 'free', expires: 0, trialUsed: false };
         if (sub.expires && Date.now() > sub.expires) {
-            return { tier: 'free', expires: 0 };
+            return { tier: 'free', expires: 0, trialUsed: !!sub.trialUsed };
         }
         return sub;
     }
@@ -1700,7 +2247,37 @@
                 banner.style.display = 'flex';
             }
         }
+        renderSubscriptionCards();
         document.getElementById('subscriptionsModal').style.display = 'flex';
+    }
+
+    function renderSubscriptionCards() {
+        const membersLine = (n) => '✓ ' + t('upToNMembers', 'Up to {n} people per room').replace('{n}', n);
+        document.getElementById('subFreeMembers').textContent = membersLine(PLAN_LIMITS.free.maxRoomMembers);
+        document.getElementById('subBasicMembers').textContent = membersLine(PLAN_LIMITS.basic.maxRoomMembers);
+        document.getElementById('subProMembers').textContent = membersLine(PLAN_LIMITS.pro.maxRoomMembers);
+        document.getElementById('subUltMembers').textContent = membersLine(PLAN_LIMITS.ultimate.maxRoomMembers);
+
+        const currentTier = currentUser ? getUserSubscription(currentUser.username).tier : null;
+        const defaultLabels = { basic: t('chooseBasic', 'Choose Basic'), pro: t('choosePro', 'Choose Pro'), ultimate: t('chooseUltimate', 'Choose Ultimate') };
+
+        ['free', 'basic', 'pro', 'ultimate'].forEach(tier => {
+            const card = document.getElementById('subCard_' + tier);
+            const btn = document.getElementById('subBtn_' + tier);
+            card.classList.remove('current-plan');
+            if (currentTier === tier) {
+                card.classList.add('current-plan');
+                btn.disabled = true;
+                btn.textContent = t('currentPlanBtn', '✓ Current Plan');
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'default';
+            } else if (tier !== 'free') {
+                btn.disabled = false;
+                btn.style.opacity = '';
+                btn.style.cursor = '';
+                btn.textContent = defaultLabels[tier];
+            }
+        });
     }
 
     window.claimFreeTrial = function() {
@@ -1711,22 +2288,24 @@
         }
 
         const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
-        subs[currentUser.username] = { tier: 'pro', expires: expiresAt, trialUsed: true };
+        subs[currentUser.username] = { tier: 'pro', expires: expiresAt, trialUsed: true, isTrial: true };
         saveSubscriptions(subs);
         showToast("🎉 Free 7-day Pro Trial activated successfully!", "success");
         document.getElementById('subscriptionsModal').style.display = 'none';
         updateAuthBarUI();
+        applyAppSettings();
     };
 
     window.purchaseSubscription = function(tierName) {
         if (!currentUser) return showToast("Please log in to purchase a subscription", "error");
         const subs = getSubscriptions();
         const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
-        subs[currentUser.username] = { tier: tierName, expires: expiresAt, trialUsed: true };
+        subs[currentUser.username] = { tier: tierName, expires: expiresAt, trialUsed: true, isTrial: false };
         saveSubscriptions(subs);
         showToast(`Successfully subscribed to ${tierName.toUpperCase()} plan!`, "success");
         document.getElementById('subscriptionsModal').style.display = 'none';
         updateAuthBarUI();
+        applyAppSettings();
     };
 
     /* ==========================================
@@ -1754,6 +2333,41 @@
 
     function saveAccounts(accounts) {
         localStorage.setItem('lb_accounts', JSON.stringify(accounts));
+    }
+
+    /* Password storage: SHA-256 with a per-account salt via the browser's
+       native Web Crypto API. Existing accounts created before this change
+       have their password stored as plain text — verifyPassword() still
+       accepts those, and login transparently upgrades them to a salted
+       hash so nobody gets locked out. This is meaningfully better than
+       plain text, though — like any purely client-side app with no
+       server — it can't fully protect against someone with direct access
+       to this browser's storage. */
+    function generateSalt() {
+        const arr = new Uint8Array(16);
+        crypto.getRandomValues(arr);
+        return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function sha256Hex(text) {
+        const data = new TextEncoder().encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function makeStoredPassword(plainPassword) {
+        const salt = generateSalt();
+        const hash = await sha256Hex(salt + ':' + plainPassword);
+        return `sha256$${salt}$${hash}`;
+    }
+
+    async function verifyPassword(plainPassword, stored) {
+        if (typeof stored === 'string' && stored.startsWith('sha256$')) {
+            const parts = stored.split('$');
+            const attempt = await sha256Hex(parts[1] + ':' + plainPassword);
+            return attempt === parts[2];
+        }
+        return stored === plainPassword; // legacy plaintext record
     }
 
     function isZeldy() {
@@ -1800,18 +2414,23 @@
         }
     }
 
-    window.logout = function() {
-        if (confirm("Are you sure you want to log out?")) {
-            localStorage.removeItem('lb_session');
-            currentUser = null;
-            document.getElementById('profileModal').style.display = 'none';
-            updateAuthBarUI();
-            showToast("Logged out successfully", "info");
-        }
+    window.logout = async function() {
+        const ok = await showConfirm({
+            title: t('logoutConfirmTitle', 'Log out?'),
+            message: t('logoutConfirmMsg', "You'll need to log back in to access your account."),
+            confirmText: t('logout', 'Log Out'),
+            danger: false
+        });
+        if (!ok) return;
+        localStorage.removeItem('lb_session');
+        currentUser = null;
+        document.getElementById('profileModal').style.display = 'none';
+        updateAuthBarUI();
+        showToast("Logged out successfully", "info");
     };
 
     /* Zeldy Admin Accounts & Subscription Manager */
-    window.openAccountsListModal = function() {
+    window.openAccountsListModal = function(filter) {
         if (!isZeldy()) return showToast("Access denied", "error");
 
         const accounts = getAccounts();
@@ -1819,31 +2438,68 @@
         const container = document.getElementById('allAccountsContainer');
         container.innerHTML = '';
 
-        const keys = Object.keys(accounts);
+        const q = (filter !== undefined ? filter : (document.getElementById('adminAccountSearch') ? document.getElementById('adminAccountSearch').value : '')).trim().toLowerCase();
+        const keys = Object.keys(accounts).filter(username => {
+            if (!q) return true;
+            const acc = accounts[username];
+            return username.toLowerCase().includes(q) || (acc.displayName || '').toLowerCase().includes(q);
+        });
+
         if (keys.length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No accounts found</div>';
+            container.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 16px 0;">${q ? 'No matching accounts' : 'No accounts found'}</div>`;
         } else {
             keys.forEach(username => {
                 const acc = accounts[username];
-                const sub = subs[username] || { tier: 'free' };
+                const rawSub = subs[username] || { tier: 'free', expires: 0 };
+                const sub = getUserSubscription(username);
                 const div = document.createElement('div');
                 div.className = 'list-item';
+                div.style.flexDirection = 'column';
+                div.style.alignItems = 'stretch';
+                div.style.gap = '8px';
+
+                let trialStatus;
+                if (sub.tier === 'pro' && rawSub.isTrial && rawSub.expires > Date.now()) {
+                    const daysLeft = Math.ceil((rawSub.expires - Date.now()) / 86400000);
+                    trialStatus = `<span style="color: var(--success);">Trial active — ${daysLeft}d left</span> <button class="manage-user-btn" onclick="adminCancelTrial('${username}')">Cancel Trial</button>`;
+                } else if (rawSub.trialUsed) {
+                    trialStatus = `<span style="color: var(--text-dim);">Trial used</span>`;
+                } else {
+                    trialStatus = `<span style="color: var(--text-dim);">Trial available</span>`;
+                }
+
+                const expiresLabel = sub.tier === 'free' ? '' : (sub.expires ? ` · expires ${new Date(sub.expires).toLocaleDateString()}` : ' · unlimited');
+
                 div.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <img class="avatar" src="${acc.avatar || defaultAvatar}">
-                        <div>
-                            <span style="color: ${acc.color || '#818cf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
-                            <span style="font-size: 0.75rem; color: var(--text-dim);"> (@${escapeHtml(username)}) | Sub: <b style="color: var(--accent-light);">${sub.tier.toUpperCase()}</b></span>
+                    <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img class="avatar" src="${acc.avatar || defaultAvatar}">
+                            <div>
+                                <span style="color: ${acc.color || '#818cf8'}; font-weight: bold;">${escapeHtml(acc.displayName || username)}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-dim);"> (@${escapeHtml(username)}) | Sub: <b style="color: var(--accent-light);">${sub.tier.toUpperCase()}</b>${expiresLabel}</span>
+                            </div>
                         </div>
+                        <div style="font-size: 0.75rem;">${trialStatus}</div>
                     </div>
-                    <div style="display: flex; gap: 6px; align-items: center;">
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                         <select id="adminSubSelect_${username}" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 0; width: auto;">
                             <option value="free" ${sub.tier === 'free' ? 'selected' : ''}>Free</option>
                             <option value="basic" ${sub.tier === 'basic' ? 'selected' : ''}>Basic</option>
                             <option value="pro" ${sub.tier === 'pro' ? 'selected' : ''}>Pro</option>
                             <option value="ultimate" ${sub.tier === 'ultimate' ? 'selected' : ''}>Ultimate</option>
                         </select>
+                        <select id="adminDurationSelect_${username}" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 0; width: auto;" onchange="document.getElementById('adminCustomDate_${username}').style.display = this.value === 'custom' ? 'inline-block' : 'none';">
+                            <option value="1d">1 day</option>
+                            <option value="7d">7 days</option>
+                            <option value="30d" selected>30 days</option>
+                            <option value="90d">90 days</option>
+                            <option value="365d">1 year</option>
+                            <option value="custom">Custom date</option>
+                            <option value="unlimited">Unlimited</option>
+                        </select>
+                        <input type="date" id="adminCustomDate_${username}" style="display:none; padding: 4px 6px; font-size: 0.75rem; margin-top: 0; width: auto;">
                         <button class="manage-user-btn" onclick="adminSetUserSub('${username}')">Set Sub</button>
+                        ${sub.tier !== 'free' ? `<button class="manage-user-btn" onclick="adminRemoveUserSub('${username}')">Remove Sub</button>` : ''}
                         <button class="manage-user-btn" onclick="openViewUserProfile('${username}')">Profile</button>
                         ${username !== 'zeldy' ? `<button class="manage-user-btn" style="background: var(--danger); border-color: var(--danger);" onclick="deleteAccountByAdmin('${username}')">Delete</button>` : ''}
                     </div>
@@ -1854,52 +2510,152 @@
         document.getElementById('accountsListModal').style.display = 'flex';
     };
 
+    function adminComputeExpiry(username) {
+        const duration = document.getElementById(`adminDurationSelect_${username}`).value;
+        const map = { '1d': 1, '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
+        if (duration === 'unlimited') return 0;
+        if (duration === 'custom') {
+            const dateVal = document.getElementById(`adminCustomDate_${username}`).value;
+            if (!dateVal) { showToast('Pick a custom expiry date first', 'error'); return null; }
+            return new Date(dateVal + 'T23:59:59').getTime();
+        }
+        return Date.now() + map[duration] * 24 * 60 * 60 * 1000;
+    }
+
     window.adminSetUserSub = function(username) {
         if (!isZeldy()) return;
         const select = document.getElementById(`adminSubSelect_${username}`);
         const tier = select.value;
+        const expiresAt = tier === 'free' ? 0 : adminComputeExpiry(username);
+        if (expiresAt === null) return; // invalid custom date — user already toasted
+
         const subs = getSubscriptions();
-        const expiresAt = tier === 'free' ? 0 : Date.now() + 30 * 24 * 60 * 60 * 1000;
-        subs[username] = { tier: tier, expires: expiresAt, trialUsed: true };
+        const existing = subs[username] || {};
+        subs[username] = { tier, expires: expiresAt, trialUsed: tier === 'free' ? !!existing.trialUsed : true, isTrial: false };
         saveSubscriptions(subs);
         showToast(`Updated subscription for @${username} to ${tier.toUpperCase()}`, "success");
         openAccountsListModal();
     };
 
-    window.deleteAccountByAdmin = function(username) {
+    window.adminRemoveUserSub = function(username) {
         if (!isZeldy()) return;
-        if (confirm(`Are you sure you want to permanently delete user @${username}?`)) {
-            const accounts = getAccounts();
-            delete accounts[username];
-            saveAccounts(accounts);
-            openAccountsListModal();
-            showToast(`Deleted user @${username}`, "success");
-        }
+        const subs = getSubscriptions();
+        const existing = subs[username] || {};
+        subs[username] = { tier: 'free', expires: 0, trialUsed: !!existing.trialUsed, isTrial: false };
+        saveSubscriptions(subs);
+        showToast(`Subscription removed for @${username}`, "info");
+        openAccountsListModal();
+    };
+
+    window.adminCancelTrial = function(username) {
+        if (!isZeldy()) return;
+        const subs = getSubscriptions();
+        const existing = subs[username] || {};
+        subs[username] = { tier: 'free', expires: 0, trialUsed: true, isTrial: false };
+        saveSubscriptions(subs);
+        showToast(`Trial cancelled for @${username}`, "info");
+        openAccountsListModal();
+    };
+
+    window.deleteAccountByAdmin = async function(username) {
+        if (!isZeldy()) return;
+        const ok = await showConfirm({
+            title: t('deleteAccountConfirmTitle', 'Delete this account?'),
+            message: t('deleteAccountConfirmMsg', '{name} will be permanently deleted. This cannot be undone.').replace('{name}', '@' + username),
+            confirmText: t('delete', 'Delete'),
+            danger: true
+        });
+        if (!ok) return;
+        const accounts = getAccounts();
+        delete accounts[username];
+        saveAccounts(accounts);
+        openAccountsListModal();
+        showToast(`Deleted user @${username}`, "success");
     };
 
     /* Settings Modal Tabs */
+    const ACCENT_SWATCHES = ['#6366f1', '#8b5cf6', '#0ea5e9', '#10b981', '#f43f5e', '#f59e0b'];
+
     window.openGlobalSettingsModal = function() {
+        syncSettingsUI();
         document.getElementById('globalSettingsModal').style.display = 'flex';
     };
 
     window.switchSettingsTab = function(tabName) {
-        document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
-
-        if (tabName === 'general') {
-            document.querySelectorAll('.settings-tab-btn')[0].classList.add('active');
-            document.getElementById('panel-general').classList.add('active');
-        } else if (tabName === 'appearance') {
-            document.querySelectorAll('.settings-tab-btn')[1].classList.add('active');
-            document.getElementById('panel-appearance').classList.add('active');
-        } else if (tabName === 'p2p') {
-            document.querySelectorAll('.settings-tab-btn')[2].classList.add('active');
-            document.getElementById('panel-p2p').classList.add('active');
-        } else if (tabName === 'security') {
-            document.querySelectorAll('.settings-tab-btn')[3].classList.add('active');
-            document.getElementById('panel-security').classList.add('active');
-        }
+        document.getElementById('settingsSearchInput').value = '';
+        document.querySelectorAll('.settings-sidebar-item').forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+        document.querySelectorAll('#settingsContent .settings-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tabName));
+        document.querySelectorAll('.settings-row').forEach(r => r.classList.remove('settings-row-hidden'));
     };
+
+    window.filterSettings = function(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) {
+            const active = document.querySelector('.settings-sidebar-item.active');
+            switchSettingsTab(active ? active.dataset.tab : 'appearance');
+            return;
+        }
+        document.querySelectorAll('#settingsContent .settings-panel').forEach(p => p.classList.add('active'));
+        document.querySelectorAll('.settings-row').forEach(row => {
+            const haystack = ((row.dataset.keywords || '') + ' ' + row.textContent).toLowerCase();
+            row.classList.toggle('settings-row-hidden', !haystack.includes(q));
+        });
+        document.querySelectorAll('.settings-sidebar-item').forEach(b => b.classList.remove('active'));
+    };
+
+    window.pickAccentColor = function(color) {
+        if (!myCapabilities().customAccent) return showToast(t('proFeatureLocked', 'This is a Pro feature — upgrade to unlock.'), 'warning');
+        updateAppSetting('accentColor', color);
+        syncSettingsUI();
+    };
+
+    function syncSettingsUI() {
+        const s = appSettings;
+        const cap = myCapabilities();
+
+        const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+        setChecked('setDensityCompact', s.density === 'compact');
+        setChecked('setReducedMotion', s.reducedMotion);
+        setChecked('setReducedMotion2', s.reducedMotion);
+        setChecked('setDisableBlur', s.disableBlur);
+        setChecked('setDesktopNotif', s.desktopNotifications);
+        setChecked('setSoundEffects', s.soundEffects);
+        setChecked('setDND', s.doNotDisturb);
+        setChecked('setNotifyJoinLeave', s.notifyMemberJoinLeave);
+        setChecked('setNotifyFiles', s.notifyFileEvents);
+        setChecked('setHighContrast', s.highContrast);
+        setChecked('setLargerText', s.largerText);
+        setChecked('setLeaveConfirm', s.leaveConfirmation);
+        setChecked('setCompactMembers', s.compactMemberList);
+        setChecked('setFileGridView', s.fileGridView);
+        setChecked('setLazyPreviews', s.lazyPreviews);
+        const sortEl = document.getElementById('setFileSort'); if (sortEl) sortEl.value = s.fileSort;
+
+        document.getElementById('themeBtnDark').classList.toggle('active', s.theme !== 'light');
+        document.getElementById('themeBtnLight').classList.toggle('active', s.theme === 'light');
+
+        const swatchContainer = document.getElementById('accentSwatches');
+        const locked = !cap.customAccent;
+        document.getElementById('accentColorRow').classList.toggle('settings-locked', locked);
+        document.getElementById('accentLockBadge').style.display = locked ? 'inline-block' : 'none';
+        swatchContainer.innerHTML = ACCENT_SWATCHES.map(c =>
+            `<span class="swatch ${s.accentColor === c ? 'active' : ''}" style="background:${c};" onclick="pickAccentColor('${c}')" title="${c}"></span>`
+        ).join('');
+
+        const sessionRow = document.getElementById('sessionInfoRow');
+        if (currentUser) {
+            sessionRow.innerHTML = `<p class="settings-row-desc">@${escapeHtml(currentUser.username)} — ${t('loggedIn', 'logged in')}</p>`;
+        } else {
+            sessionRow.innerHTML = `<p class="settings-row-desc">${t('notLoggedIn', 'Not logged in')}</p>`;
+        }
+
+        let bytes = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith('lb_')) bytes += (localStorage.getItem(k) || '').length;
+        }
+        document.getElementById('storageUsageText').textContent = `~${(bytes / 1024).toFixed(1)} KB ${t('usedOnThisDevice', 'used on this device')}`;
+    }
 
     /* Profile Modal Settings */
     let tempAvatarBase64 = null;
@@ -2287,7 +3043,7 @@
     };
 
     /* Registration & Login */
-    document.getElementById('doRegisterBtn').onclick = () => {
+    document.getElementById('doRegisterBtn').onclick = async () => {
         const u = document.getElementById('regUsername').value.trim();
         const disp = document.getElementById('regDisplayName').value.trim() || u;
         const p = document.getElementById('regPassword').value.trim();
@@ -2305,7 +3061,7 @@
         }
 
         accounts[u] = { 
-            password: p, 
+            password: await makeStoredPassword(p), 
             displayName: disp,
             uuid: newShortId,
             createdAt: new Date().toISOString(),
@@ -2327,13 +3083,20 @@
         showToast(`Account created successfully! ID: ${newShortId}`, 'success');
     };
 
-    document.getElementById('doLoginBtn').onclick = () => {
+    document.getElementById('doLoginBtn').onclick = async () => {
         const u = document.getElementById('loginUsername').value.trim();
         const p = document.getElementById('loginPassword').value.trim();
 
         const accounts = getAccounts();
-        if (!accounts[u] || accounts[u].password !== p) {
+        const acc = accounts[u];
+        if (!acc || !(await verifyPassword(p, acc.password))) {
             return showToast('Invalid username or password', 'error');
+        }
+
+        // Transparently upgrade legacy plaintext-stored passwords now that we know it's correct
+        if (!String(acc.password).startsWith('sha256$')) {
+            acc.password = await makeStoredPassword(p);
+            saveAccounts(accounts);
         }
 
         currentUser = { username: u };
@@ -2350,18 +3113,34 @@
     let myPeer = null;
     let isHost = false;
     let roomHostConn = null;
-    
-    let hostState = {
-        roomId: '',
-        password: '',
-        maxUsers: 2,
-        requireAccount: false,
-        defaultPermissions: {},
-        users: {},
-        blacklist: [],
-        chatHistory: [],
-        fileHistory: []
-    };
+    let isLeavingRoom = false;
+    let heartbeatInterval = null;
+    let clientWatchdogInterval = null;
+    let lastHostSeen = 0;
+    let pendingInviteToken = null;
+
+    function freshHostState() {
+        return {
+            roomId: '',
+            password: '',
+            maxUsers: 2,
+            requireAccount: false,
+            defaultPermissions: {},
+            users: {},
+            blacklist: [],
+            chatHistory: [],
+            fileHistory: [],
+            roomName: '',
+            welcomeMessage: '',
+            inviteLinks: [],
+            fileTypeBlock: [],
+            autoLockMinutes: 0,
+            locked: false,
+            lastActivityAt: Date.now()
+        };
+    }
+
+    let hostState = freshHostState();
 
     let myPermissions = { canUpload: true, canDownload: true, canChat: true, canDeleteFiles: true, canViewMessageHistory: true, canViewFileHistory: true };
     let currentRoomId = '';
@@ -2381,29 +3160,41 @@
     updateAuthBarUI();
     setLanguage(currentLanguage);
 
+    (function checkInviteLinkOnLoad() {
+        const match = location.hash.match(/^#join=(.+)$/);
+        if (!match) return;
+        try {
+            const decoded = JSON.parse(decodeURIComponent(atob(match[1])));
+            if (decoded && decoded.r && decoded.p) {
+                pendingInviteToken = match[1];
+                document.getElementById('joinRoomId').value = decoded.r;
+                document.getElementById('joinPassword').value = decoded.p;
+                document.getElementById('joinModal').style.display = 'flex';
+                showToast(t('inviteLinkDetected', 'Invite link detected — review and click Join.'), 'info');
+            }
+        } catch (e) { /* malformed or foreign hash — ignore silently */ }
+        history.replaceState(null, '', location.pathname + location.search);
+    })();
+
     document.getElementById('cancelLoginBtn').onclick = () => document.getElementById('loginModal').style.display = 'none';
     document.getElementById('cancelRegBtn').onclick = () => document.getElementById('registerModal').style.display = 'none';
 
     document.getElementById('openCreateModalBtn').onclick = () => {
         document.getElementById('modalRoomId').value = Math.floor(100000 + Math.random() * 900000).toString();
         document.getElementById('modalPassword').value = '';
-        
-        // Enforce max 2 people for free tier
-        const sub = getUserSubscription(currentUser ? currentUser.username : null);
+
+        // Enforce room-size limits from the single centralized capability table
+        const cap = myCapabilities();
         const maxUsersInput = document.getElementById('modalMaxUsers');
         const hint = document.getElementById('roomLimitHint');
 
-        if (sub.tier === 'free') {
-            maxUsersInput.value = '2';
-            maxUsersInput.max = '2';
-            maxUsersInput.disabled = true;
-            hint.textContent = "Free tier limit: Max 2 users per room. Upgrade to Pro/Ultimate for up to 50+ users.";
-        } else {
-            maxUsersInput.value = sub.tier === 'basic' ? '10' : (sub.tier === 'pro' ? '50' : '100');
-            maxUsersInput.max = '200';
-            maxUsersInput.disabled = false;
-            hint.textContent = `Active ${sub.tier.toUpperCase()} subscription: Extended user capacity enabled.`;
-        }
+        maxUsersInput.value = String(cap.maxRoomMembers);
+        maxUsersInput.min = '1';
+        maxUsersInput.max = String(cap.maxRoomMembers);
+        maxUsersInput.disabled = cap.tier === 'free';
+        hint.textContent = cap.tier === 'free'
+            ? `Free tier limit: Max ${cap.maxRoomMembers} users per room. Upgrade for more.`
+            : `${cap.tier.toUpperCase()} plan: up to ${cap.maxRoomMembers} users per room.`;
 
         document.getElementById('createModal').style.display = 'flex';
     };
@@ -2422,41 +3213,127 @@
         document.getElementById('eyeIcon').innerHTML = isPasswordVisible ? svgEyeClosed : svgEyeOpen;
     };
 
-    /* Robust Leave Room Fix */
-    window.leaveRoom = function() {
-        if (roomHostConn) {
-            try { roomHostConn.close(); } catch(e){}
-            roomHostConn = null;
-        }
-        if (myPeer) {
-            try { myPeer.destroy(); } catch(e){}
-            myPeer = null;
-        }
+    /* ==========================================
+       Robust Room Exit System
+       - performLeaveRoom(): user-initiated (Leave Room button).
+         Confirms (if enabled), notifies the other side, waits a
+         brief flush window, then always finishes cleanup.
+       - forceLeaveRoom(): used for kicks / bans / rejections /
+         host-closed / connection errors — no confirm, no outgoing
+         notify (the connection is already gone or we were told to
+         leave), just guaranteed, idempotent cleanup.
+       - Both funnel through the same state reset so nothing about
+         the previous room can leak into the next join.
+       ========================================== */
+    function stopHeartbeat() {
+        if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    }
+    function stopClientWatchdog() {
+        if (clientWatchdogInterval) { clearInterval(clientWatchdogInterval); clientWatchdogInterval = null; }
+    }
+    function startHeartbeat() {
+        stopHeartbeat();
+        heartbeatInterval = setInterval(() => {
+            const now = Date.now();
+            Object.values(hostState.users).forEach(u => {
+                if (u.isHost) return;
+                if (now - (u.lastSeen || now) > 24000) {
+                    handleUserDisconnect(u.id, 'timeout');
+                } else if (u.conn) {
+                    try { u.conn.send({ type: 'PING' }); } catch (e) {}
+                }
+            });
+            if (hostState.autoLockMinutes > 0 && !hostState.locked && now - hostState.lastActivityAt > hostState.autoLockMinutes * 60000) {
+                hostState.locked = true;
+                appendSystemMessage(t('roomAutoLocked', 'Room auto-locked due to inactivity.'));
+                if (typeof syncRoomSettingsUI === 'function') syncRoomSettingsUI();
+            }
+        }, 8000);
+    }
+    function startClientWatchdog() {
+        stopClientWatchdog();
+        lastHostSeen = Date.now();
+        clientWatchdogInterval = setInterval(() => {
+            if (!isHost && currentRoomId && Date.now() - lastHostSeen > 26000) {
+                forceLeaveRoom(t('lostHostConnection', 'Lost connection to host.'), 'error');
+            }
+        }, 8000);
+    }
 
-        isHost = false;
-        currentRoomId = '';
-        hostState = {
-            roomId: '',
-            password: '',
-            maxUsers: 2,
-            requireAccount: false,
-            defaultPermissions: {},
-            users: {},
-            blacklist: [],
-            chatHistory: [],
-            fileHistory: []
-        };
-
+    function resetRoomUIState() {
         appLayout.style.display = 'none';
         mainWrapper.style.display = 'flex';
         document.getElementById('topLeftBar').style.display = 'flex';
         document.getElementById('authBar').style.display = 'flex';
         document.getElementById('footerBar').style.display = 'flex';
-
         statusText.className = 'status disconnected';
         statusText.textContent = 'Status: Ready';
-        showToast("Successfully left the room", "success");
-    };
+    }
+
+    function teardownConnections() {
+        if (roomHostConn) { try { roomHostConn.close(); } catch (e) {} roomHostConn = null; }
+        if (myPeer) { try { myPeer.destroy(); } catch (e) {} myPeer = null; }
+        isHost = false;
+        currentRoomId = '';
+        selectedUserId = null;
+        hostState = freshHostState();
+        myPermissions = { canUpload: true, canDownload: true, canChat: true, canDeleteFiles: true, canViewMessageHistory: true, canViewFileHistory: true };
+    }
+
+    async function performLeaveRoom() {
+        if (isLeavingRoom) return;
+        if (!currentRoomId && !myPeer) return;
+
+        if (appSettings.leaveConfirmation) {
+            const ok = await showConfirm({
+                title: t('leaveRoomConfirmTitle', 'Leave room?'),
+                message: t('leaveRoomConfirmMsg', 'You will leave this room and can join again later.'),
+                confirmText: t('leaveRoom', 'Leave Room'),
+                cancelText: t('cancel', 'Cancel'),
+                danger: true
+            });
+            if (!ok) return;
+        }
+
+        isLeavingRoom = true;
+        const leaveBtn = document.getElementById('leaveRoomBtn');
+        if (leaveBtn) { leaveBtn.disabled = true; leaveBtn.style.opacity = '0.6'; leaveBtn.style.cursor = 'wait'; }
+
+        stopHeartbeat();
+        stopClientWatchdog();
+
+        await new Promise((resolve) => {
+            try {
+                if (isHost) {
+                    broadcastToAllClients({ type: 'ROOM_CLOSED', reason: t('roomClosedByHost', 'Host left the room.') });
+                } else if (roomHostConn && roomHostConn.open) {
+                    roomHostConn.send({ type: 'USER_LEFT' });
+                }
+            } catch (e) { /* connection already gone — fine, we clean up locally regardless */ }
+            setTimeout(resolve, 220); // let the message actually flush before we tear the transport down
+        });
+
+        teardownConnections();
+        resetRoomUIState();
+
+        if (leaveBtn) { leaveBtn.disabled = false; leaveBtn.style.opacity = ''; leaveBtn.style.cursor = ''; }
+        isLeavingRoom = false;
+        showToast(t('leftRoomSuccess', 'Successfully left the room'), 'success');
+        playNotifySound('leave');
+    }
+
+    function forceLeaveRoom(message, type = 'error') {
+        if (isLeavingRoom) return;
+        isLeavingRoom = true;
+        stopHeartbeat();
+        stopClientWatchdog();
+        teardownConnections();
+        resetRoomUIState();
+        isLeavingRoom = false;
+        if (message) showToast(message, type);
+    }
+
+    window.leaveRoom = function() { performLeaveRoom(); };
 
     /* App Switching & State Setup */
     function initAppView(roomId) {
@@ -2471,6 +3348,7 @@
         document.getElementById('labelRoomPass').textContent = '••••••';
         document.getElementById('eyeIcon').innerHTML = svgEyeOpen;
         isPasswordVisible = false;
+        updateRoomHeaderDisplay();
 
         if (isHost) {
             openSettingsBtn.style.display = 'flex';
@@ -2488,9 +3366,9 @@
         const rId = document.getElementById('modalRoomId').value;
         const pass = document.getElementById('modalPassword').value.trim();
         
-        const sub = getUserSubscription(currentUser ? currentUser.username : null);
-        let maxU = parseInt(document.getElementById('modalMaxUsers').value) || 2;
-        if (sub.tier === 'free') maxU = 2; // Strict free limit enforcement
+        const cap = myCapabilities();
+        let maxU = parseInt(document.getElementById('modalMaxUsers').value) || cap.maxRoomMembers;
+        maxU = Math.max(1, Math.min(maxU, cap.maxRoomMembers)); // hard ceiling regardless of what the field contains
 
         if (!pass) return showToast('Please set a password', 'error');
 
@@ -2525,22 +3403,23 @@
                 isHost: true,
                 username: currentUser ? currentUser.username : null,
                 conn: null,
+                lastSeen: Date.now(),
                 permissions: { canUpload: true, canDownload: true, canChat: true, canDeleteFiles: true, canViewMessageHistory: true, canViewFileHistory: true }
             };
             renderUserListHost();
+            startHeartbeat();
             appendSystemMessage("Room created. You are Host!");
             showToast("Room created successfully!", "success");
         });
 
         myPeer.on('connection', (conn) => {
             conn.on('data', (data) => handleHostIncomingData(conn, data));
-            conn.on('close', () => handleUserDisconnect(conn.peer));
-            conn.on('error', () => handleUserDisconnect(conn.peer));
+            conn.on('close', () => { if (!isLeavingRoom) handleUserDisconnect(conn.peer); });
+            conn.on('error', () => { if (!isLeavingRoom) handleUserDisconnect(conn.peer); });
         });
 
         myPeer.on('error', (err) => {
-            showToast('Error creating room: ' + err.type, 'error');
-            leaveRoom();
+            forceLeaveRoom(t('errorCreatingRoom', 'Error creating room: ') + err.type, 'error');
         });
     };
 
@@ -2548,8 +3427,10 @@
     document.getElementById('confirmJoinBtn').onclick = () => {
         const rId = document.getElementById('joinRoomId').value.trim();
         const pass = document.getElementById('joinPassword').value.trim();
+        const token = pendingInviteToken;
+        pendingInviteToken = null; // one-shot: a later manual join shouldn't silently reuse it
 
-        if (!rId || !pass) return showToast('Fill in Room ID and Password', 'error');
+        if (!rId || (!pass && !token)) return showToast('Fill in Room ID and Password', 'error');
 
         isHost = false;
         document.getElementById('joinModal').style.display = 'none';
@@ -2561,37 +3442,56 @@
             roomHostConn = myPeer.connect(`localbridge-room-${rId}`);
 
             roomHostConn.on('open', () => {
-                roomHostConn.send({
-                    type: 'JOIN_REQUEST',
-                    password: pass,
-                    name: myName,
-                    username: currentUser ? currentUser.username : null
-                });
+                const payload = { type: 'JOIN_REQUEST', password: pass, name: myName, username: currentUser ? currentUser.username : null };
+                if (token) payload.token = token;
+                roomHostConn.send(payload);
             });
 
             roomHostConn.on('data', (data) => handleClientIncomingData(data));
 
             roomHostConn.on('close', () => {
-                showToast('Disconnected from host.', 'error');
-                leaveRoom();
+                if (isLeavingRoom) return; // we closed this ourselves — already handled by performLeaveRoom
+                forceLeaveRoom(t('disconnectedFromHost', 'Disconnected from host.'), 'error');
             });
 
             roomHostConn.on('error', (err) => {
-                showToast('Connection error: ' + err, 'error');
-                leaveRoom();
+                if (isLeavingRoom) return;
+                forceLeaveRoom(t('connectionError', 'Connection error: ') + err, 'error');
             });
         });
 
         myPeer.on('error', (err) => {
-            showToast('Peer error: ' + err.type, 'error');
-            leaveRoom();
+            if (isLeavingRoom) return;
+            forceLeaveRoom(t('peerError', 'Peer error: ') + err.type, 'error');
         });
     };
 
+    /* Best-effort graceful exit on refresh / tab close. Browsers don't
+       guarantee delivery here, so this is defense-in-depth on top of the
+       explicit USER_LEFT/ROOM_CLOSED messages and the heartbeat watchdog —
+       not the only thing either side relies on. */
+    window.addEventListener('pagehide', () => {
+        if (isLeavingRoom || (!isHost && !currentRoomId)) return;
+        try {
+            if (isHost) {
+                broadcastToAllClients({ type: 'ROOM_CLOSED', reason: t('roomClosedByHost', 'Host left the room.') });
+            } else if (roomHostConn && roomHostConn.open) {
+                roomHostConn.send({ type: 'USER_LEFT' });
+            }
+        } catch (e) {}
+    });
+
     /* Data Logic & Processing */
     function handleHostIncomingData(conn, data) {
+        // Any traffic from a connected peer is proof of life — feeds the heartbeat watchdog
+        if (hostState.users[conn.peer]) hostState.users[conn.peer].lastSeen = Date.now();
+
         if (data.type === 'JOIN_REQUEST') {
-            if (hostState.blacklist.includes(conn.peer)) {
+            if (hostState.locked) {
+                conn.send({ type: 'JOIN_REJECTED', reason: 'Room is locked by host.' });
+                return;
+            }
+            if (hostState.blacklist.some(b => b.peerId === conn.peer || (data.username && b.username === data.username))) {
                 conn.send({ type: 'JOIN_REJECTED', reason: 'You are banned from this room.' });
                 return;
             }
@@ -2601,16 +3501,33 @@
                 return;
             }
 
-            if (data.password !== hostState.password) {
+            let usedInviteLink = null;
+            if (data.token) {
+                usedInviteLink = (hostState.inviteLinks || []).find(l => l.token === data.token);
+                if (!usedInviteLink) {
+                    conn.send({ type: 'JOIN_REJECTED', reason: 'Invalid or revoked invite link.' });
+                    return;
+                }
+                if (usedInviteLink.expiresAt && Date.now() > usedInviteLink.expiresAt) {
+                    conn.send({ type: 'JOIN_REJECTED', reason: 'This invite link has expired.' });
+                    return;
+                }
+                if (usedInviteLink.singleUse && usedInviteLink.used) {
+                    conn.send({ type: 'JOIN_REJECTED', reason: 'This invite link has already been used.' });
+                    return;
+                }
+            } else if (data.password !== hostState.password) {
                 conn.send({ type: 'JOIN_REJECTED', reason: 'Incorrect password.' });
                 return;
             }
 
             const activeUserCount = Object.keys(hostState.users).length;
             if (hostState.maxUsers && activeUserCount >= hostState.maxUsers) {
-                conn.send({ type: 'JOIN_REJECTED', reason: 'Room is full (Free tier limit reached).' });
+                conn.send({ type: 'JOIN_REJECTED', reason: 'Room is full.' });
                 return;
             }
+
+            if (usedInviteLink && usedInviteLink.singleUse) usedInviteLink.used = true;
 
             const newPerms = { ...hostState.defaultPermissions };
             hostState.users[conn.peer] = {
@@ -2619,12 +3536,15 @@
                 username: data.username,
                 isHost: false,
                 conn: conn,
+                lastSeen: Date.now(),
                 permissions: newPerms
             };
 
             conn.send({
                 type: 'JOIN_ACCEPTED',
                 roomId: hostState.roomId,
+                roomName: hostState.roomName,
+                welcomeMessage: hostState.welcomeMessage,
                 permissions: newPerms,
                 chatHistory: newPerms.canViewMessageHistory ? hostState.chatHistory : [],
                 fileHistory: newPerms.canViewFileHistory ? hostState.fileHistory : []
@@ -2632,10 +3552,19 @@
 
             broadcastRoomState();
             appendSystemMessage(`${data.name} joined the room.`);
+            playNotifySound('default');
+            hostState.lastActivityAt = Date.now();
+        }
+        else if (data.type === 'USER_LEFT') {
+            // Explicit, immediate leave notice — the fast, reliable path.
+            // The connection's close/error events remain as a fallback for
+            // abrupt disconnects where no message could be sent.
+            handleUserDisconnect(conn.peer, 'left');
         }
         else if (data.type === 'CHAT') {
             const u = hostState.users[conn.peer];
             if (u && u.permissions.canChat) {
+                hostState.lastActivityAt = Date.now();
                 const msgObj = { author: u.name, text: data.text, isSystem: false };
                 hostState.chatHistory.push(msgObj);
                 appendChatMessage(msgObj);
@@ -2645,9 +3574,16 @@
         else if (data.type === 'FILE_ADD') {
             const u = hostState.users[conn.peer];
             if (u && u.permissions.canUpload) {
+                hostState.lastActivityAt = Date.now();
+                const ext = (data.file.name.split('.').pop() || '').toLowerCase();
+                if (hostState.fileTypeBlock && hostState.fileTypeBlock.includes(ext)) {
+                    conn.send({ type: 'FILE_REJECTED', fileName: data.file.name, reason: `.${ext} files are blocked in this room.` });
+                    return;
+                }
                 hostState.fileHistory.push(data.file);
                 renderQueue();
                 broadcastToAllClients({ type: 'FILE_BROADCAST', file: data.file }, conn.peer, 'canViewFileHistory');
+                playNotifySound('file');
             }
         }
         else if (data.type === 'FILE_DELETE') {
@@ -2661,26 +3597,30 @@
     }
 
     function handleClientIncomingData(data) {
+        lastHostSeen = Date.now(); // any traffic from host is proof of life
+
         if (data.type === 'JOIN_REJECTED') {
-            showToast('Join Failed: ' + data.reason, 'error');
-            leaveRoom();
+            forceLeaveRoom(t('joinFailedPrefix', 'Join Failed: ') + data.reason, 'error');
         }
         else if (data.type === 'JOIN_ACCEPTED') {
             myPermissions = data.permissions;
+            hostState.roomName = data.roomName || '';
+            hostState.welcomeMessage = data.welcomeMessage || '';
             initAppView(data.roomId);
-            
+
             if (myPermissions.canViewMessageHistory) {
                 document.getElementById('chatMessages').innerHTML = '';
                 data.chatHistory.forEach(m => appendChatMessage(m));
             }
-            
+
             if (myPermissions.canViewFileHistory) {
                 hostState.fileHistory = data.fileHistory;
                 renderQueue();
             }
 
-            appendSystemMessage("Connected to room!");
+            appendSystemMessage(data.welcomeMessage ? data.welcomeMessage : "Connected to room!");
             showToast("Successfully connected to room!", "success");
+            startClientWatchdog();
         }
         else if (data.type === 'ROOM_STATE') {
             renderUserListClient(data.users);
@@ -2691,16 +3631,31 @@
             showToast("Your room permissions were updated by host", "info");
         }
         else if (data.type === 'KICKED') {
-            showToast(data.reason || 'You were kicked from the room.', 'error');
-            leaveRoom();
+            forceLeaveRoom(data.reason || t('kickedFromRoom', 'You were kicked from the room.'), 'error');
+        }
+        else if (data.type === 'ROOM_CLOSED') {
+            forceLeaveRoom(data.reason || t('roomClosedByHost', 'Host left the room.'), 'info');
+        }
+        else if (data.type === 'ROOM_META_UPDATED') {
+            hostState.roomName = data.roomName || '';
+            hostState.welcomeMessage = data.welcomeMessage || '';
+            updateRoomHeaderDisplay();
+        }
+        else if (data.type === 'PING') {
+            try { roomHostConn.send({ type: 'PONG' }); } catch (e) {}
+        }
+        else if (data.type === 'FILE_REJECTED') {
+            showToast(data.reason || `"${data.fileName}" was rejected by the room.`, 'warning');
         }
         else if (data.type === 'CHAT_BROADCAST') {
             if (myPermissions.canViewMessageHistory) appendChatMessage(data.message);
+            if (document.visibilityState !== 'visible') { playNotifySound('default'); fireDesktopNotification(t('newMessage', 'New message'), data.message.text); }
         }
         else if (data.type === 'FILE_BROADCAST') {
             if (myPermissions.canViewFileHistory) {
                 hostState.fileHistory.push(data.file);
                 renderQueue();
+                playNotifySound('file');
             }
         }
         else if (data.type === 'FILE_DELETE_BROADCAST') {
@@ -2711,12 +3666,14 @@
         }
     }
 
-    function handleUserDisconnect(peerId) {
+    function handleUserDisconnect(peerId, reason) {
+        if (isLeavingRoom) return; // the whole room is tearing down on our own side — skip redundant per-user cleanup
         if (hostState.users[peerId]) {
             const name = hostState.users[peerId].name;
             delete hostState.users[peerId];
             broadcastRoomState();
-            appendSystemMessage(`${name} left the room.`);
+            appendSystemMessage(reason === 'timeout' ? `${name}'s connection timed out.` : `${name} left the room.`);
+            if (appSettings.notifyMemberJoinLeave) playNotifySound('leave');
         }
     }
 
@@ -2841,10 +3798,18 @@
         showToast(`${u.name} was kicked`, 'info');
     };
 
-    document.getElementById('banUserBtn').onclick = () => {
+    document.getElementById('banUserBtn').onclick = async () => {
         if (!selectedUserId || !hostState.users[selectedUserId]) return;
         const u = hostState.users[selectedUserId];
-        hostState.blacklist.push(selectedUserId);
+        const ok = await showConfirm({
+            title: t('banUserConfirmTitle', 'Ban this user?'),
+            message: t('banUserConfirmMsg', "{name} won't be able to rejoin this room, even with a new connection.").replace('{name}', u.name),
+            confirmText: t('banUser', 'Ban User'),
+            danger: true
+        });
+        if (!ok) return;
+
+        hostState.blacklist.push({ peerId: selectedUserId, username: u.username || null, name: u.name, bannedAt: Date.now() });
 
         if (u.conn) u.conn.send({ type: 'KICKED', reason: 'You were banned by Host.' });
 
@@ -2856,41 +3821,206 @@
         showToast(`${u.name} was banned`, 'error');
     };
 
-    /* Room Settings Modal Logic */
+    /* Room Settings Modal — General / Access / Members / Files / Security */
     window.openRoomSettingsModal = function() {
         if (!isHost) return;
         document.getElementById('hostSettingsSection').style.display = 'block';
-        document.getElementById('toggleRequireAccount').checked = hostState.requireAccount;
-        renderBlacklist();
+        switchRoomSettingsTab('general');
+        syncRoomSettingsUI();
         document.getElementById('settingsModal').style.display = 'flex';
     };
 
-    window.toggleRequireAccountSetting = function() {
-        hostState.requireAccount = document.getElementById('toggleRequireAccount').checked;
+    window.switchRoomSettingsTab = function(tabName) {
+        document.querySelectorAll('#settingsModal .settings-sidebar-item').forEach(b => b.classList.toggle('active', b.dataset.rtab === tabName));
+        document.querySelectorAll('#settingsModal .settings-panel').forEach(p => p.classList.toggle('active', p.id === 'rpanel-' + tabName));
+        if (tabName === 'members') renderRoomSettingsMemberList();
     };
+
+    function syncRoomSettingsUI() {
+        if (!isHost) return;
+        const cap = myCapabilities();
+
+        document.getElementById('roomNameInput').value = hostState.roomName || '';
+        document.getElementById('welcomeMsgInput').value = hostState.welcomeMessage || '';
+
+        document.getElementById('roomMaxUsersInput').value = hostState.maxUsers;
+        document.getElementById('roomMaxUsersInput').max = cap.maxRoomMembers;
+        document.getElementById('maxUsersCapHint').textContent = `${cap.tier.toUpperCase()} plan ceiling: ${cap.maxRoomMembers} members.`;
+        document.getElementById('toggleRequireAccount').checked = hostState.requireAccount;
+
+        document.getElementById('fileSizeCapLine').textContent = `Max file size on this room's plan: ${cap.maxFileSizeMB}MB.`;
+        document.getElementById('fileTypeBlockWrap').classList.toggle('settings-locked', !cap.fileTypeRules);
+        document.getElementById('fileTypeBlockInput').value = (hostState.fileTypeBlock || []).join(', ');
+
+        document.getElementById('autoLockSelect').value = String(hostState.autoLockMinutes || 0);
+        document.getElementById('toggleManualLock').checked = !!hostState.locked;
+
+        const inviteLocked = !cap.inviteLinks;
+        document.getElementById('inviteLinksWrap').classList.toggle('settings-locked', inviteLocked);
+        document.getElementById('inviteLockBadge').style.display = inviteLocked ? 'inline-block' : 'none';
+        Array.from(document.getElementById('inviteExpirySelect').options).forEach(opt => {
+            if (opt.value !== '0') opt.disabled = !cap.expiringLinks;
+        });
+
+        renderInviteLinksList();
+        renderBlacklist();
+        document.getElementById('memberCountLine').textContent = `${Object.keys(hostState.users).length} / ${hostState.maxUsers} members`;
+        renderRoomSettingsMemberList();
+    }
+
+    function updateRoomHeaderDisplay() {
+        const el = document.getElementById('roomHeaderSubtitle');
+        if (el) el.textContent = hostState.roomName ? hostState.roomName : t('activeWorkspace', 'Active P2P Workspace');
+    }
+
+    window.saveRoomGeneralSettings = function() {
+        if (!isHost) return;
+        hostState.roomName = document.getElementById('roomNameInput').value.trim().slice(0, 40);
+        hostState.welcomeMessage = document.getElementById('welcomeMsgInput').value.trim().slice(0, 120);
+        updateRoomHeaderDisplay();
+        broadcastToAllClients({ type: 'ROOM_META_UPDATED', roomName: hostState.roomName, welcomeMessage: hostState.welcomeMessage });
+        showToast(t('roomSettingsSaved', 'Room settings saved'), 'success');
+    };
+
+    window.saveRoomAccessSettings = function() {
+        if (!isHost) return;
+        const cap = myCapabilities();
+        let newMax = parseInt(document.getElementById('roomMaxUsersInput').value) || hostState.maxUsers;
+        newMax = Math.max(1, Math.min(newMax, cap.maxRoomMembers));
+        const activeCount = Object.keys(hostState.users).length;
+        if (newMax < activeCount) {
+            showToast(t('cantLowerBelowActive', "Can't set below the number of members currently in the room."), 'error');
+            document.getElementById('roomMaxUsersInput').value = hostState.maxUsers;
+            return;
+        }
+        hostState.maxUsers = newMax;
+        hostState.requireAccount = document.getElementById('toggleRequireAccount').checked;
+        broadcastRoomState();
+        syncRoomSettingsUI();
+        showToast(t('roomSettingsSaved', 'Room settings saved'), 'success');
+    };
+
+    window.saveFileTypeRules = function() {
+        if (!isHost || !myCapabilities().fileTypeRules) return;
+        const raw = document.getElementById('fileTypeBlockInput').value;
+        hostState.fileTypeBlock = raw.split(',').map(s => s.trim().replace(/^\./, '').toLowerCase()).filter(Boolean);
+        showToast(t('roomSettingsSaved', 'Room settings saved'), 'success');
+    };
+
+    window.changeRoomPassword = function() {
+        if (!isHost) return;
+        const val = document.getElementById('roomNewPasswordInput').value.trim();
+        if (!val) return showToast(t('enterNewPassword', 'Enter a new password first'), 'error');
+        hostState.password = val;
+        document.getElementById('roomNewPasswordInput').value = '';
+        document.getElementById('labelRoomPass').textContent = '••••••';
+        showToast(t('passwordChanged', 'Room password updated. Share the new password with members who need to rejoin.'), 'success');
+    };
+
+    window.saveAutoLock = function() {
+        if (!isHost) return;
+        hostState.autoLockMinutes = parseInt(document.getElementById('autoLockSelect').value) || 0;
+        hostState.lastActivityAt = Date.now();
+        showToast(t('roomSettingsSaved', 'Room settings saved'), 'success');
+    };
+
+    window.toggleManualLock = function() {
+        if (!isHost) return;
+        hostState.locked = document.getElementById('toggleManualLock').checked;
+        showToast(hostState.locked ? t('roomLockedToast', 'Room locked — no new members can join.') : t('roomUnlockedToast', 'Room unlocked.'), 'info');
+    };
+
+    function makeInviteToken() {
+        return btoa(encodeURIComponent(JSON.stringify({ r: hostState.roomId, p: hostState.password, t: Date.now() })));
+    }
+
+    window.generateInviteLink = function() {
+        if (!isHost || !myCapabilities().inviteLinks) return;
+        const expiryVal = document.getElementById('inviteExpirySelect').value;
+        const cap = myCapabilities();
+        if (expiryVal !== '0' && !cap.expiringLinks) return;
+
+        const token = makeInviteToken();
+        const link = {
+            token,
+            createdAt: Date.now(),
+            expiresAt: expiryVal === '0' || expiryVal === 'singleuse' ? 0 : Date.now() + parseInt(expiryVal) * 60000,
+            singleUse: expiryVal === 'singleuse',
+            used: false
+        };
+        hostState.inviteLinks.push(link);
+        renderInviteLinksList();
+        showToast(t('inviteLinkGenerated', 'Invite link generated'), 'success');
+    };
+
+    window.revokeInviteLink = function(token) {
+        hostState.inviteLinks = hostState.inviteLinks.filter(l => l.token !== token);
+        renderInviteLinksList();
+    };
+
+    window.copyInviteLink = function(token) {
+        const url = `${location.origin}${location.pathname}#join=${token}`;
+        navigator.clipboard.writeText(url).then(() => {
+            showToast(t('linkCopied', 'Link copied to clipboard'), 'success');
+        }).catch(() => {
+            showToast(url, 'info');
+        });
+    };
+
+    function renderInviteLinksList() {
+        const wrap = document.getElementById('inviteLinksList');
+        if (!wrap) return;
+        const links = hostState.inviteLinks || [];
+        if (links.length === 0) { wrap.innerHTML = ''; return; }
+        wrap.innerHTML = links.map(l => {
+            let status = t('inviteNoExpiry', 'Never expires');
+            if (l.singleUse) status = l.used ? t('inviteUsedUp', 'Already used') : t('inviteSingleUse', 'Single use');
+            else if (l.expiresAt) status = l.expiresAt < Date.now() ? t('inviteExpired', 'Expired') : new Date(l.expiresAt).toLocaleString();
+            return `<div class="list-item" style="margin-top:6px;">
+                <span style="font-size:0.75rem; color: var(--text-dim);">${status}</span>
+                <div style="display:flex; gap:6px;">
+                    <button class="manage-user-btn" onclick="copyInviteLink('${l.token}')">${t('copyLink', 'Copy')}</button>
+                    <button class="manage-user-btn" style="background: var(--danger);" onclick="revokeInviteLink('${l.token}')">${t('revoke', 'Revoke')}</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderRoomSettingsMemberList() {
+        const container = document.getElementById('roomSettingsMemberList');
+        if (!container || !isHost) return;
+        const users = Object.values(hostState.users);
+        container.innerHTML = users.map(u => `
+            <div class="list-item">
+                <span style="font-weight:600;">${escapeHtml(u.name)}${u.isHost ? ' 👑' : ''}${u.username ? ` <span style="color:var(--text-dim); font-weight:400;">(@${escapeHtml(u.username)})</span>` : ''}</span>
+                ${!u.isHost ? `<button class="manage-user-btn" onclick="openManageUserModal('${u.id}')">${t('manage', 'Manage')}</button>` : ''}
+            </div>
+        `).join('');
+    }
 
     function renderBlacklist() {
         const container = document.getElementById('blacklistContainer');
         container.innerHTML = '';
         if (hostState.blacklist.length === 0) {
-            container.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem;">No banned users</div>`;
+            container.innerHTML = `<div style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 10px 0;">${t('noBannedUsers', 'No banned users')}</div>`;
             return;
         }
-        hostState.blacklist.forEach(peerId => {
+        hostState.blacklist.forEach(entry => {
             const div = document.createElement('div');
             div.className = 'list-item';
+            const label = entry.username ? `@${entry.username}` : (entry.name || 'Unknown user');
             div.innerHTML = `
-                <span>ID: ${peerId.substring(0, 8)}...</span>
-                <button class="manage-user-btn" onclick="unbanUser('${peerId}')">Unban</button>
+                <span>${escapeHtml(label)}</span>
+                <button class="manage-user-btn" onclick="unbanUser('${entry.peerId}')">${t('unban', 'Unban')}</button>
             `;
             container.appendChild(div);
         });
     }
 
     window.unbanUser = function(peerId) {
-        hostState.blacklist = hostState.blacklist.filter(id => id !== peerId);
+        hostState.blacklist = hostState.blacklist.filter(entry => entry.peerId !== peerId);
         renderBlacklist();
-        showToast("User unbanned", "success");
+        showToast(t('userUnbanned', 'User unbanned'), 'success');
     };
 
     /* UI Permission Synchronizer */
@@ -2957,6 +4087,7 @@
 
         if (isHost) {
             hostState.chatHistory.push(msgObj);
+            hostState.lastActivityAt = Date.now();
             appendChatMessage(msgObj);
             broadcastToAllClients({ type: 'CHAT_BROADCAST', message: msgObj }, null, 'canViewMessageHistory');
         } else if (roomHostConn) {
@@ -2992,16 +4123,54 @@
         fileInput.value = '';
     };
 
-    const MAX_FILE_SIZE = 12 * 1024 * 1024; // 12MB limit
+    // Per-tier file size limits now come from PLAN_LIMITS via myCapabilities() —
+    // see the centralized capability system near the top of this file.
+
+    const activeReads = {}; // fileName -> percent, drives a real (not fake) progress banner
+
+    function renderUploadProgress() {
+        const banner = document.getElementById('uploadProgressBanner');
+        if (!banner) return;
+        const names = Object.keys(activeReads);
+        if (names.length === 0) { banner.innerHTML = ''; return; }
+        banner.innerHTML = names.map(name => `
+            <div style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 6px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>${t('reading', 'Reading')} ${escapeHtml(name)}...</span><span>${activeReads[name]}%</span></div>
+                <div style="height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+                    <div style="height:100%; width:${activeReads[name]}%; background: var(--accent); transition: width 0.15s ease;"></div>
+                </div>
+            </div>
+        `).join('');
+    }
 
     function handleFilesSelected(fileList) {
+        const cap = myCapabilities();
+        const maxBytes = cap.maxFileSizeMB * 1024 * 1024;
+
         Array.from(fileList).forEach(file => {
-            if (file.size > MAX_FILE_SIZE) {
-                showToast(`"${file.name}" is too large to send (max 12MB).`, 'error');
+            if (file.size > maxBytes) {
+                showToast(`"${file.name}" exceeds your ${cap.tier.toUpperCase()} plan limit (max ${cap.maxFileSizeMB}MB).`, 'error');
                 return;
             }
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            if (hostState.fileTypeBlock && hostState.fileTypeBlock.includes(ext)) {
+                showToast(`.${ext} files are blocked in this room.`, 'warning');
+                return;
+            }
+
             const reader = new FileReader();
+            activeReads[file.name] = 0;
+            renderUploadProgress();
+
+            reader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    activeReads[file.name] = Math.round((e.loaded / e.total) * 100);
+                    renderUploadProgress();
+                }
+            };
             reader.onload = () => {
+                delete activeReads[file.name];
+                renderUploadProgress();
                 const fileObj = {
                     id: 'f_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
                     name: file.name,
@@ -3010,7 +4179,12 @@
                     uploader: myName
                 };
                 sendFileToQueue(fileObj);
-                showToast(`File "${file.name}" added to queue`, 'success');
+                if (appSettings.notifyFileEvents) showToast(`File "${file.name}" added to queue`, 'success');
+            };
+            reader.onerror = () => {
+                delete activeReads[file.name];
+                renderUploadProgress();
+                showToast(`Couldn't read "${file.name}"`, 'error');
             };
             reader.readAsDataURL(file);
         });
@@ -3019,6 +4193,7 @@
     function sendFileToQueue(fileObj) {
         if (isHost) {
             hostState.fileHistory.push(fileObj);
+            hostState.lastActivityAt = Date.now();
             renderQueue();
             broadcastToAllClients({ type: 'FILE_BROADCAST', file: fileObj }, null, 'canViewFileHistory');
         } else if (roomHostConn) {
@@ -3047,7 +4222,18 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-        showToast(`Downloading "${file.name}"...`, 'success');
+        if (appSettings.notifyFileEvents) showToast(`Downloading "${file.name}"...`, 'success');
+    };
+
+    window.revealFilePreview = function(fileId) {
+        const file = (hostState.fileHistory || []).find(f => f.id === fileId);
+        const el = document.getElementById('preview_' + fileId);
+        if (!file || !el) return;
+        const img = document.createElement('img');
+        img.src = file.data;
+        img.className = 'file-thumb';
+        img.loading = 'lazy';
+        el.replaceWith(img);
     };
 
     function formatFileSize(bytes) {
@@ -3056,28 +4242,65 @@
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
+    const FILE_ICONS = {
+        image: '🖼️', video: '🎞️', audio: '🎵', pdf: '📕', archive: '🗜️',
+        doc: '📄', sheet: '📊', slide: '📽️', code: '💻', generic: '📦'
+    };
+    function getFileCategory(name) {
+        const ext = (name.split('.').pop() || '').toLowerCase();
+        if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'image';
+        if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext)) return 'video';
+        if (['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) return 'audio';
+        if (ext === 'pdf') return 'pdf';
+        if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return 'archive';
+        if (['doc', 'docx', 'txt', 'rtf'].includes(ext)) return 'doc';
+        if (['xls', 'xlsx', 'csv'].includes(ext)) return 'sheet';
+        if (['ppt', 'pptx'].includes(ext)) return 'slide';
+        if (['js', 'py', 'html', 'css', 'json', 'ts', 'jsx'].includes(ext)) return 'code';
+        return 'generic';
+    }
+
     function renderQueue() {
         const container = document.getElementById('fileQueue');
         if (!container) return;
-        const files = hostState.fileHistory || [];
+        let files = (hostState.fileHistory || []).slice();
 
         if (files.length === 0) {
-            container.innerHTML = `<div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">No files in queue</div>`;
+            container.classList.remove('file-queue-grid');
+            container.innerHTML = `<div class="file-item-empty" style="text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px; background: rgba(0,0,0,0.15); border-radius: var(--radius-md);">${t('noFilesInQueue', 'No files in queue')}</div>`;
             return;
         }
 
+        const sortMode = appSettings.fileSort;
+        if (sortMode === 'name') files.sort((a, b) => a.name.localeCompare(b.name));
+        else if (sortMode === 'size') files.sort((a, b) => b.size - a.size);
+        // 'date' = insertion order (already newest-appended-last from history) — show newest first
+        if (sortMode === 'date') files = files.reverse();
+
+        container.classList.toggle('file-queue-grid', !!appSettings.fileGridView);
         container.innerHTML = '';
         files.forEach(file => {
             const div = document.createElement('div');
             div.className = 'list-item';
+            const category = getFileCategory(file.name);
+            const isImage = category === 'image';
+            const showPreviewNow = isImage && !appSettings.lazyPreviews;
+
+            const thumbHtml = isImage
+                ? (showPreviewNow
+                    ? `<img src="${file.data}" class="file-thumb" loading="lazy">`
+                    : `<span class="file-thumb file-thumb-placeholder" id="preview_${file.id}" onclick="revealFilePreview('${file.id}')" title="${t('loadPreview', 'Click to load preview')}">${FILE_ICONS.image}</span>`)
+                : `<span class="file-thumb file-thumb-icon">${FILE_ICONS[category]}</span>`;
+
             div.innerHTML = `
-                <div style="display: flex; flex-direction: column; overflow: hidden;">
+                ${thumbHtml}
+                <div style="display: flex; flex-direction: column; overflow: hidden; flex: 1;">
                     <span style="font-weight: 600; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(file.name)}</span>
                     <span style="font-size: 0.7rem; color: var(--text-dim);">${formatFileSize(file.size)} · ${escapeHtml(file.uploader || '')}</span>
                 </div>
                 <div style="display: flex; gap: 4px; flex-shrink: 0;">
-                    ${myPermissions.canDownload ? `<button class="manage-user-btn" onclick="downloadQueuedFile('${file.id}')">Get</button>` : ''}
-                    ${myPermissions.canDeleteFiles ? `<button class="manage-user-btn" style="background: var(--danger);" onclick="deleteQueuedFile('${file.id}')">Del</button>` : ''}
+                    ${myPermissions.canDownload ? `<button class="manage-user-btn" onclick="downloadQueuedFile('${file.id}')">${t('get', 'Get')}</button>` : ''}
+                    ${myPermissions.canDeleteFiles ? `<button class="manage-user-btn" style="background: var(--danger);" onclick="deleteQueuedFile('${file.id}')">${t('del', 'Del')}</button>` : ''}
                 </div>
             `;
             container.appendChild(div);
